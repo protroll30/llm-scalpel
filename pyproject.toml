@@ -41,7 +41,7 @@ demo = [
 packages = ["causal_patcher"]
 
 [tool.hatch.build.targets.sdist]
-include = ["causal_patcher", "tests", "README.md", "LICENSE"]
+include = ["causal_patcher", "tests", "docs", "notebooks", "README.md", "LICENSE"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

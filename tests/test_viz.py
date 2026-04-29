@@ -60,6 +60,23 @@ def test_sweep_layer_head_grid_shape():
     assert g.shape == (model.cfg.n_layers, model.cfg.n_heads)
 
 
+def test_position_tick_labels_match_corrupt_tokens():
+    torch.manual_seed(3)
+    model = _tiny_model()
+    names = [utils.get_act_name("resid_pre", L) for L in range(model.cfg.n_layers)]
+    r = ExperimentRunner(
+        model,
+        "a b",
+        "c d",
+        clean_answer_token=5,
+        corrupt_answer_token=6,
+        names_filter=names,
+    )
+    labels = viz.position_tick_labels(r, "corrupt")
+    assert len(labels) == int(r.corrupt_tokens.shape[-1])
+    assert all(isinstance(s, str) for s in labels)
+
+
 def test_plot_functions_return_figure():
     torch.manual_seed(2)
     model = _tiny_model()

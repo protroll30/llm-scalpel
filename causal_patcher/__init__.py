@@ -3,11 +3,13 @@
 from causal_patcher.runner import ExperimentRunner
 from causal_patcher.targets import PatchPos, PatchTarget, patch_hook_name
 from causal_patcher import viz
+from causal_patcher.viz import position_tick_labels
 
 __all__ = [
     "ExperimentRunner",
     "PatchPos",
     "PatchTarget",
     "patch_hook_name",
+    "position_tick_labels",
     "viz",
 ]
