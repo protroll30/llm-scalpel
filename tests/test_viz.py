@@ -5,8 +5,7 @@ import matplotlib
 matplotlib.use("Agg")
 
 import torch
-import transformer_lens.utilities as utils
-from transformer_lens import HookedTransformer, HookedTransformerConfig
+from transformer_lens import HookedTransformer, HookedTransformerConfig, utilities as utils
 
 from causal_patcher.runner import ExperimentRunner
 from causal_patcher import viz

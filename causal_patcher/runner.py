@@ -5,9 +5,9 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Callable, Iterable, List, Optional, Union
 
 import torch
-import transformer_lens.utilities as utils
+from transformer_lens import utilities as utils
 
-from causal_patcher.targets import PatchKind, PatchTarget
+from causal_patcher.targets import PatchKind, PatchPos, PatchTarget
 
 if TYPE_CHECKING:
     from transformer_lens.hook_points import HookedRootModule
@@ -15,38 +15,56 @@ if TYPE_CHECKING:
 NamesFilter = Optional[Union[str, List[str], Callable[[str], bool]]]
 
 
-def _resolve_positions(
-    positions: Union[int, slice, None], seq_len: int
-) -> Union[slice, int]:
-    if positions is None:
+def _resolve_index(i: int, seq_len: int) -> int:
+    if i < 0:
+        return i + seq_len
+    return i
+
+
+def _resolve_patch_pos(
+    pos: Optional[PatchPos],
+    seq_len: int,
+) -> Union[slice, int, tuple[int, int]]:
+    """Normalize position spec: aligned ``slice``/``int``, or ``(clean_i, corrupt_i)`` with negative indices fixed."""
+    if pos is None:
         return slice(None)
-    if isinstance(positions, int) and positions < 0:
-        return positions + seq_len
-    return positions
+    if isinstance(pos, slice):
+        return pos
+    if isinstance(pos, tuple):
+        if len(pos) != 2:
+            raise ValueError("pos tuple must be (clean_index, corrupt_index)")
+        a, b = int(pos[0]), int(pos[1])
+        return (_resolve_index(a, seq_len), _resolve_index(b, seq_len))
+    if isinstance(pos, int):
+        return _resolve_index(pos, seq_len)
+    raise TypeError(f"Invalid pos spec: {pos!r}")
 
 
 def _patch_fn(
     clean_activation: torch.Tensor,
     target: PatchTarget,
-    positions: Union[int, slice, None],
-    seq_len: int,
+    pos_spec: Union[slice, int, tuple[int, int]],
 ):
-    pos = _resolve_positions(positions, seq_len)
-
     def hook_fn(activation: torch.Tensor, hook) -> torch.Tensor:  # noqa: ANN001
         src = clean_activation.to(device=activation.device, dtype=activation.dtype)
         if target.kind == "attn_head_z":
             h = target.head
             assert h is not None
-            if isinstance(pos, slice):
-                activation[:, pos, h, :] = src[:, pos, h, :]
+            if isinstance(pos_spec, tuple) and len(pos_spec) == 2:
+                ci, ri = pos_spec
+                activation[:, ri, h, :] = src[:, ci, h, :]
+            elif isinstance(pos_spec, slice):
+                activation[:, pos_spec, h, :] = src[:, pos_spec, h, :]
             else:
-                activation[:, pos, h, :] = src[:, pos, h, :]
+                activation[:, pos_spec, h, :] = src[:, pos_spec, h, :]
         else:
-            if isinstance(pos, slice):
-                activation[:, pos, ...] = src[:, pos, ...]
+            if isinstance(pos_spec, tuple) and len(pos_spec) == 2:
+                ci, ri = pos_spec
+                activation[:, ri, ...] = src[:, ci, ...]
+            elif isinstance(pos_spec, slice):
+                activation[:, pos_spec, ...] = src[:, pos_spec, ...]
             else:
-                activation[:, pos, ...] = src[:, pos, ...]
+                activation[:, pos_spec, ...] = src[:, pos_spec, ...]
         return activation
 
     return hook_fn
@@ -125,14 +143,16 @@ class ExperimentRunner:
         self,
         target: PatchTarget,
         *,
-        positions: Union[int, slice, None] = None,
+        positions: Optional[PatchPos] = None,
     ) -> torch.Tensor:
         """Run the corrupt prompt with a forward hook that overwrites the target activation from the clean cache.
 
         Args:
-            target: Patch site (layer, kind, and optional head for ``attn_head_z``).
-            positions: Token index (``int``), ``slice``, or ``None`` for all positions.
-                Negative ints index from the end of the sequence.
+            target: Patch site (``kind``, ``layer``, ``head`` for z, and optional ``pos``). If
+                ``target.pos`` is set, it chooses which token positions to patch. A tuple
+                ``(clean_index, corrupt_index)`` reads the clean run at the first index and
+                overwrites the corrupt run at the second.
+            positions: If not ``None``, overrides ``target.pos`` (same types as :attr:`PatchTarget.pos`).
 
         Returns:
             Logits from the patched corrupt forward pass.
@@ -150,7 +170,9 @@ class ExperimentRunner:
 
         clean_activation = self.clean_cache[hook_name]
         seq_len = self.corrupt_tokens.shape[-1]
-        hook_fn = _patch_fn(clean_activation, target, positions, seq_len)
+        effective_pos = target.pos if positions is None else positions
+        pos_spec = _resolve_patch_pos(effective_pos, seq_len)
+        hook_fn = _patch_fn(clean_activation, target, pos_spec)
 
         logits = self.model.run_with_hooks(
             self.corrupt_tokens,

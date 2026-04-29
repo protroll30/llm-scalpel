@@ -1,7 +1,7 @@
 """Tests for ``PatchTarget`` and hook name resolution."""
 
 import pytest
-import transformer_lens.utilities as utils
+from transformer_lens import utilities as utils
 
 from causal_patcher.targets import PatchTarget, patch_hook_name
 
@@ -40,3 +40,13 @@ def test_attn_head_z_requires_head():
 def test_non_head_target_rejects_head():
     with pytest.raises(ValueError, match="head"):
         PatchTarget("resid_pre", 0, head=0)
+
+
+def test_pos_pair_tuple():
+    t = PatchTarget("resid_pre", 0, pos=(1, 2))
+    assert t.pos == (1, 2)
+
+
+def test_pos_tuple_validates_length():
+    with pytest.raises(ValueError, match="pos tuple"):
+        PatchTarget("resid_pre", 0, pos=(1, 2, 3))

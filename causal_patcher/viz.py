@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING
 import matplotlib.pyplot as plt
 import numpy as np
 
-from causal_patcher.targets import PatchKind, PatchTarget
+from causal_patcher.targets import PatchKind, PatchPos, PatchTarget
 
 if TYPE_CHECKING:
     from causal_patcher.runner import ExperimentRunner
@@ -33,9 +33,13 @@ def sweep_layer_position_logit_diff(
 def sweep_layer_head_logit_diff(
     runner: "ExperimentRunner",
     *,
-    positions: int | slice | None = None,
+    positions: PatchPos = None,
 ) -> np.ndarray:
-    """Patch each attention head's ``hook_z`` slice; cell is patched corrupt logit difference."""
+    """Patch each attention head's ``hook_z`` slice; cell is patched corrupt logit difference.
+
+    ``positions`` is passed through to :meth:`~causal_patcher.runner.ExperimentRunner.patch_clean_into_corrupt`
+    (e.g. a single index, or ``(clean_index, corrupt_index)`` for explicit alignment).
+    """
     n_layers = runner.model.cfg.n_layers
     n_heads = runner.model.cfg.n_heads
     grid = np.zeros((n_layers, n_heads))
@@ -78,6 +82,7 @@ def plot_layer_position_patching(
     *,
     kind: PatchKind = "resid_pre",
     title: str | None = None,
+    figsize: tuple[float, float] = (8.0, 4.0),
 ):
     """Run ``sweep_layer_position_logit_diff`` and plot. Returns ``(fig, ax, im, grid)``."""
     grid = sweep_layer_position_logit_diff(runner, kind=kind)
@@ -87,6 +92,7 @@ def plot_layer_position_patching(
         xlabel="position",
         ylabel="layer",
         title=t,
+        figsize=figsize,
     )
     return fig, ax, im, grid
 
@@ -94,8 +100,9 @@ def plot_layer_position_patching(
 def plot_layer_head_patching(
     runner: "ExperimentRunner",
     *,
-    positions: int | slice | None = None,
+    positions: PatchPos = None,
     title: str | None = None,
+    figsize: tuple[float, float] = (8.0, 4.0),
 ):
     """Run ``sweep_layer_head_logit_diff`` and plot. Returns ``(fig, ax, im, grid)``."""
     grid = sweep_layer_head_logit_diff(runner, positions=positions)
@@ -105,5 +112,6 @@ def plot_layer_head_patching(
         xlabel="head",
         ylabel="layer",
         title=t,
+        figsize=figsize,
     )
     return fig, ax, im, grid
