@@ -2,13 +2,13 @@
 
 from __future__ import annotations
 
-from typing import Callable, List, Optional, Union, cast
+from typing import Callable, List, Optional, Union, cast, get_args
 
 import torch
 from transformer_lens import HookedTransformer
 
 from causal_patcher.runner import _patch_fn, _resolve_index
-from causal_patcher.targets import PatchPos, PatchTarget
+from causal_patcher.targets import PatchKind, PatchPos, PatchTarget
 from causal_patcher.utils import get_left_padded_tokens
 
 NamesFilter = Optional[Union[str, List[str], Callable[[str], bool]]]
@@ -169,6 +169,59 @@ class BatchExperimentRunner:
             return_type="logits",
         )
         return self._compute_logit_diff(cast(torch.Tensor, logits))
+
+    def run_patch_sweep(self, kind: str, pos: PatchPos) -> torch.Tensor:
+        """Sweep patch sites of one ``kind`` and record the patched corrupt logit-difference readout.
+
+        For **residual-stream** kinds (``resid_pre``, ``resid_mid``, ``resid_post``) the clean run was
+        already cached in :meth:`run_baselines` — that single cache already holds every layer’s
+        activations, so the sweep only repeats **corrupt** forward passes (one per layer/head) and
+        does not recompute the clean forward.
+
+        Args:
+            kind: One of ``"resid_pre"``, ``"resid_mid"``, ``"resid_post"``, ``"mlp_out"``,
+                ``"attn_head_z"``.
+            pos: Position spec passed to each :class:`PatchTarget` (see Phase-1 /
+                :func:`_batch_resolve_patch_pos`).
+
+        Returns:
+            If ``kind != "attn_head_z"``: shape ``[n_layers, batch_size]``.
+            If ``kind == "attn_head_z"``: shape ``[n_layers, n_heads, batch_size]``.
+
+        Note:
+            :meth:`run_baselines` must have been run with a ``names_filter`` that includes the hooks
+            you sweep (e.g. ``None`` to cache all), or :meth:`patch_clean_into_corrupt` will raise.
+        """
+        self._require_baselines()
+        assert self.corrupt_tokens is not None
+        if self.corrupt_logits is not None:
+            dtype = self.corrupt_logits.dtype
+        else:
+            dtype = torch.float32
+        dev = self.corrupt_tokens.device
+        batch_size = int(self.corrupt_tokens.shape[0])
+
+        valid: tuple[str, ...] = get_args(PatchKind)
+        if kind not in valid:
+            raise ValueError(f"kind must be one of {valid}, got {kind!r}")
+        k = cast(PatchKind, kind)
+
+        n_layers = int(self.model.cfg.n_layers)
+        n_heads = int(self.model.cfg.n_heads)
+
+        with torch.no_grad():
+            if k == "attn_head_z":
+                out = torch.empty(n_layers, n_heads, batch_size, device=dev, dtype=dtype)
+                for layer in range(n_layers):
+                    for head in range(n_heads):
+                        tgt = PatchTarget("attn_head_z", layer, head=head, pos=pos)
+                        out[layer, head] = self.patch_clean_into_corrupt(tgt)
+            else:
+                out = torch.empty(n_layers, batch_size, device=dev, dtype=dtype)
+                for layer in range(n_layers):
+                    tgt = PatchTarget(k, layer, pos=pos)
+                    out[layer] = self.patch_clean_into_corrupt(tgt)
+        return out
 
 
 if __name__ == "__main__":
