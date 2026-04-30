@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import Callable, List, Optional, Union, cast, get_args
 
 import torch
+from tqdm.auto import tqdm
 from transformer_lens import HookedTransformer
 
 from causal_patcher.runner import _patch_fn, _resolve_index
@@ -212,13 +213,26 @@ class BatchExperimentRunner:
         with torch.no_grad():
             if k == "attn_head_z":
                 out = torch.empty(n_layers, n_heads, batch_size, device=dev, dtype=dtype)
-                for layer in range(n_layers):
-                    for head in range(n_heads):
+                for layer in tqdm(
+                    range(n_layers),
+                    desc="attn_head_z layers",
+                    unit="layer",
+                ):
+                    for head in tqdm(
+                        range(n_heads),
+                        desc=f"heads L{layer}",
+                        unit="head",
+                        leave=False,
+                    ):
                         tgt = PatchTarget("attn_head_z", layer, head=head, pos=pos)
                         out[layer, head] = self.patch_clean_into_corrupt(tgt)
             else:
                 out = torch.empty(n_layers, batch_size, device=dev, dtype=dtype)
-                for layer in range(n_layers):
+                for layer in tqdm(
+                    range(n_layers),
+                    desc=f"patch_sweep[{k}]",
+                    unit="layer",
+                ):
                     tgt = PatchTarget(k, layer, pos=pos)
                     out[layer] = self.patch_clean_into_corrupt(tgt)
         return out
@@ -232,7 +246,7 @@ if __name__ == "__main__":
     _torch.manual_seed(0)
 
     _cfg = HookedTransformerConfig(
-        n_layers=1,
+        n_layers=2,
         d_model=32,
         n_heads=1,
         d_head=32,
@@ -279,3 +293,7 @@ if __name__ == "__main__":
     # Patch should change the readout for at least the first two rows.
     for _i in (0, 1):
         assert not _torch.allclose(_ld_corrupt[_i], _ld_patched[_i], rtol=0, atol=1e-5), _i
+
+    _sweep = _runner.run_patch_sweep("resid_pre", pos=-1)
+    print("run_patch_sweep('resid_pre', pos=-1) shape:", tuple(_sweep.shape))
+    assert _sweep.shape == (_m.cfg.n_layers, 3)
