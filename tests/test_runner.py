@@ -5,7 +5,7 @@ from unittest.mock import MagicMock
 
 import pytest
 import torch
-from transformer_lens import HookedTransformer, HookedTransformerConfig, utilities as utils
+from transformer_lens import HookedTransformer, HookedTransformerConfig, utils
 
 from causal_patcher.runner import ExperimentRunner
 from causal_patcher.targets import PatchTarget

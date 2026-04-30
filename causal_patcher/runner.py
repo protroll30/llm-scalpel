@@ -5,7 +5,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Callable, Iterable, List, Optional, Union
 
 import torch
-from transformer_lens import utilities as utils
+from transformer_lens import utils as tl_utils
 
 from causal_patcher.targets import PatchKind, PatchPos, PatchTarget
 
@@ -195,7 +195,7 @@ class ExperimentRunner:
         for layer in range(n_layers):
             for k in kinds:
                 if k == "attn_head_z":
-                    names.append(utils.get_act_name("z", layer))
+                    names.append(tl_utils.get_act_name("z", layer))
                 else:
-                    names.append(utils.get_act_name(k, layer))
+                    names.append(tl_utils.get_act_name(k, layer))
         return names

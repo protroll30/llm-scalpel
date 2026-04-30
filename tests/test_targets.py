@@ -1,7 +1,7 @@
 """Tests for ``PatchTarget`` and hook name resolution."""
 
 import pytest
-from transformer_lens import utilities as utils
+from transformer_lens import utils
 
 from causal_patcher.targets import PatchTarget, patch_hook_name
 

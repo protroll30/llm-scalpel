@@ -1,11 +1,11 @@
-"""Patch targets map to TransformerLens hook names via ``utils.get_act_name``."""
+"""Patch targets map to TransformerLens hook names via :func:`transformer_lens.utils.get_act_name`."""
 
 from __future__ import annotations
 
 from dataclasses import dataclass
 from typing import Literal
 
-from transformer_lens import utilities as utils
+from transformer_lens import utils as tl_utils
 
 PatchKind = Literal["resid_pre", "resid_mid", "resid_post", "mlp_out", "attn_head_z"]
 
@@ -18,8 +18,8 @@ PatchPos = int | slice | tuple[int, int] | None
 def patch_hook_name(kind: PatchKind, layer: int) -> str:
     """Resolve the hook name for a patch site (no head index; use for all non-head-z kinds)."""
     if kind == "attn_head_z":
-        return utils.get_act_name("z", layer)
-    return utils.get_act_name(kind, layer)
+        return tl_utils.get_act_name("z", layer)
+    return tl_utils.get_act_name(kind, layer)
 
 
 @dataclass(frozen=True)

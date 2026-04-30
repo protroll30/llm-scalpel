@@ -2,14 +2,51 @@
 
 from __future__ import annotations
 
-from typing import Callable, List, Optional, Union
+from typing import Callable, List, Optional, Union, cast
 
 import torch
 from transformer_lens import HookedTransformer
 
+from causal_patcher.runner import _patch_fn, _resolve_index
+from causal_patcher.targets import PatchPos, PatchTarget
 from causal_patcher.utils import get_left_padded_tokens
 
 NamesFilter = Optional[Union[str, List[str], Callable[[str], bool]]]
+
+
+def _batch_resolve_patch_pos(
+    pos: Optional[PatchPos], p_clean: int, p_corrupt: int
+) -> int | slice | tuple[int, int]:
+    """Like Phase-1 :func:`_resolve_patch_pos` but *clean* and *corrupt* rows can have different *P*.
+
+    * ``int``: resolved as ``(resolve(int, p_clean), resolve(int, p_corrupt))`` so the last
+      prompt token (``-1``) reads/writes the correct time step in each cache.
+    * ``tuple[int, int]``: ``(resolve(a, p_clean), resolve(b, p_corrupt))``.
+    * ``None`` or ``slice``: use the same on both sides; *requires* ``p_clean == p_corrupt`` so
+      the sliced activations are the same shape.
+    """
+    if pos is None:
+        if p_clean != p_corrupt:
+            raise ValueError(
+                "pos is None (full-sequence copy) but clean and corrupt have different "
+                f"lengths: P_clean={p_clean} vs P_corrupt={p_corrupt}."
+            )
+        return slice(None)
+    if isinstance(pos, slice):
+        if p_clean != p_corrupt:
+            raise ValueError(
+                "pos is a slice but clean and corrupt have different lengths: "
+                f"P_clean={p_clean} vs P_corrupt={p_corrupt}."
+            )
+        return pos
+    if isinstance(pos, tuple):
+        if len(pos) != 2:
+            raise ValueError("pos tuple must be (clean_index, corrupt_index)")
+        a, b = int(pos[0]), int(pos[1])
+        return (_resolve_index(a, p_clean), _resolve_index(b, p_corrupt))
+    if isinstance(pos, int):
+        return (_resolve_index(pos, p_clean), _resolve_index(pos, p_corrupt))
+    raise TypeError(f"Invalid pos spec: {pos!r}")
 
 
 class BatchExperimentRunner:
@@ -58,16 +95,18 @@ class BatchExperimentRunner:
 
     def run_baselines(self, names_filter: NamesFilter = None) -> None:
         """Run ``run_with_cache`` for clean and corrupt token batches; store logits and caches."""
-        self.clean_logits, self.clean_cache = self.model.run_with_cache(
+        cl, self.clean_cache = self.model.run_with_cache(
             self.clean_tokens,
             names_filter=names_filter,
             return_type="logits",
         )
-        self.corrupt_logits, self.corrupt_cache = self.model.run_with_cache(
+        ul, self.corrupt_cache = self.model.run_with_cache(
             self.corrupt_tokens,
             names_filter=names_filter,
             return_type="logits",
         )
+        self.clean_logits = cast(torch.Tensor, cl)
+        self.corrupt_logits = cast(torch.Tensor, ul)
 
     def _compute_logit_diff(self, logits: torch.Tensor) -> torch.Tensor:
         """Per-row ``logit(clean_answer) - logit(corrupt_answer)`` at the last token position.
@@ -82,9 +121,62 @@ class BatchExperimentRunner:
         cu = self.corrupt_answer_token_ids.to(logits.device)
         return logits[r, -1, ca] - logits[r, -1, cu]
 
+    def _require_baselines(self) -> None:
+        if self.clean_cache is None or self.corrupt_tokens is None or self.clean_tokens is None:
+            raise RuntimeError("Call run_baselines() first.")
+
+    def patch_clean_into_corrupt(
+        self,
+        target: PatchTarget,
+        *,
+        positions: Optional[PatchPos] = None,
+    ) -> torch.Tensor:
+        """Corrupt forward with a hook that overwrites the target activation from ``clean_cache``.
+
+        Indexing is vectorized: ``src[:, clean_idx, ...]`` and ``[:, corrupt_idx, ...]`` (or
+        full-slice) so the patch applies to the whole batch at once.
+
+        Returns:
+            Per-row logit-difference (clean vs corrupt answer at last time step) on the **patched**
+            corrupt run, shape ``[B]`` (same as :meth:`_compute_logit_diff`).
+        """
+        self._require_baselines()
+        assert self.clean_cache is not None
+        assert self.corrupt_tokens is not None
+        assert self.clean_tokens is not None
+
+        hook_name = target.hook_name()
+        if hook_name not in self.clean_cache:
+            raise KeyError(
+                f"Clean cache has no entry for {hook_name!r}. "
+                "Re-run run_baselines with a names_filter that includes this hook."
+            )
+
+        clean_activation = self.clean_cache[hook_name]
+        p_clean = int(self.clean_tokens.shape[1])
+        p_corrupt = int(self.corrupt_tokens.shape[1])
+        if clean_activation.shape[1] != p_clean:
+            raise ValueError(
+                f"Clean cache {hook_name} pos dim {clean_activation.shape[1]} != clean_tokens {p_clean}."
+            )
+
+        effective_pos = target.pos if positions is None else positions
+        pos_spec = _batch_resolve_patch_pos(effective_pos, p_clean, p_corrupt)
+        hook_fn = _patch_fn(clean_activation, target, pos_spec)
+        logits = self.model.run_with_hooks(
+            self.corrupt_tokens,
+            fwd_hooks=[(hook_name, hook_fn)],
+            return_type="logits",
+        )
+        return self._compute_logit_diff(cast(torch.Tensor, logits))
+
 
 if __name__ == "__main__":
+    import torch as _torch
+
     from transformer_lens import HookedTransformerConfig
+
+    _torch.manual_seed(0)
 
     _cfg = HookedTransformerConfig(
         n_layers=1,
@@ -117,8 +209,20 @@ if __name__ == "__main__":
         _m.to_single_token(_s)  # fail fast if not a single token in this tokenizer
 
     _runner = BatchExperimentRunner(_m, _c_prompts, _u_prompts, _c_ans, _u_ans)
-    _runner.run_baselines()
-    assert _runner.clean_logits is not None
-    _ld = _runner._compute_logit_diff(_runner.clean_logits)
-    print("logit_diff (on clean run):", _ld)
-    print("logit_diff shape:", tuple(_ld.shape))
+    _runner.run_baselines()  # cache all hooks so resid activations are available
+    assert _runner.corrupt_logits is not None
+
+    _ld_corrupt = _runner._compute_logit_diff(_runner.corrupt_logits)
+    print("logit_diff (corrupt run, pre-patch):", _ld_corrupt)
+    print("  shape:", tuple(_ld_corrupt.shape))
+
+    # ``resid_pre`` can leave some rows' logit readout unchanged on tiny random models; ``resid_mid``
+    # at the last position reliably moves the first two rows here.
+    _t = PatchTarget("resid_mid", 0, pos=-1)
+    _ld_patched = _runner.patch_clean_into_corrupt(_t)
+    print("logit_diff (corrupt run, patched, last pos):", _ld_patched)
+    print("  shape:", tuple(_ld_patched.shape))
+
+    # Patch should change the readout for at least the first two rows.
+    for _i in (0, 1):
+        assert not _torch.allclose(_ld_corrupt[_i], _ld_patched[_i], rtol=0, atol=1e-5), _i
