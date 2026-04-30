@@ -5,7 +5,7 @@ from __future__ import annotations
 from typing import Callable, List, Optional, Union, cast, get_args
 
 import torch
-from tqdm.auto import tqdm
+from tqdm import tqdm
 from transformer_lens import HookedTransformer
 
 from causal_patcher.runner import _patch_fn, _resolve_index

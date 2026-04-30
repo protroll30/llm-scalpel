@@ -62,5 +62,5 @@ if __name__ == "__main__":
         row = toks[i]
         mrow = mask[i]
         for j, (tid, m) in enumerate(zip(row.tolist(), mrow.tolist())):
-            dec = _model.tokenizer.decode([tid])
+            dec = _model.tokenizer.decode([int(tid)])
             print(f"  pos {j:2d}  id={tid:5d}  mask={m}  decoded={dec!r}")

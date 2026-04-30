@@ -32,7 +32,7 @@ def position_tick_labels(
 
     labels: list[str] = []
     for tid in toks[0].cpu().tolist():
-        s = runner.model.tokenizer.decode([tid])
+        s = runner.model.tokenizer.decode([int(tid)])
         labels.append(s if s else f"<id {tid}>")
     return labels
 
