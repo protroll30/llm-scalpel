@@ -12,6 +12,7 @@ Example:
 
   python scripts/run_discovery_real.py --device cuda --hook-layer 0 --n-features 4096
   python scripts/run_discovery_real.py --device cuda --ig-steps 20 --run-prune --kl-budget 0.5
+  python scripts/run_discovery_real.py --sae-backend sae_lens --sae-release gpt2-small-res-jb --sae-id blocks.8.hook_resid_pre --model gpt2-small
 """
 
 from __future__ import annotations
@@ -34,6 +35,12 @@ from discovery.attribution import (
     feature_integrated_gradients_pass,
 )
 from discovery.pruner import prune_sae_circuit_budget
+from discovery.sae_lens_bridge import (
+    assert_d_in_matches_model,
+    discovery_encode_decode,
+    load_pretrained_sae,
+    metadata_hook_name,
+)
 
 
 class LinearSAE(nn.Module):
@@ -69,8 +76,51 @@ def _scalar_metric_plain_forward(
 def main() -> None:
     p = argparse.ArgumentParser(description="Template discovery run on gpt2-small.")
     p.add_argument("--device", type=str, default="cpu", choices=("cpu", "cuda"))
+    p.add_argument(
+        "--model",
+        type=str,
+        default="gpt2-small",
+        help="TransformerLens `HookedTransformer` id (must match the SAE's training model when using SAELens).",
+    )
     p.add_argument("--hook-layer", type=int, default=0, help="Layer index for blocks.L.hook_resid_pre")
+    p.add_argument(
+        "--hook-name",
+        type=str,
+        default="",
+        help="Full TransformerLens hook string (overrides --hook-layer). Example: blocks.8.hook_resid_pre",
+    )
     p.add_argument("--seq-pos", type=int, default=-1, help="Token position for attribution/IG (supports -1).")
+
+    p.add_argument(
+        "--sae-backend",
+        type=str,
+        default="stub",
+        choices=("stub", "sae_lens"),
+        help="stub: random LinearSAE; sae_lens: pretrained SAE via SAELens.from_pretrained.",
+    )
+    p.add_argument(
+        "--sae-release",
+        type=str,
+        default="",
+        help="SAELens release (e.g. gpt2-small-res-jb) when --sae-backend=sae_lens.",
+    )
+    p.add_argument(
+        "--sae-id",
+        type=str,
+        default="",
+        help="SAELens sae_id within the release (often the hook path, e.g. blocks.8.hook_resid_pre).",
+    )
+    p.add_argument(
+        "--sae-dtype",
+        type=str,
+        default="float32",
+        help="SAELens load dtype string when using --sae-backend=sae_lens.",
+    )
+    p.add_argument(
+        "--sae-force-download",
+        action="store_true",
+        help="Pass force_download=True to SAELens when loading.",
+    )
 
     # SAE width (stub)
     p.add_argument("--n-features", type=int, default=4096, help="SAE latent width for the stub encoder/decoder.")
@@ -111,27 +161,62 @@ def main() -> None:
     ig_alpha_schedule = cast(Literal["midpoint", "linspace", "trapezoidal"], args.ig_schedule)
 
     device = torch.device(args.device)
-    model = HookedTransformer.from_pretrained("gpt2-small", device=device)
+    model = HookedTransformer.from_pretrained(str(args.model), device=device)
     model.eval()
 
-    # Hook site
-    hook_name = f"blocks.{int(args.hook_layer)}.hook_resid_pre"
-
-    # SAE stub (replace with your real SAE)
     d_model = int(model.cfg.d_model)
-    sae = LinearSAE(d_model=d_model, n_features=int(args.n_features)).to(device)
 
-    def encode_fn(x: torch.Tensor) -> torch.Tensor:
-        return sae.encode(x)
+    # Hook site
+    if str(args.hook_name).strip():
+        hook_name = str(args.hook_name).strip()
+    elif args.sae_backend == "sae_lens":
+        hook_name = ""
+    else:
+        hook_name = f"blocks.{int(args.hook_layer)}.hook_resid_pre"
 
-    def decode_fn(f: torch.Tensor) -> torch.Tensor:
-        return sae.decode(f)
+    if args.sae_backend == "stub":
+        sae_mod = LinearSAE(d_model=d_model, n_features=int(args.n_features)).to(device)
+
+        def encode_fn(x: torch.Tensor, /) -> torch.Tensor:
+            return sae_mod.encode(x)
+
+        def decode_fn(f: torch.Tensor, /) -> torch.Tensor:
+            return sae_mod.decode(f)
+    else:
+        rel, sid = str(args.sae_release).strip(), str(args.sae_id).strip()
+        if not rel or not sid:
+            raise SystemExit("--sae-backend=sae_lens requires non-empty --sae-release and --sae-id.")
+
+        sae_tl = load_pretrained_sae(
+            release=rel,
+            sae_id=sid,
+            device=device,
+            dtype=str(args.sae_dtype),
+            force_download=bool(args.sae_force_download),
+        )
+        assert_d_in_matches_model(sae_tl, d_model=d_model)
+
+        meta_hook = metadata_hook_name(sae_tl)
+        if not hook_name:
+            if meta_hook:
+                hook_name = meta_hook
+            else:
+                hook_name = f"blocks.{int(args.hook_layer)}.hook_resid_pre"
+
+        if meta_hook and hook_name != meta_hook:
+            print(
+                f"warning: hook_name={hook_name!r} differs from SAE metadata hook_name={meta_hook!r}. "
+                "Use the training hook unless you know the SAE matches this site.",
+                file=sys.stderr,
+            )
+
+        encode_fn, decode_fn = discovery_encode_decode(sae_tl)
 
     # Scalar metric: prefer clean answer token over corrupt answer token at seq_pos.
     clean_tok = int(model.to_single_token(args.clean_answer))
     corrupt_tok = int(model.to_single_token(args.corrupt_answer))
 
-    def logits_to_scalar_loss(logits: torch.Tensor) -> torch.Tensor:
+    def logits_to_scalar_loss(logits: torch.Tensor, /) -> torch.Tensor:
         pos = int(args.seq_pos)
         if pos < 0:
             pos += int(logits.shape[1])
