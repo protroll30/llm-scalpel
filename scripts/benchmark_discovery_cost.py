@@ -1,5 +1,7 @@
 """Rough latency probe for discovery attribution paths (no pytest).
 
+Optionally measures :func:`discovery.attribution.feature_integrated_gradients_pass` (see ``--ig-steps``).
+
 Use this **before** enabling gradient-drift gating in :func:`discovery.pruner.prune_sae_circuit_budget`:
 each KL-successful trial can call :func:`discovery.attribution.feature_attribution_pass` (corrupt
 backward **plus** clean ``run_with_cache``), which is much heavier than ranking with
@@ -36,6 +38,7 @@ from discovery.attribution import (
     capture_latent_gradient_snapshot,
     feature_act_grad_scores,
     feature_attribution_pass,
+    feature_integrated_gradients_pass,
 )
 
 
@@ -86,6 +89,29 @@ def main() -> None:
     p.add_argument("--repeats", type=int, default=10)
     p.add_argument("--warmup", type=int, default=3)
     p.add_argument("--device", type=str, default="cpu", choices=("cpu", "cuda"))
+    p.add_argument(
+        "--ig-steps",
+        type=int,
+        default=20,
+        help="If >0, also benchmark feature_integrated_gradients_pass with this many Riemann steps.",
+    )
+    p.add_argument(
+        "--ig-schedule",
+        type=str,
+        default="midpoint",
+        choices=("midpoint", "linspace", "trapezoidal"),
+        help="Alpha spacing for integrated gradients (see discovery.attribution).",
+    )
+    p.add_argument(
+        "--ig-empty-cache",
+        action="store_true",
+        help="Pass empty_cache_between_steps=True for IG (CUDA peak VRAM vs speed tradeoff).",
+    )
+    p.add_argument(
+        "--ig-check-completeness",
+        action="store_true",
+        help="After timing, run one IG pass with check_completeness (needs --ig-steps > 0).",
+    )
     args = p.parse_args()
 
     if args.device == "cuda" and not torch.cuda.is_available():
@@ -166,11 +192,38 @@ def main() -> None:
             device=device,
         )
 
-    rows = [
+    rows: list[tuple[str, str, Callable[[], None]]] = [
         ("scores", "feature_act_grad_scores (corrupt fwd+bwd)", run_scores),
         ("snapshot", "capture_latent_gradient_snapshot (same core)", run_snapshot),
         ("full_pass", "feature_attribution_pass (+ clean run_with_cache)", run_full_pass),
     ]
+
+    if args.ig_steps > 0:
+
+        def run_ig() -> None:
+            feature_integrated_gradients_pass(
+                model=model,
+                prompt_clean=clean_prompt,
+                prompt_corrupt=corrupt_prompt,
+                hook_name=hook_name,
+                encode_fn=encode_fn,
+                decode_fn=decode_fn,
+                logits_to_scalar_loss=logits_to_scalar_loss,
+                metric="ig_bench",
+                forced_zero_indices=forced,
+                device=device,
+                n_steps=args.ig_steps,
+                ig_alpha_schedule=args.ig_schedule,
+                empty_cache_between_steps=args.ig_empty_cache,
+            )
+
+        rows.append(
+            (
+                "ig_pass",
+                f"feature_integrated_gradients_pass (n_steps={args.ig_steps}, {args.ig_schedule})",
+                run_ig,
+            )
+        )
 
     print(f"device={device}  cfg: L={args.n_layers} d_model={args.d_model} ctx={args.n_ctx}  SAE width={args.n_features}")
     print(f"hook={hook_name}  repeats={args.repeats} warmup={args.warmup}\n")
@@ -193,6 +246,42 @@ def main() -> None:
         f"`feature_act_grad_scores` ~ {mean_scores:.1f} ms "
         f"(factor x{mean_pass / max(mean_scores, 1e-9):.2f})."
     )
+    if "ig_pass" in means:
+        mean_ig = means["ig_pass"]
+        print(
+            f"\nIntegrated gradients (~{args.ig_steps} steps): ~{mean_ig:.1f} ms per pass "
+            f"(vs single-point full_pass x{mean_ig / max(mean_pass, 1e-9):.2f}, "
+            f"vs scores x{mean_ig / max(mean_scores, 1e-9):.2f}). "
+            "Use `--ig-steps 0` to skip IG timing."
+        )
+
+    if args.ig_check_completeness:
+        if args.ig_steps <= 0:
+            raise SystemExit("--ig-check-completeness requires --ig-steps > 0.")
+        _, diag = feature_integrated_gradients_pass(
+            model=model,
+            prompt_clean=clean_prompt,
+            prompt_corrupt=corrupt_prompt,
+            hook_name=hook_name,
+            encode_fn=encode_fn,
+            decode_fn=decode_fn,
+            logits_to_scalar_loss=logits_to_scalar_loss,
+            metric="ig_bench",
+            forced_zero_indices=forced,
+            device=device,
+            n_steps=args.ig_steps,
+            ig_alpha_schedule=args.ig_schedule,
+            empty_cache_between_steps=args.ig_empty_cache,
+            check_completeness=True,
+        )
+        print("\n--- IG completeness (plain ℒ_clean − ℒ_corrupt vs Σ IG) ---")
+        print(
+            f"  Δℒ_natural = {diag.delta_metric:.6g}   Σ latent IG = {diag.sum_latent_ig:.6g}   "
+            f"residual IG = {diag.residual_score:.6g}   total_attr = {diag.total_attributed:.6g}   "
+            f"|gap| = {diag.gap_abs:.6g}"
+        )
+        print(f"  (ℒ_clean={diag.metric_clean:.6g}, ℒ_corrupt={diag.metric_corrupt:.6g})")
+
     print(
         "Recursive binary splitting retries smaller chunks on KL or drift failure; worst-case "
         "attribution calls per outer wave scale with tree probes (often multiple x batch_remove_n)."

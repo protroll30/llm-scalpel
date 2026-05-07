@@ -3,7 +3,18 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import AbstractSet, Any, Callable, Dict, Iterable, Optional, Tuple, Union
+from typing import (
+    AbstractSet,
+    Any,
+    Callable,
+    Dict,
+    Iterable,
+    Literal,
+    Optional,
+    Tuple,
+    Union,
+    overload,
+)
 
 import torch
 
@@ -30,12 +41,12 @@ class SAEAttributionComponents:
     """SAE latent difference ``Δf = f_clean - f_corrupt`` at ``metadata.seq_pos``, shape ``[n_features]``."""
 
     gradient_g: torch.Tensor
-    """``∂L/∂f`` at the corrupt forward’s latents, same shape as ``delta_f``."""
+    """For Taylor passes: ``∂L/∂f`` at corrupt latents. For IG: weighted sum approximating ``∫ ∂L/∂f\\,dα``."""
 
 
 @dataclass(frozen=True)
 class SAEAttributionPass:
-    """Full output of one attribution pass over SAE latents."""
+    """Full output of one attribution pass over SAE latents (+ residual ``e = x - \\hat{x}`` channel)."""
 
     indices: torch.Tensor
     """Latent indices ``0 … n_features-1`` (dtype ``long``, aligned with ``scores``)."""
@@ -43,8 +54,26 @@ class SAEAttributionPass:
     scores: torch.Tensor
     """Per-latent ``Δf ⊙ g`` (element-wise product); aligns with ``(Δx)·∇`` in feature coordinates."""
 
+    residual_score: float
+    """``⟨∇_x \\mathcal{L}, e_{clean} - e_{corrupt}⟩`` at the hook (scalar ``e`` / activation gradient dot)."""
+
     components: SAEAttributionComponents
     metadata: AttributionMetadata
+
+    def get_completeness_report(self, actual_delta_loss: float) -> dict[str, float]:
+        """Compare observed ``Δℒ`` to latent sum plus ``residual_score`` (linear decomposition diagnostic)."""
+
+        latent_sum = float(self.scores.sum().detach().cpu().item())
+        total_attributed = latent_sum + float(self.residual_score)
+        error = abs(float(actual_delta_loss) - total_attributed)
+        denom = total_attributed + 1e-9
+        return {
+            "actual_delta": float(actual_delta_loss),
+            "total_attributed": float(total_attributed),
+            "latent_contribution": latent_sum / denom,
+            "residual_contribution": float(self.residual_score) / denom,
+            "approximation_error": float(error),
+        }
 
 
 @dataclass(frozen=True)
@@ -76,6 +105,150 @@ class LatentGradientCosineDiagnostics:
     norm_new: torch.Tensor
 
 
+@dataclass(frozen=True)
+class IGCompletenessDiagnostics:
+    """Compare summed IG (latents + residual channel) to ``Δℒ`` on **unhooked** forwards."""
+
+    metric_clean: float
+    """Scalar ``ℒ(logits)`` on a plain forward of ``prompt_clean`` (no SAE intervention)."""
+
+    metric_corrupt: float
+    """Scalar ``ℒ(logits)`` on a plain forward of ``prompt_corrupt``."""
+
+    delta_metric: float
+    """``metric_clean - metric_corrupt``."""
+
+    sum_latent_ig: float
+    """``Σ_i IG_i`` over SAE latents only."""
+
+    residual_score: float
+    """Residual attribution ``⟨∇̄_x \\mathcal{L}, Δe⟩`` accumulated along the IG path."""
+
+    total_attributed: float
+    """``sum_latent_ig + residual_score``."""
+
+    gap_abs: float
+    """``|delta_metric - total_attributed|``. Remaining gap ⇒ higher-order / linearization error."""
+
+
+def _scalar_metric_plain_forward(
+    *,
+    model: Any,
+    tokens: torch.Tensor,
+    logits_to_scalar_loss: Callable[[torch.Tensor], torch.Tensor],
+) -> float:
+    """Evaluate ``logits_to_scalar_loss(model(tokens))`` without hooks (TransformerLens-style)."""
+
+    model.eval()
+    with torch.no_grad():
+        logits = model(tokens)
+        return float(logits_to_scalar_loss(logits).detach().cpu().item())
+
+
+def _encode_latents_at_hook_cached(
+    *,
+    model: Any,
+    tokens: torch.Tensor,
+    hook_name: str,
+    encode_fn: Callable[[torch.Tensor], torch.Tensor],
+    pos_effective: int,
+) -> torch.Tensor:
+    """Encode hook activation at ``pos_effective`` → 1D latent ``[n_features]`` (detached)."""
+
+    model.eval()
+    with torch.no_grad():
+        _, cache = model.run_with_cache(tokens, names_filter=[hook_name], return_type="logits")
+        if hook_name not in cache:
+            raise KeyError(f"Cache missing {hook_name!r}.")
+        act = cache[hook_name]
+        f_raw = encode_fn(act)
+        if f_raw.dim() == 2:
+            f_raw = f_raw.unsqueeze(0)
+        if f_raw.dim() < 3:
+            raise ValueError(
+                f"encode_fn must return [pos, n_features] or [batch, pos, n_features]; got {tuple(f_raw.shape)}"
+            )
+        seq_len = int(f_raw.shape[1])
+        if pos_effective >= seq_len:
+            raise IndexError(f"seq_pos_effective={pos_effective} out of range for seq_len={seq_len}")
+        return f_raw[0, pos_effective, :].detach()
+
+
+def _resolve_seq_pos_index(seq_pos: int, seq_len: int) -> int:
+    pos_effective = int(seq_pos)
+    if pos_effective < 0:
+        pos_effective += seq_len
+    if pos_effective < 0 or pos_effective >= seq_len:
+        raise IndexError(f"seq_pos resolved to {pos_effective}, invalid for seq_len={seq_len}")
+    return pos_effective
+
+
+def _hook_residual_vector_at_pos(
+    act_bpdm: torch.Tensor,
+    *,
+    encode_fn: Callable[[torch.Tensor], torch.Tensor],
+    decode_fn: Callable[[torch.Tensor], torch.Tensor],
+    pos_effective: int,
+) -> torch.Tensor:
+    """``e = x - \\hat{x}`` at ``pos_effective``; ``act_bpdm`` is ``[batch, pos, d_model]``."""
+
+    f_raw = encode_fn(act_bpdm)
+    if f_raw.dim() == 2:
+        f_raw = f_raw.unsqueeze(0)
+    if f_raw.dim() < 3:
+        raise ValueError(
+            f"encode_fn must return [pos, n_features] or [batch, pos, n_features]; got {tuple(f_raw.shape)}"
+        )
+    xhat = decode_fn(f_raw)
+    if xhat.shape != act_bpdm.shape:
+        raise ValueError(
+            "decode_fn output must match activation shape. "
+            f"Got xhat={tuple(xhat.shape)} vs act={tuple(act_bpdm.shape)}"
+        )
+    return (act_bpdm - xhat)[0, pos_effective, :].detach().reshape(-1)
+
+
+def _residual_delta_e_clean_minus_corrupt(
+    *,
+    model: Any,
+    clean_tokens: torch.Tensor,
+    corrupt_tokens: torch.Tensor,
+    hook_name: str,
+    encode_fn: Callable[[torch.Tensor], torch.Tensor],
+    decode_fn: Callable[[torch.Tensor], torch.Tensor],
+    pos_effective: int,
+) -> torch.Tensor:
+    """``e_clean - e_corrupt`` at ``hook_name``, shape ``[d_model]`` (detached)."""
+
+    model.eval()
+    with torch.no_grad():
+        _, cache_cl = model.run_with_cache(
+            clean_tokens,
+            names_filter=[hook_name],
+            return_type="logits",
+        )
+        _, cache_co = model.run_with_cache(
+            corrupt_tokens,
+            names_filter=[hook_name],
+            return_type="logits",
+        )
+        if hook_name not in cache_cl or hook_name not in cache_co:
+            raise KeyError(f"Missing {hook_name!r} in clean or corrupt cache.")
+        e_cl = _hook_residual_vector_at_pos(
+            cache_cl[hook_name],
+            encode_fn=encode_fn,
+            decode_fn=decode_fn,
+            pos_effective=pos_effective,
+        )
+        e_co = _hook_residual_vector_at_pos(
+            cache_co[hook_name],
+            encode_fn=encode_fn,
+            decode_fn=decode_fn,
+            pos_effective=pos_effective,
+        )
+    return e_cl - e_co
+
+
 def _feat_grad_corrupt_forward(
     *,
     model: Any,
@@ -88,25 +261,36 @@ def _feat_grad_corrupt_forward(
     prepend_bos: Optional[bool],
     device: Optional[Union[str, torch.device]],
     forced_zero_indices: Optional[AbstractSet[int]],
-) -> Tuple[torch.Tensor, torch.Tensor, int]:
+    corrupt_tokens: Optional[torch.Tensor] = None,
+) -> Tuple[torch.Tensor, torch.Tensor, int, torch.Tensor]:
     """One corrupt forward + backward.
 
-    Returns ``(f_corrupt, ∂L/∂f, seq_pos_effective)`` at ``seq_pos``; tensors shaped ``[n_features]``.
+    Uses ``act_r = act.detach().clone().requires_grad_(True)`` at the hook so ``∂ℒ/∂act`` is defined at the
+    SAE boundary without relying on TransformerLens feeding differentiable hook inputs.
+
+    Returns ``(f_corrupt, ∂L/∂f, seq_pos_effective, ∂L/∂act)`` with latent tensors shaped ``[n_features]``
+    and activation gradient ``[d_model]`` at ``seq_pos``.
     """
 
     to_tokens_kwargs: Dict[str, Any] = {}
     if prepend_bos is not None:
         to_tokens_kwargs["prepend_bos"] = prepend_bos
-    tokens = model.to_tokens(prompt_corrupt, **to_tokens_kwargs)
-    if device is not None:
-        tokens = tokens.to(device)
+    if corrupt_tokens is None:
+        tokens = model.to_tokens(prompt_corrupt, **to_tokens_kwargs)
+        if device is not None:
+            tokens = tokens.to(device)
+    else:
+        tokens = corrupt_tokens
 
     feats_for_grad: torch.Tensor | None = None
+    act_boundary: torch.Tensor | None = None
     forced = frozenset(forced_zero_indices) if forced_zero_indices else frozenset()
 
     def _grad_hook(act: torch.Tensor, hook) -> torch.Tensor:  # noqa: ANN001
-        nonlocal feats_for_grad
-        g = encode_fn(act)
+        nonlocal feats_for_grad, act_boundary
+        act_r = act.detach().clone().requires_grad_(True)
+        act_boundary = act_r
+        g = encode_fn(act_r)
         if g.dim() == 2:
             g = g.unsqueeze(0)
         if g.dim() < 3:
@@ -124,12 +308,12 @@ def _feat_grad_corrupt_forward(
 
         xhat_m = decode_fn(f_masked)
         xhat_full = decode_fn(g)
-        if xhat_m.shape != act.shape or xhat_full.shape != act.shape:
+        if xhat_m.shape != act_r.shape or xhat_full.shape != act_r.shape:
             raise ValueError(
                 "decode_fn output must match activation shape. "
-                f"Got masked={tuple(xhat_m.shape)} full={tuple(xhat_full.shape)} vs act={tuple(act.shape)}"
+                f"Got masked={tuple(xhat_m.shape)} full={tuple(xhat_full.shape)} vs act={tuple(act_r.shape)}"
             )
-        return xhat_m + (act - xhat_full.detach())
+        return xhat_m + (act_r - xhat_full.detach())
 
     model.zero_grad(set_to_none=True)
     with torch.enable_grad():
@@ -145,6 +329,10 @@ def _feat_grad_corrupt_forward(
         raise RuntimeError(
             f"Hook {hook_name!r} did not produce feature gradients (hook name or loss graph?)."
         )
+    if act_boundary is None or act_boundary.grad is None:
+        raise RuntimeError(
+            f"Hook {hook_name!r} did not produce activation gradients on the SAE boundary tensor."
+        )
 
     pos_effective = int(seq_pos)
     seq_dim = int(feats_for_grad.shape[1])
@@ -152,7 +340,8 @@ def _feat_grad_corrupt_forward(
         pos_effective += seq_dim
     f_co = feats_for_grad[0, pos_effective, :]
     ggrad = feats_for_grad.grad[0, pos_effective, :]
-    return f_co.detach(), ggrad.detach(), pos_effective
+    grad_act = act_boundary.grad[0, pos_effective, :].detach().reshape(-1)
+    return f_co.detach(), ggrad.detach(), pos_effective, grad_act
 
 
 def feature_act_grad_scores(
@@ -173,7 +362,7 @@ def feature_act_grad_scores(
     Same graph as :func:`feature_attribution_pass` but **no** clean prompt — magnitude-only salience on corrupt latents.
     """
 
-    f_co, g, _pos_eff = _feat_grad_corrupt_forward(
+    f_co, g, _pos_eff, _ga = _feat_grad_corrupt_forward(
         model=model,
         prompt_corrupt=prompt,
         hook_name=hook_name,
@@ -203,17 +392,27 @@ def feature_attribution_pass(
     device: Optional[Union[str, torch.device]] = None,
     forced_zero_indices: Optional[AbstractSet[int]] = None,
 ) -> SAEAttributionPass:
-    """Full clean-vs-corrupt attribution: ``scores_i = (Δf)_i · (∂L/∂f)_i`` with ``Δf = f_cl - f_co``.
+    """Full clean-vs-corrupt attribution: ``scores_i = (Δf)_i · (∂L/∂f)_i`` plus residual ``⟨∇_xℒ, Δe⟩``.
 
     Runs corrupt forward + backward (same masked substitution as :func:`feature_act_grad_scores`),
     then a **no-grad** clean forward with ``run_with_cache`` to obtain ``f_clean`` at the hook.
+    Residual ``e = x - \\hat{x}(f)`` uses plain encode/decode on cached hook activations.
 
     Args:
         metric: Stored in :class:`AttributionMetadata` (e.g. ``\"logit_diff\"``, ``\"kl_div_last_token\"``).
             Must match what ``logits_to_scalar_loss`` implements.
     """
 
-    f_co, g, pos_effective = _feat_grad_corrupt_forward(
+    to_tokens_kwargs: Dict[str, Any] = {}
+    if prepend_bos is not None:
+        to_tokens_kwargs["prepend_bos"] = prepend_bos
+    corrupt_tokens = model.to_tokens(prompt_corrupt, **to_tokens_kwargs)
+    clean_tokens = model.to_tokens(prompt_clean, **to_tokens_kwargs)
+    if device is not None:
+        corrupt_tokens = corrupt_tokens.to(device)
+        clean_tokens = clean_tokens.to(device)
+
+    f_co, g, pos_effective, grad_act = _feat_grad_corrupt_forward(
         model=model,
         prompt_corrupt=prompt_corrupt,
         hook_name=hook_name,
@@ -224,18 +423,22 @@ def feature_attribution_pass(
         prepend_bos=prepend_bos,
         device=device,
         forced_zero_indices=forced_zero_indices,
+        corrupt_tokens=corrupt_tokens,
     )
-
-    to_tokens_kwargs: Dict[str, Any] = {}
-    if prepend_bos is not None:
-        to_tokens_kwargs["prepend_bos"] = prepend_bos
-    clean_tokens = model.to_tokens(prompt_clean, **to_tokens_kwargs)
-    if device is not None:
-        clean_tokens = clean_tokens.to(device)
 
     seq_len = int(clean_tokens.shape[-1])
     if pos_effective >= seq_len:
         raise IndexError(f"seq_pos_effective={pos_effective} out of range for clean seq_len={seq_len}")
+
+    delta_e = _residual_delta_e_clean_minus_corrupt(
+        model=model,
+        clean_tokens=clean_tokens,
+        corrupt_tokens=corrupt_tokens,
+        hook_name=hook_name,
+        encode_fn=encode_fn,
+        decode_fn=decode_fn,
+        pos_effective=pos_effective,
+    )
 
     model.eval()
     with torch.no_grad():
@@ -260,6 +463,8 @@ def feature_attribution_pass(
     delta_f = f_cl - f_co_slice
     scores = delta_f * g.to(dtype=delta_f.dtype, device=delta_f.device)
 
+    residual_score = float((grad_act.to(device=delta_e.device, dtype=delta_e.dtype) * delta_e).sum().item())
+
     n_features = int(scores.numel())
     indices = torch.arange(n_features, device=scores.device, dtype=torch.long)
 
@@ -269,9 +474,311 @@ def feature_attribution_pass(
     return SAEAttributionPass(
         indices=indices,
         scores=scores.detach(),
+        residual_score=residual_score,
         components=components,
         metadata=meta,
     )
+
+
+@overload
+def feature_integrated_gradients_pass(
+    *,
+    model: Any,
+    prompt_clean: str,
+    prompt_corrupt: str,
+    hook_name: str,
+    encode_fn: Callable[[torch.Tensor], torch.Tensor],
+    decode_fn: Callable[[torch.Tensor], torch.Tensor],
+    logits_to_scalar_loss: Callable[[torch.Tensor], torch.Tensor],
+    metric: str = "integrated_gradients",
+    seq_pos: int = -1,
+    n_steps: int = 20,
+    ig_alpha_schedule: Literal["midpoint", "linspace", "trapezoidal"] = "midpoint",
+    prepend_bos: Optional[bool] = None,
+    device: Optional[Union[str, torch.device]] = None,
+    forced_zero_indices: Optional[AbstractSet[int]] = None,
+    empty_cache_between_steps: bool = False,
+    check_completeness: Literal[False] = False,
+) -> SAEAttributionPass: ...
+
+
+@overload
+def feature_integrated_gradients_pass(
+    *,
+    model: Any,
+    prompt_clean: str,
+    prompt_corrupt: str,
+    hook_name: str,
+    encode_fn: Callable[[torch.Tensor], torch.Tensor],
+    decode_fn: Callable[[torch.Tensor], torch.Tensor],
+    logits_to_scalar_loss: Callable[[torch.Tensor], torch.Tensor],
+    metric: str = "integrated_gradients",
+    seq_pos: int = -1,
+    n_steps: int = 20,
+    ig_alpha_schedule: Literal["midpoint", "linspace", "trapezoidal"] = "midpoint",
+    prepend_bos: Optional[bool] = None,
+    device: Optional[Union[str, torch.device]] = None,
+    forced_zero_indices: Optional[AbstractSet[int]] = None,
+    empty_cache_between_steps: bool = False,
+    check_completeness: Literal[True],
+) -> Tuple[SAEAttributionPass, IGCompletenessDiagnostics]: ...
+
+
+def feature_integrated_gradients_pass(
+    *,
+    model: Any,
+    prompt_clean: str,
+    prompt_corrupt: str,
+    hook_name: str,
+    encode_fn: Callable[[torch.Tensor], torch.Tensor],
+    decode_fn: Callable[[torch.Tensor], torch.Tensor],
+    logits_to_scalar_loss: Callable[[torch.Tensor], torch.Tensor],
+    metric: str = "integrated_gradients",
+    seq_pos: int = -1,
+    n_steps: int = 20,
+    ig_alpha_schedule: Literal["midpoint", "linspace", "trapezoidal"] = "midpoint",
+    prepend_bos: Optional[bool] = None,
+    device: Optional[Union[str, torch.device]] = None,
+    forced_zero_indices: Optional[AbstractSet[int]] = None,
+    empty_cache_between_steps: bool = False,
+    check_completeness: bool = False,
+) -> Union[SAEAttributionPass, Tuple[SAEAttributionPass, IGCompletenessDiagnostics]]:
+    """Integrated Gradients on **SAE latents** ``f`` (not raw hook activations ``x``) at ``seq_pos``.
+
+    Interpolation is applied to the latent vector ``f`` at one sequence position; the hook injects that
+    choice through ``decode_fn`` while preserving the corrupt residual term (same substitution semantics as
+    :func:`_feat_grad_corrupt_forward` / :func:`discovery.sae_scout.reconstruct_activation`). Other positions
+    keep ``encode_fn(act)`` from the corrupt forward (detached); gradients flow only through the injected
+    ``f(α)`` slice.
+
+    If ``encode_fn`` encodes a **non-linear** map from ``x → f`` (e.g. JumpReLU / Top-K inside the encoder),
+    the straight-line path ``f_corrupt → f_clean`` in ``f``-space can cut across discontinuities in the
+    true ``x → f`` composition — IG along ``f`` is still well-defined for ℒ as a function of injected latents,
+    but may disagree with paths defined in ``x``.
+
+    Discrete quadrature for ``∫_0^1 ∂ℒ/∂f_i|_{f(α)} dα``:
+
+    - ``midpoint``: ``n_steps`` evaluations at ``(k+½)/n_steps``, weights ``1/n_steps`` (often efficient per step).
+    - ``linspace``: ``n_steps`` evaluations at ``torch.linspace(0, 1, n_steps)``, uniform weights ``1/n_steps``.
+    - ``trapezoidal``: ``n_steps`` **subintervals**, ``n_steps + 1`` evaluations at boundaries ``k/n_steps``,
+      composite trapezoid weights (endpoints half-weight). Better alignment with endpoint-inclusive Riemann
+      intuition when checking completeness with ``check_completeness``.
+
+    ``scores_i = (Δf)_i × \\hat{∫} ∂ℒ/∂f_i\\, dα`` where ``Δf = f_clean - f_corrupt`` and ``\\hat{∫}`` is the
+    weighted gradient sum (stored in ``components.gradient_g``).
+
+    **Residual / completeness:** only latent coordinates are attributed; SAE residual is not a summed
+    dimension, so ``Σ_i IG_i`` need not equal plain ``Δℒ`` (see ``check_completeness``).
+
+    Args:
+        n_steps: For ``midpoint`` / ``linspace``: number of gradient evaluations. For ``trapezoidal``: number
+            of subintervals (``n_steps + 1`` evaluations).
+        ig_alpha_schedule: Quadrature rule (see above).
+        empty_cache_between_steps: If True, call ``torch.cuda.empty_cache()`` after each backward (slower;
+            can reduce peak VRAM when ``n_steps`` is large).
+        check_completeness: If True, also return :class:`IGCompletenessDiagnostics` comparing ``Δℒ_natural``
+            to ``Σ_i IG_i + residual_score`` (plain forwards for ``ℒ``, latent IG plus averaged ``∇_xℒ`` dot
+            ``Δe``). Large ``gap_abs`` implicates curvature / linearization beyond missing residual attribution.
+    """
+
+    if n_steps < 1:
+        raise ValueError("n_steps must be >= 1.")
+
+    to_tokens_kwargs: Dict[str, Any] = {}
+    if prepend_bos is not None:
+        to_tokens_kwargs["prepend_bos"] = prepend_bos
+
+    corrupt_tokens = model.to_tokens(prompt_corrupt, **to_tokens_kwargs)
+    clean_tokens = model.to_tokens(prompt_clean, **to_tokens_kwargs)
+    if device is not None:
+        corrupt_tokens = corrupt_tokens.to(device)
+        clean_tokens = clean_tokens.to(device)
+
+    metric_clean_natural: Optional[float] = None
+    metric_corrupt_natural: Optional[float] = None
+    if check_completeness:
+        metric_clean_natural = _scalar_metric_plain_forward(
+            model=model,
+            tokens=clean_tokens,
+            logits_to_scalar_loss=logits_to_scalar_loss,
+        )
+        metric_corrupt_natural = _scalar_metric_plain_forward(
+            model=model,
+            tokens=corrupt_tokens,
+            logits_to_scalar_loss=logits_to_scalar_loss,
+        )
+
+    model.eval()
+    with torch.no_grad():
+        _, corrupt_cache = model.run_with_cache(
+            corrupt_tokens,
+            names_filter=[hook_name],
+            return_type="logits",
+        )
+        if hook_name not in corrupt_cache:
+            raise KeyError(f"Corrupt cache missing {hook_name!r}.")
+        act_co_ref = corrupt_cache[hook_name]
+        seq_len_co = int(act_co_ref.shape[1])
+        pos_effective = _resolve_seq_pos_index(seq_pos, seq_len_co)
+
+    seq_len_cl = int(clean_tokens.shape[-1])
+    if pos_effective >= seq_len_cl:
+        raise IndexError(f"seq_pos_effective={pos_effective} out of range for clean seq_len={seq_len_cl}")
+
+    f_corrupt = _encode_latents_at_hook_cached(
+        model=model,
+        tokens=corrupt_tokens,
+        hook_name=hook_name,
+        encode_fn=encode_fn,
+        pos_effective=pos_effective,
+    )
+    f_clean = _encode_latents_at_hook_cached(
+        model=model,
+        tokens=clean_tokens,
+        hook_name=hook_name,
+        encode_fn=encode_fn,
+        pos_effective=pos_effective,
+    )
+
+    delta_f = f_clean - f_corrupt
+    dev = delta_f.device
+    dt = delta_f.dtype
+    forced = frozenset(forced_zero_indices) if forced_zero_indices else frozenset()
+
+    delta_e = _residual_delta_e_clean_minus_corrupt(
+        model=model,
+        clean_tokens=clean_tokens,
+        corrupt_tokens=corrupt_tokens,
+        hook_name=hook_name,
+        encode_fn=encode_fn,
+        decode_fn=decode_fn,
+        pos_effective=pos_effective,
+    )
+    gx_accum = torch.zeros(int(delta_e.numel()), dtype=torch.float32, device=delta_e.device)
+
+    if ig_alpha_schedule == "midpoint":
+        alphas = (torch.arange(n_steps, device=dev, dtype=torch.float64) + 0.5) / float(n_steps)
+        weights = torch.full((n_steps,), 1.0 / float(n_steps), device=dev, dtype=torch.float64)
+    elif ig_alpha_schedule == "linspace":
+        alphas = torch.linspace(0.0, 1.0, n_steps, device=dev, dtype=torch.float64)
+        weights = torch.full((n_steps,), 1.0 / float(n_steps), device=dev, dtype=torch.float64)
+    elif ig_alpha_schedule == "trapezoidal":
+        alphas = torch.linspace(0.0, 1.0, n_steps + 1, device=dev, dtype=torch.float64)
+        h = 1.0 / float(n_steps)
+        w_mid = [h] * max(0, n_steps - 1)
+        w_list = [h / 2.0] + w_mid + [h / 2.0]
+        weights = torch.tensor(w_list, device=dev, dtype=torch.float64)
+    else:
+        raise ValueError(f"Unknown ig_alpha_schedule={ig_alpha_schedule!r}.")
+
+    if alphas.numel() != weights.numel():
+        raise RuntimeError("internal error: alphas and weights length mismatch")
+
+    g_accum = torch.zeros_like(delta_f, dtype=torch.float32)
+
+    for step_i in range(int(alphas.numel())):
+        alpha = float(alphas[step_i].item())
+        w_step = float(weights[step_i].item())
+        model.zero_grad(set_to_none=True)
+
+        f_alpha = f_corrupt + delta_f * alpha
+        f_leaf = f_alpha.detach().clone().requires_grad_(True)
+
+        hook_act_r: Optional[torch.Tensor] = None
+
+        def _ig_hook(act: torch.Tensor, hook) -> torch.Tensor:  # noqa: ANN001
+            nonlocal hook_act_r
+            act_r = act.detach().clone().requires_grad_(True)
+            hook_act_r = act_r
+            g_cor = encode_fn(act_r)
+            if g_cor.dim() == 2:
+                g_cor = g_cor.unsqueeze(0)
+            if g_cor.dim() < 3:
+                raise ValueError(
+                    f"encode_fn must return [pos, n_features] or [batch, pos, n_features]; got {tuple(g_cor.shape)}"
+                )
+            g_cor_det = g_cor.detach()
+            g_work = g_cor_det.clone()
+            g_work[0, pos_effective, :] = f_leaf.to(dtype=g_work.dtype, device=g_work.device)
+            if forced:
+                idx = torch.tensor(sorted(forced), device=g_work.device, dtype=torch.long)
+                g_work.index_fill_(-1, idx, 0.0)
+
+            xhat_m = decode_fn(g_work)
+            xhat_full = decode_fn(g_cor_det)
+            if xhat_m.shape != act_r.shape or xhat_full.shape != act_r.shape:
+                raise ValueError(
+                    "decode_fn output must match activation shape. "
+                    f"Got masked={tuple(xhat_m.shape)} full={tuple(xhat_full.shape)} vs act={tuple(act_r.shape)}"
+                )
+            return xhat_m + (act_r - xhat_full.detach())
+
+        with torch.enable_grad():
+            logits = model.run_with_hooks(
+                corrupt_tokens,
+                fwd_hooks=[(hook_name, _ig_hook)],
+                return_type="logits",
+            )
+            loss = logits_to_scalar_loss(logits)
+            loss.backward()
+
+        if f_leaf.grad is None:
+            raise RuntimeError(
+                f"Integrated gradients step (alpha={alpha}) did not produce gradients on f_leaf "
+                f"(hook {hook_name!r} or loss graph?)."
+            )
+        if hook_act_r is None or hook_act_r.grad is None:
+            raise RuntimeError(
+                f"Integrated gradients step (alpha={alpha}) did not produce ∂ℒ/∂act on hook boundary "
+                f"(hook {hook_name!r})."
+            )
+        gx_step = hook_act_r.grad[0, pos_effective, :].detach().reshape(-1).float()
+        gx_accum += gx_step * float(w_step)
+        g_accum += f_leaf.grad.detach().float() * float(w_step)
+
+        del loss, logits, f_leaf
+        if empty_cache_between_steps and torch.cuda.is_available():
+            torch.cuda.empty_cache()
+
+    g_integral_hat = g_accum.to(dtype=dt, device=dev)
+    delta_f_det = delta_f.detach()
+    scores = delta_f_det * g_integral_hat
+
+    n_features = int(scores.numel())
+    indices = torch.arange(n_features, device=scores.device, dtype=torch.long)
+
+    meta = AttributionMetadata(metric=metric, seq_pos=pos_effective, hook_name=hook_name)
+    components = SAEAttributionComponents(delta_f=delta_f_det, gradient_g=g_integral_hat.detach())
+
+    residual_ig = float((gx_accum * delta_e.float()).sum().item())
+
+    pass_out = SAEAttributionPass(
+        indices=indices,
+        scores=scores.detach(),
+        residual_score=residual_ig,
+        components=components,
+        metadata=meta,
+    )
+
+    if check_completeness:
+        if metric_clean_natural is None or metric_corrupt_natural is None:
+            raise RuntimeError("Completeness metrics missing despite check_completeness=True.")
+        sum_lat = float(pass_out.scores.sum().detach().cpu().item())
+        delta_m = metric_clean_natural - metric_corrupt_natural
+        total_attr = sum_lat + residual_ig
+        gap_abs = abs(delta_m - total_attr)
+        diag = IGCompletenessDiagnostics(
+            metric_clean=metric_clean_natural,
+            metric_corrupt=metric_corrupt_natural,
+            delta_metric=delta_m,
+            sum_latent_ig=sum_lat,
+            residual_score=residual_ig,
+            total_attributed=total_attr,
+            gap_abs=gap_abs,
+        )
+        return pass_out, diag
+
+    return pass_out
 
 
 def capture_latent_gradient_snapshot(
@@ -290,7 +797,7 @@ def capture_latent_gradient_snapshot(
 ) -> LatentGradientSnapshot:
     """Micro backward pass: save ``g = ∂L/∂f`` at ``seq_pos`` for the current mask (before / after a prune)."""
 
-    _f_co, g, pos_eff = _feat_grad_corrupt_forward(
+    _f_co, g, pos_eff, _ga = _feat_grad_corrupt_forward(
         model=model,
         prompt_corrupt=prompt_corrupt,
         hook_name=hook_name,

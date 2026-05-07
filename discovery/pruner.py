@@ -18,13 +18,19 @@ budget — otherwise the wave is rejected / subdivided like a KL failure. During
 ``pass_orig`` is **realigned** when the recursive baseline ``removed`` differs from the mask it was
 computed at; after a drift failure on unchanged ``removed``, the baseline is **refreshed** once
 (re-run attribution at ``removed``) before splitting to reduce unnecessary subdivision.
+
+**Ranking vs drift:** use optional :func:`discovery.attribution.feature_integrated_gradients_pass` only for
+**outer-loop** importance ordering (expensive); keep drift checks on **single-point**
+:func:`discovery.attribution.feature_attribution_pass` — cheaper and usually sufficient to detect local
+geometry breakdown inside recursive batching.
 """
 
 from __future__ import annotations
 
 import math
+import warnings
 from dataclasses import dataclass, field, replace
-from typing import TYPE_CHECKING, Any, Callable, Optional, Set, Union
+from typing import TYPE_CHECKING, Any, Callable, Literal, Optional, Set, Union
 
 import torch
 import torch.nn.functional as F
@@ -34,6 +40,7 @@ from discovery.attribution import (
     calculate_gradient_drift,
     feature_act_grad_scores,
     feature_attribution_pass,
+    feature_integrated_gradients_pass,
 )
 from discovery.sae_scout import reconstruct_activation
 
@@ -398,19 +405,35 @@ def prune_sae_circuit_budget(
     gradient_drift_small_chunk_max_exclusive: int = 5,
     gradient_drift_bypass_small_chunks: bool = False,
     drift_attribution_metric: str = "logit_diff",
+    ranking_mode: Literal["act_grad", "integrated_gradients"] = "act_grad",
+    ig_n_steps: int = 20,
+    ig_alpha_schedule: Literal["midpoint", "linspace", "trapezoidal"] = "midpoint",
+    ig_empty_cache_between_steps: bool = False,
+    drift_residual_mass_warn_fraction: Optional[float] = None,
 ) -> Circuit:
     """Budgeted pruning with **re-attribution** each outer step.
 
     **Outer loop**: continue while ``KL(p_ref ‖ p_masked) < kl_budget`` for the masked
     graph at the **start** of the iteration (same reference logits as τ-mode: full latent graph).
 
-    **Inner loop**: with removed set ``R``, run ``feature_act_grad_scores(..., forced_zero_indices=R)``
-    and take the **bottom** ``min(N, |alive|)`` by score as ``chunk``. Try ``R ∪ chunk`` via
+    **Inner loop**: with removed set ``R``, compute per-feature scores (see ``ranking_mode``) and take the
+    **bottom** ``min(N, |alive|)`` by score as ``chunk``. Try ``R ∪ chunk`` via
     :func:`_budget_try_remove_recursive`: if KL fails on the batch, split ~in half recursively
     (**left** subtree first on ``R``, then **right** on the updated removal set), refusing only when
     a **singleton** cannot be merged into ``R`` — then continue the outer sweep with fresh scores.
 
-    **Recalculate**: one attribution pass each outer iteration on the **current** mask.
+    **Recalculate**: one scoring pass each outer iteration on the **current** mask.
+
+    **Ranking** (``ranking_mode``): default ``act_grad`` uses
+    :func:`discovery.attribution.feature_act_grad_scores`. ``integrated_gradients`` uses
+    :func:`discovery.attribution.feature_integrated_gradients_pass` once per outer step (slow); ranks by
+    ``|IG_i|`` so ordering matches magnitude-style salience. Requires ``prompt_clean`` or
+    ``ExperimentRunner.clean_prompt``. Drift gating (below) always uses single-point
+    :func:`discovery.attribution.feature_attribution_pass`, not IG.
+
+    **Residual mass** (optional): if ``drift_residual_mass_warn_fraction`` is set (e.g. ``0.4``), emit
+    ``warnings.warn`` when ``|residual_score| / (|Σ latent scores| + |residual_score|)`` from the drift
+    baseline pass exceeds it — a coarse hint that the SAE leaves task-relevant signal in ``e``.
 
     **Gradient drift** (optional): pass ``prompt_clean`` or use :class:`ExperimentRunner` (uses
     ``clean_prompt`` when ``prompt_clean`` is omitted). Each accepted removal batch must satisfy
@@ -426,6 +449,10 @@ def prune_sae_circuit_budget(
         raise ValueError("kl_budget must be non-negative.")
     if gradient_drift_small_chunk_max_exclusive < 1:
         raise ValueError("gradient_drift_small_chunk_max_exclusive must be >= 1.")
+    if ig_n_steps < 1:
+        raise ValueError("ig_n_steps must be >= 1.")
+    if ranking_mode not in ("act_grad", "integrated_gradients"):
+        raise ValueError(f"Unknown ranking_mode={ranking_mode!r}.")
 
     corrupt_tokens, corrupt_prompt_for_attr = _resolve_corrupt_tokens_and_prompt(
         model=model,
@@ -469,18 +496,46 @@ def prune_sae_circuit_budget(
         if kl_now >= kl_budget:
             break
 
-        last_scores = feature_act_grad_scores(
-            model=model,
-            prompt=corrupt_prompt_for_attr,
-            hook_name=hook_name,
-            encode_fn=encode_fn,
-            decode_fn=decode_fn,
-            logits_to_scalar_loss=logits_to_scalar_loss,
-            seq_pos=attribution_seq_pos,
-            prepend_bos=prepend_bos,
-            device=device,
-            forced_zero_indices=removed,
-        )
+        clean_for_rank = prompt_clean
+        if clean_for_rank is None and experiment is not None:
+            clean_for_rank = experiment.clean_prompt
+
+        if ranking_mode == "act_grad":
+            last_scores = feature_act_grad_scores(
+                model=model,
+                prompt=corrupt_prompt_for_attr,
+                hook_name=hook_name,
+                encode_fn=encode_fn,
+                decode_fn=decode_fn,
+                logits_to_scalar_loss=logits_to_scalar_loss,
+                seq_pos=attribution_seq_pos,
+                prepend_bos=prepend_bos,
+                device=device,
+                forced_zero_indices=removed,
+            )
+        else:
+            if clean_for_rank is None:
+                raise ValueError(
+                    "ranking_mode='integrated_gradients' requires prompt_clean or ExperimentRunner.clean_prompt."
+                )
+            ig_pass = feature_integrated_gradients_pass(
+                model=model,
+                prompt_clean=clean_for_rank,
+                prompt_corrupt=corrupt_prompt_for_attr,
+                hook_name=hook_name,
+                encode_fn=encode_fn,
+                decode_fn=decode_fn,
+                logits_to_scalar_loss=logits_to_scalar_loss,
+                metric=f"{drift_attribution_metric}_ig_rank",
+                seq_pos=attribution_seq_pos,
+                n_steps=ig_n_steps,
+                ig_alpha_schedule=ig_alpha_schedule,
+                prepend_bos=prepend_bos,
+                device=device,
+                forced_zero_indices=removed,
+                empty_cache_between_steps=ig_empty_cache_between_steps,
+            )
+            last_scores = ig_pass.scores.abs()
         inferred = int(last_scores.numel())
         if nf < 0:
             nf = inferred
@@ -517,6 +572,19 @@ def prune_sae_circuit_budget(
                 device=device,
                 forced_zero_indices=removed,
             )
+            if drift_residual_mass_warn_fraction is not None:
+                lat_mag = abs(float(pass_orig.scores.sum().detach().cpu().item()))
+                res_mag = abs(float(pass_orig.residual_score))
+                denom = lat_mag + res_mag + 1e-12
+                mass_frac = res_mag / denom
+                if mass_frac >= drift_residual_mass_warn_fraction:
+                    warnings.warn(
+                        "Residual attribution mass fraction is high (~"
+                        f"{mass_frac:.1%}); latent-only pruning may miss "
+                        "'dark matter' carried by e = x - decode(f).",
+                        UserWarning,
+                        stacklevel=2,
+                    )
             drift_gate = WaveGradientDriftGate(
                 pass_orig=pass_orig,
                 pass_orig_mask=frozenset(removed),
