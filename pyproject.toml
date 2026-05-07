@@ -27,6 +27,8 @@ dependencies = [
   "numpy>=1.24",
   "matplotlib>=3.7",
   "tqdm>=4.65",
+  "neuronpedia>=1.2.0",
+  "python-dotenv>=1.0",
 ]
 
 [project.optional-dependencies]
@@ -50,6 +52,8 @@ pythonpath = ["."]
 
 # Helps Pylance / Pyright resolve `causal_patcher` as a first-party package
 [tool.pyright]
-include = ["causal_patcher", "tests"]
+include = ["causal_patcher", "discovery", "tests", "scripts"]
 extraPaths = ["."]
 pythonVersion = "3.10"
+venvPath = "."
+venv = ".venv"
