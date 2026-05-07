@@ -544,13 +544,25 @@ def prune_sae_circuit_budget(
                 f"n_features={nf} but attribution returned {inferred} scores; align encode width."
             )
 
-        alive = [i for i in range(nf) if i not in removed]
-        if not alive:
+        alive_count = nf - len(removed)
+        if alive_count <= 0:
             break
 
         removed_before = set(removed)
-        alive_by_score = sorted(alive, key=lambda i: float(last_scores[i].item()))
-        chunk = alive_by_score[: min(batch_remove_n, len(alive))]
+
+        # IMPORTANT: keep ranking on-device to avoid GPU↔CPU sync from repeated `.item()` calls.
+        # We only materialize a small Python list of size `batch_remove_n` for the recursive remover.
+        k = min(batch_remove_n, alive_count)
+        scores = last_scores
+        assert scores is not None
+        if removed:
+            idx = torch.tensor(list(removed), device=scores.device, dtype=torch.long)
+            masked = scores.clone()
+            masked.index_fill_(0, idx, float("inf"))
+        else:
+            masked = scores
+        chunk_t = torch.topk(masked, k=k, largest=False).indices
+        chunk = [int(i) for i in chunk_t.detach().cpu().tolist()]
 
         clean_for_drift = prompt_clean
         if clean_for_drift is None and experiment is not None:
@@ -745,7 +757,9 @@ def prune_sae_circuit(
             zero_indices=set(),
         )
 
-    order = sorted(range(nf), key=lambda i: float(scores[i].item()))
+    # Sort on-device to avoid per-element `.item()` GPU sync.
+    order_t = torch.argsort(scores.detach())
+    order = [int(i) for i in order_t.detach().cpu().tolist()]
     removed: Set[int] = set()
 
     for j in order:

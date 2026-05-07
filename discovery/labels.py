@@ -90,6 +90,21 @@ def _cache_key(model_id: str, source: str, index: Union[int, str]) -> str:
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()[:32]
 
 
+def _sae_cache_dir(cache_root: Path, model_id: str, source: str) -> Path:
+    """Directory keying labels by (model_id, source) = one SAE / feature set."""
+
+    # Keep path-friendly but deterministic.
+    mid = str(model_id).strip().replace("/", "_")
+    src = str(source).strip().replace("/", "_")
+    return cache_root / "by_sae" / mid / src
+
+
+def _sae_index_cache_path(cache_root: Path, model_id: str, source: str) -> Path:
+    """Single JSON map for this SAE: {index(str): payload}."""
+
+    return _sae_cache_dir(cache_root, model_id, source) / "index_map.v1.json"
+
+
 def _feature_url(model_id: str, source: str, index: int) -> str:
     return f"https://neuronpedia.org/{model_id}/{source}/{index}"
 
@@ -187,6 +202,35 @@ def _load_cache(path: Path) -> Optional[dict[str, Any]]:
         return json.loads(path.read_text(encoding="utf-8"))
     except (json.JSONDecodeError, OSError):
         return None
+
+
+def _load_sae_index_map(path: Path) -> dict[str, Any]:
+    blob = _load_cache(path)
+    if not blob or not isinstance(blob, dict):
+        return {}
+    if blob.get("version") != 1 or blob.get("kind") != "neuronpedia_sae_index_map":
+        return {}
+    items = blob.get("items")
+    if not isinstance(items, dict):
+        return {}
+    return items
+
+
+def _write_sae_index_map(
+    *,
+    path: Path,
+    model_id: str,
+    source: str,
+    items: dict[str, Any],
+) -> None:
+    payload = {
+        "version": 1,
+        "kind": "neuronpedia_sae_index_map",
+        "model_id": str(model_id),
+        "source": str(source),
+        "items": items,
+    }
+    _atomic_write_json(path, payload)
 
 
 def _payload_to_feature_label(data: dict[str, Any], *, cached: bool) -> FeatureLabel:
@@ -301,10 +345,21 @@ def fetch_feature_label(
     src = str(source).strip()
     cache_root = Path(cache_dir) if cache_dir is not None else _default_cache_dir()
     cpath = cache_root / f"{_cache_key(mid, src, idx_int)}.json"
+    sae_map_path = _sae_index_cache_path(cache_root, mid, src)
 
     url = _feature_url(mid, src, idx_int)
 
     if use_cache and not force_refresh:
+        # Fast path: per-SAE index map.
+        items = _load_sae_index_map(sae_map_path)
+        hit = items.get(str(idx_int))
+        if isinstance(hit, dict) and hit.get("version") == 1:
+            try:
+                return _payload_to_feature_label(hit, cached=True)
+            except (KeyError, TypeError, ValueError):
+                pass
+
+        # Back-compat: legacy per-feature file cache.
         blob = _load_cache(cpath)
         if blob and blob.get("version") == 1:
             try:
@@ -457,7 +512,15 @@ def fetch_feature_label(
         detail=None,
     )
     if use_cache:
+        # Write both: per-feature legacy file + per-SAE map for efficient batch lookup.
         _atomic_write_json(cpath, payload)
+        try:
+            items = _load_sae_index_map(sae_map_path)
+            items[str(idx_int)] = payload
+            _write_sae_index_map(path=sae_map_path, model_id=mid, source=src, items=items)
+        except Exception:
+            # Best-effort; single-feature cache still works.
+            pass
 
     return FeatureLabel(
         model_id=mid,
@@ -476,5 +539,61 @@ def fetch_feature_labels_batch(
     keys: Sequence[tuple[str, str, Union[int, str]]],
     **kwargs: Any,
 ) -> list[FeatureLabel]:
-    """Fetch many ``(model_id, source, index)`` tuples; each uses cache independently."""
-    return [fetch_feature_label(m, s, i, **kwargs) for m, s, i in keys]
+    """Fetch many ``(model_id, source, index)`` tuples.
+
+    This function is optimized for the common research workflow:
+    - You have a large list of latents (e.g. 500 indices) from one SAE (same ``model_id`` + ``source``).
+    - You want labels quickly without 500 separate API round-trips on repeat runs.
+
+    Behavior:
+    - Uses the per-SAE `index_map.v1.json` cache for fast local lookups (keyed by ``(model_id, source, index)``).
+    - Falls back to the legacy per-feature cache files if present.
+    - Only hits the Neuronpedia API for missing indices, then backfills both caches.
+    """
+
+    # Preserve ordering and allow mixed SAEs; group by (model_id, source) for map-cache efficiency.
+    out: list[Optional[FeatureLabel]] = [None] * len(keys)
+
+    cache_dir = kwargs.get("cache_dir")
+    cache_root = Path(cache_dir) if cache_dir is not None else _default_cache_dir()
+    use_cache = bool(kwargs.get("use_cache", True))
+    force_refresh = bool(kwargs.get("force_refresh", False))
+
+    # First pass: try to satisfy from per-SAE map (and per-feature legacy).
+    misses: list[tuple[int, str, str, int]] = []
+    sae_map_cache: dict[tuple[str, str], dict[str, Any]] = {}
+    if use_cache and not force_refresh:
+        for j, (m, s, i) in enumerate(keys):
+            mid = str(m).strip()
+            src = str(s).strip()
+            idx_int = int(str(i).strip())
+            map_key = (mid, src)
+            if map_key not in sae_map_cache:
+                sae_map_cache[map_key] = _load_sae_index_map(_sae_index_cache_path(cache_root, mid, src))
+            hit = sae_map_cache[map_key].get(str(idx_int))
+            if isinstance(hit, dict) and hit.get("version") == 1:
+                try:
+                    out[j] = _payload_to_feature_label(hit, cached=True)
+                    continue
+                except Exception:
+                    pass
+            # legacy fallback
+            legacy = _load_cache(cache_root / f"{_cache_key(mid, src, idx_int)}.json")
+            if isinstance(legacy, dict) and legacy.get("version") == 1:
+                try:
+                    out[j] = _payload_to_feature_label(legacy, cached=True)
+                    continue
+                except Exception:
+                    pass
+            misses.append((j, mid, src, idx_int))
+
+    else:
+        for j, (m, s, i) in enumerate(keys):
+            misses.append((j, str(m).strip(), str(s).strip(), int(str(i).strip())))
+
+    # Second pass: fetch misses (still uses cache writes inside fetch_feature_label).
+    for j, mid, src, idx_int in misses:
+        out[j] = fetch_feature_label(mid, src, idx_int, **kwargs)
+
+    # Safety: should be fully populated now.
+    return [x for x in out if x is not None]
