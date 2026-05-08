@@ -15,10 +15,19 @@ if TYPE_CHECKING:
 NamesFilter = Optional[Union[str, List[str], Callable[[str], bool]]]
 
 
-def _resolve_index(i: int, seq_len: int) -> int:
-    if i < 0:
-        return i + seq_len
-    return i
+def _resolve_index(i: int, seq_len: int, *, role: str = "token") -> int:
+    """Map possibly-negative index to 0..seq_len-1; raise with context if out of range."""
+
+    if seq_len < 1:
+        raise ValueError(f"Cannot resolve {role} index: seq_len={seq_len}.")
+    resolved = int(i) + seq_len if int(i) < 0 else int(i)
+    if resolved < 0 or resolved >= seq_len:
+        raise IndexError(
+            f"Patch {role} index {int(i)!r} resolves to {resolved}, invalid for seq_len={seq_len} "
+            f"(use 0..{seq_len - 1}, or negative indices down to -{seq_len}). "
+            "Prompts are 0-based; if you counted from 1 or skipped BOS, subtract one."
+        )
+    return resolved
 
 
 def _resolve_patch_pos(
@@ -34,9 +43,12 @@ def _resolve_patch_pos(
         if len(pos) != 2:
             raise ValueError("pos tuple must be (clean_index, corrupt_index)")
         a, b = int(pos[0]), int(pos[1])
-        return (_resolve_index(a, seq_len), _resolve_index(b, seq_len))
+        return (
+            _resolve_index(a, seq_len, role="clean (source)"),
+            _resolve_index(b, seq_len, role="corrupt (destination)"),
+        )
     if isinstance(pos, int):
-        return _resolve_index(pos, seq_len)
+        return _resolve_index(pos, seq_len, role="aligned")
     raise TypeError(f"Invalid pos spec: {pos!r}")
 
 
