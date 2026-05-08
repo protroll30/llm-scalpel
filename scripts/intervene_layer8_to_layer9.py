@@ -79,6 +79,11 @@ def main() -> None:
     p.add_argument("--model", type=str, default="gpt2-small")
     p.add_argument("--prompt", type=str, default="The capital of Germany is")
     p.add_argument("--seq-pos", type=int, default=4)
+    p.add_argument(
+        "--prepend-bos",
+        action="store_true",
+        help="If set, prepend the BOS token when tokenizing (shifts token indices by +1 for most prompts).",
+    )
 
     p.add_argument("--sae-release", type=str, required=True)
     p.add_argument("--src-sae-id", type=str, default="blocks.8.hook_resid_pre")
@@ -142,7 +147,7 @@ def main() -> None:
     encode9, _decode9 = discovery_encode_decode(dst_sae)
 
     # Tokens
-    tokens = model.to_tokens(str(args.prompt), prepend_bos=False).to(device)
+    tokens = model.to_tokens(str(args.prompt), prepend_bos=bool(args.prepend_bos)).to(device)
     seq_len = int(tokens.shape[-1])
     pos_eff = _resolve_pos(int(args.seq_pos), seq_len)
     try:
