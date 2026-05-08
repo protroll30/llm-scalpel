@@ -233,7 +233,7 @@ def main() -> None:
         return act
 
     with torch.no_grad():
-        _ = model.run_with_hooks(
+        logits_int = model.run_with_hooks(
             tokens,
             fwd_hooks=[
                 (str(args.src_sae_id), _hook8),
@@ -278,6 +278,18 @@ def main() -> None:
     print()
     print(f"top|Δ dst_feature| (k={k}): {top_ids}")
 
+    # --- Top predictions (intervened run) ---
+    try:
+        vocab_logits = logits_int[0, -1, :].detach()
+        topk = torch.topk(vocab_logits, k=min(10, int(vocab_logits.numel())))
+        print()
+        print("Top predictions (intervened) at seq_pos:", pos_eff)
+        for rank, (tok_id, logit) in enumerate(zip(topk.indices.tolist(), topk.values.tolist()), start=1):
+            tok_str = model.tokenizer.decode([int(tok_id)]) if getattr(model, "tokenizer", None) is not None else str(tok_id)
+            print(f"  {rank:>2}. id={int(tok_id):>5} logit={float(logit):+.4f} token={tok_str!r}")
+    except Exception as e:  # pragma: no cover
+        print(f"(topk decode failed: {e})")
+
 
 if __name__ == "__main__":
     # Ensure repo root on path when running from elsewhere.
@@ -285,4 +297,5 @@ if __name__ == "__main__":
     if str(repo) not in sys.path:
         sys.path.insert(0, str(repo))
     main()
+
 
