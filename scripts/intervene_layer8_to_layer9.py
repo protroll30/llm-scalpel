@@ -223,11 +223,26 @@ def main() -> None:
             decode_fn=decode8,
         )
 
+    # Run *with* the layer-8 hook, but cache the layer-9 activation so we can encode it without
+    # accidentally re-running the model clean.
     with torch.no_grad():
-        _ = model.run_with_hooks(tokens, fwd_hooks=[(str(args.src_sae_id), _hook8)], return_type="logits")
-
-    # Read layer-9 features under intervention.
-    int_f9 = _encode_feature_vec_at_pos(model=model, tokens=tokens, hook_name=str(args.dst_sae_id), encode_fn=encode9, seq_pos=pos_eff)
+        _logits, cache_int = model.run_with_cache(
+            tokens,
+            names_filter=[str(args.dst_sae_id)],
+            return_type="logits",
+            fwd_hooks=[(str(args.src_sae_id), _hook8)],
+        )
+    if str(args.dst_sae_id) not in cache_int:
+        raise KeyError(f"Intervention cache missing {str(args.dst_sae_id)!r}")
+    act9_int = cache_int[str(args.dst_sae_id)]
+    f9_int_raw = encode9(act9_int)
+    if f9_int_raw.dim() == 2:
+        f9_int_raw = f9_int_raw.unsqueeze(0)
+    if f9_int_raw.dim() < 3:
+        raise ValueError(
+            f"encode_fn must return [pos, n_features] or [batch, pos, n_features]; got {tuple(f9_int_raw.shape)}"
+        )
+    int_f9 = f9_int_raw[0, pos_eff, :].detach().clone()
     delta = (int_f9 - base_f9).detach().cpu()
 
     print(f"prompt={args.prompt!r} seq_pos={pos_eff} device={device}")
