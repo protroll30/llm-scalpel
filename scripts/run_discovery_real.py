@@ -22,6 +22,7 @@ Example:
 from __future__ import annotations
 
 import argparse
+import json
 import sys
 from pathlib import Path
 from typing import Any, Callable, Literal, cast
@@ -38,7 +39,7 @@ from discovery.attribution import (
     feature_attribution_pass,
     feature_integrated_gradients_pass,
 )
-from discovery.pruner import prune_sae_circuit_budget
+from discovery.pruner import Circuit, prune_sae_circuit_budget
 from discovery.sae_lens_bridge import (
     assert_d_in_matches_model,
     discovery_encode_decode,
@@ -63,6 +64,20 @@ class LinearSAE(nn.Module):
 
     def decode(self, f: torch.Tensor) -> torch.Tensor:
         return self.dec(f)
+
+
+def _circuit_json_dict(circuit: Circuit) -> dict[str, Any]:
+    return {
+        "hook_name": circuit.hook_name,
+        "feature_indices": circuit.feature_indices,
+        "n_features_initial": circuit.n_features_initial,
+        "removed_indices": circuit.removed_indices,
+        "attribution_scores": circuit.attribution_scores,
+        "tau": circuit.tau,
+        "kl_budget": circuit.kl_budget,
+        "batch_remove_n": circuit.batch_remove_n,
+        "final_kl_vs_reference": circuit.final_kl_vs_reference,
+    }
 
 
 def _scalar_metric_plain_forward(
@@ -166,7 +181,21 @@ def main() -> None:
         help="Ranking signal inside prune_sae_circuit_budget.",
     )
     p.add_argument("--prune-ig-steps", type=int, default=10)
+    p.add_argument(
+        "--prune-progress",
+        action="store_true",
+        help="Show a tqdm progress bar during KL-budget pruning (one wave per outer iteration).",
+    )
+    p.add_argument(
+        "--prune-circuit-json",
+        type=str,
+        default="",
+        help="With --run-prune: write the returned Circuit (feature_indices, removed_indices, KL, ...) to this JSON path.",
+    )
     args = p.parse_args()
+
+    if bool(str(args.prune_circuit_json).strip()) and not bool(args.run_prune):
+        raise SystemExit("--prune-circuit-json requires --run-prune.")
 
     if args.device == "cuda" and not torch.cuda.is_available():
         raise SystemExit("CUDA requested but not available.")
@@ -359,8 +388,15 @@ def main() -> None:
             ranking_mode=ranking_mode,
             ig_n_steps=int(args.prune_ig_steps),
             ig_alpha_schedule=ig_alpha_schedule,
+            progress=bool(args.prune_progress),
         )
         print(f"  kept={len(circuit.feature_indices)} removed={len(circuit.removed_indices)} final_KL={circuit.final_kl_vs_reference}")
+        out_json = str(args.prune_circuit_json).strip()
+        if out_json:
+            outp = Path(out_json).expanduser().resolve()
+            outp.parent.mkdir(parents=True, exist_ok=True)
+            outp.write_text(json.dumps(_circuit_json_dict(circuit), indent=2), encoding="utf-8")
+            print(f"  prune circuit saved to {outp}")
 
 
 if __name__ == "__main__":

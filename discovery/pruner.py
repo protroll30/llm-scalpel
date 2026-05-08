@@ -28,12 +28,14 @@ geometry breakdown inside recursive batching.
 from __future__ import annotations
 
 import math
+import sys
 import warnings
 from dataclasses import dataclass, field, replace
 from typing import TYPE_CHECKING, Any, Callable, Literal, Optional, Set, Union
 
 import torch
 import torch.nn.functional as F
+from tqdm.auto import tqdm
 
 from discovery.attribution import (
     SAEAttributionPass,
@@ -410,6 +412,7 @@ def prune_sae_circuit_budget(
     ig_alpha_schedule: Literal["midpoint", "linspace", "trapezoidal"] = "midpoint",
     ig_empty_cache_between_steps: bool = False,
     drift_residual_mass_warn_fraction: Optional[float] = None,
+    progress: bool = False,
 ) -> Circuit:
     """Budgeted pruning with **re-attribution** each outer step.
 
@@ -443,6 +446,9 @@ def prune_sae_circuit_budget(
     ``len(chunk) >= gradient_drift_small_chunk_max_exclusive``, else ``gradient_drift_threshold_small``
     (default ``0.70``). Set ``gradient_drift_bypass_small_chunks=True`` to skip the drift check entirely
     for chunks smaller than that cutoff (KL still applies).
+
+    **Progress:** set ``progress=True`` to emit one tqdm ``wave`` per outer iteration (masked KL, scoring,
+    optional drift baseline, recursive batch removal) on stderr — useful during long pruning runs.
     """
     if batch_remove_n < 1:
         raise ValueError("batch_remove_n must be >= 1.")
@@ -478,157 +484,186 @@ def prune_sae_circuit_budget(
     last_scores: Optional[torch.Tensor] = None
     nf = int(n_features) if n_features is not None else -1
 
-    while True:
-        with torch.no_grad():
-            logits_now = _logits_with_feature_mask(
-                model=model,
-                tokens=corrupt_tokens,
-                hook_name=hook_name,
-                encode_fn=encode_fn,
-                decode_fn=decode_fn,
-                zero_indices=removed,
-            )
-        kl_now = float(
-            kl_last_token_divergence(logits_ref, logits_now, seq_pos=seq_pos, reduction="sum")
-            .detach()
-            .cpu()
-            .item()
+    kl_now = 0.0
+    pbar: Any = None
+    if progress:
+        pbar = tqdm(
+            desc="KL-budget prune",
+            unit="wave",
+            leave=True,
+            dynamic_ncols=True,
+            file=sys.stderr,
         )
-        if kl_now >= kl_budget:
-            break
-
-        clean_for_rank = prompt_clean
-        if clean_for_rank is None and experiment is not None:
-            clean_for_rank = experiment.clean_prompt
-
-        if ranking_mode == "act_grad":
-            last_scores = feature_act_grad_scores(
-                model=model,
-                prompt=corrupt_prompt_for_attr,
-                hook_name=hook_name,
-                encode_fn=encode_fn,
-                decode_fn=decode_fn,
-                logits_to_scalar_loss=logits_to_scalar_loss,
-                seq_pos=attribution_seq_pos,
-                prepend_bos=prepend_bos,
-                device=device,
-                forced_zero_indices=removed,
-            )
-        else:
-            if clean_for_rank is None:
-                raise ValueError(
-                    "ranking_mode='integrated_gradients' requires prompt_clean or ExperimentRunner.clean_prompt."
+    try:
+        while True:
+            with torch.no_grad():
+                logits_now = _logits_with_feature_mask(
+                    model=model,
+                    tokens=corrupt_tokens,
+                    hook_name=hook_name,
+                    encode_fn=encode_fn,
+                    decode_fn=decode_fn,
+                    zero_indices=removed,
                 )
-            ig_pass = feature_integrated_gradients_pass(
-                model=model,
-                prompt_clean=clean_for_rank,
-                prompt_corrupt=corrupt_prompt_for_attr,
-                hook_name=hook_name,
-                encode_fn=encode_fn,
-                decode_fn=decode_fn,
-                logits_to_scalar_loss=logits_to_scalar_loss,
-                metric=f"{drift_attribution_metric}_ig_rank",
-                seq_pos=attribution_seq_pos,
-                n_steps=ig_n_steps,
-                ig_alpha_schedule=ig_alpha_schedule,
-                prepend_bos=prepend_bos,
-                device=device,
-                forced_zero_indices=removed,
-                empty_cache_between_steps=ig_empty_cache_between_steps,
+            kl_now = float(
+                kl_last_token_divergence(logits_ref, logits_now, seq_pos=seq_pos, reduction="sum")
+                .detach()
+                .cpu()
+                .item()
             )
-            last_scores = ig_pass.scores
-        inferred = int(last_scores.numel())
-        if nf < 0:
-            nf = inferred
-        elif inferred != nf:
-            raise ValueError(
-                f"n_features={nf} but attribution returned {inferred} scores; align encode width."
-            )
+            if kl_now >= kl_budget:
+                if pbar is not None:
+                    pbar.set_postfix(KL=f"{kl_now:.4g}", rm=len(removed), stop="budget")
+                break
 
-        alive_count = nf - len(removed)
-        if alive_count <= 0:
-            break
+            clean_for_rank = prompt_clean
+            if clean_for_rank is None and experiment is not None:
+                clean_for_rank = experiment.clean_prompt
 
-        removed_before = set(removed)
-
-        # IMPORTANT: keep ranking on-device to avoid GPU↔CPU sync from repeated `.item()` calls.
-        # We only materialize a small Python list of size `batch_remove_n` for the recursive remover.
-        k = min(batch_remove_n, alive_count)
-        assert last_scores is not None
-        rank_scores = last_scores.abs()
-        if removed:
-            idx = torch.tensor(list(removed), device=rank_scores.device, dtype=torch.long)
-            masked = rank_scores.clone()
-            masked.index_fill_(0, idx, float("inf"))
-        else:
-            masked = rank_scores
-        chunk_t = torch.topk(masked, k=k, largest=False).indices
-        chunk = [int(i) for i in chunk_t.detach().cpu().tolist()]
-
-        clean_for_drift = prompt_clean
-        if clean_for_drift is None and experiment is not None:
-            clean_for_drift = experiment.clean_prompt
-
-        drift_gate: Optional[WaveGradientDriftGate] = None
-        if clean_for_drift is not None:
-            pass_orig = feature_attribution_pass(
-                model=model,
-                prompt_clean=clean_for_drift,
-                prompt_corrupt=corrupt_prompt_for_attr,
-                hook_name=hook_name,
-                encode_fn=encode_fn,
-                decode_fn=decode_fn,
-                logits_to_scalar_loss=logits_to_scalar_loss,
-                metric=drift_attribution_metric,
-                seq_pos=attribution_seq_pos,
-                prepend_bos=prepend_bos,
-                device=device,
-                forced_zero_indices=removed,
-            )
-            if drift_residual_mass_warn_fraction is not None:
-                lat_mag = abs(float(pass_orig.scores.sum().detach().cpu().item()))
-                res_mag = abs(float(pass_orig.residual_score))
-                denom = lat_mag + res_mag + 1e-12
-                mass_frac = res_mag / denom
-                if mass_frac >= drift_residual_mass_warn_fraction:
-                    warnings.warn(
-                        "Residual attribution mass fraction is high (~"
-                        f"{mass_frac:.1%}); latent-only pruning may miss "
-                        "'dark matter' carried by e = x - decode(f).",
-                        UserWarning,
-                        stacklevel=2,
+            if ranking_mode == "act_grad":
+                last_scores = feature_act_grad_scores(
+                    model=model,
+                    prompt=corrupt_prompt_for_attr,
+                    hook_name=hook_name,
+                    encode_fn=encode_fn,
+                    decode_fn=decode_fn,
+                    logits_to_scalar_loss=logits_to_scalar_loss,
+                    seq_pos=attribution_seq_pos,
+                    prepend_bos=prepend_bos,
+                    device=device,
+                    forced_zero_indices=removed,
+                )
+            else:
+                if clean_for_rank is None:
+                    raise ValueError(
+                        "ranking_mode='integrated_gradients' requires prompt_clean or ExperimentRunner.clean_prompt."
                     )
-            drift_gate = WaveGradientDriftGate(
-                pass_orig=pass_orig,
-                pass_orig_mask=frozenset(removed),
-                prompt_clean=clean_for_drift,
-                corrupt_prompt=corrupt_prompt_for_attr,
-                metric=drift_attribution_metric,
-                attribution_seq_pos=attribution_seq_pos,
-                threshold_large=gradient_drift_threshold_large,
-                threshold_small=gradient_drift_threshold_small,
-                small_chunk_max_exclusive=gradient_drift_small_chunk_max_exclusive,
-                bypass_small_chunks=gradient_drift_bypass_small_chunks,
-                prepend_bos=prepend_bos,
-                device=device,
-            )
+                ig_pass = feature_integrated_gradients_pass(
+                    model=model,
+                    prompt_clean=clean_for_rank,
+                    prompt_corrupt=corrupt_prompt_for_attr,
+                    hook_name=hook_name,
+                    encode_fn=encode_fn,
+                    decode_fn=decode_fn,
+                    logits_to_scalar_loss=logits_to_scalar_loss,
+                    metric=f"{drift_attribution_metric}_ig_rank",
+                    seq_pos=attribution_seq_pos,
+                    n_steps=ig_n_steps,
+                    ig_alpha_schedule=ig_alpha_schedule,
+                    prepend_bos=prepend_bos,
+                    device=device,
+                    forced_zero_indices=removed,
+                    empty_cache_between_steps=ig_empty_cache_between_steps,
+                )
+                last_scores = ig_pass.scores
+            inferred = int(last_scores.numel())
+            if nf < 0:
+                nf = inferred
+            elif inferred != nf:
+                raise ValueError(
+                    f"n_features={nf} but attribution returned {inferred} scores; align encode width."
+                )
 
-        removed = _budget_try_remove_recursive(
-            model=model,
-            logits_reference=logits_ref,
-            corrupt_tokens=corrupt_tokens,
-            hook_name=hook_name,
-            encode_fn=encode_fn,
-            decode_fn=decode_fn,
-            logits_to_scalar_loss=logits_to_scalar_loss,
-            removed=removed,
-            chunk=chunk,
-            kl_budget=kl_budget,
-            seq_pos=seq_pos,
-            drift_gate=drift_gate,
-        )
-        if removed == removed_before:
-            break
+            alive_count = nf - len(removed)
+            if alive_count <= 0:
+                if pbar is not None:
+                    pbar.update(1)
+                    pbar.set_postfix(KL=f"{kl_now:.4g}", rm=len(removed), alive=0, stop="all_dead")
+                break
+
+            removed_before = set(removed)
+
+            # IMPORTANT: keep ranking on-device to avoid GPU↔CPU sync from repeated `.item()` calls.
+            # We only materialize a small Python list of size `batch_remove_n` for the recursive remover.
+            k = min(batch_remove_n, alive_count)
+            assert last_scores is not None
+            rank_scores = last_scores.abs()
+            if removed:
+                idx = torch.tensor(list(removed), device=rank_scores.device, dtype=torch.long)
+                masked = rank_scores.clone()
+                masked.index_fill_(0, idx, float("inf"))
+            else:
+                masked = rank_scores
+            chunk_t = torch.topk(masked, k=k, largest=False).indices
+            chunk = [int(i) for i in chunk_t.detach().cpu().tolist()]
+
+            clean_for_drift = prompt_clean
+            if clean_for_drift is None and experiment is not None:
+                clean_for_drift = experiment.clean_prompt
+
+            drift_gate: Optional[WaveGradientDriftGate] = None
+            if clean_for_drift is not None:
+                pass_orig = feature_attribution_pass(
+                    model=model,
+                    prompt_clean=clean_for_drift,
+                    prompt_corrupt=corrupt_prompt_for_attr,
+                    hook_name=hook_name,
+                    encode_fn=encode_fn,
+                    decode_fn=decode_fn,
+                    logits_to_scalar_loss=logits_to_scalar_loss,
+                    metric=drift_attribution_metric,
+                    seq_pos=attribution_seq_pos,
+                    prepend_bos=prepend_bos,
+                    device=device,
+                    forced_zero_indices=removed,
+                )
+                if drift_residual_mass_warn_fraction is not None:
+                    lat_mag = abs(float(pass_orig.scores.sum().detach().cpu().item()))
+                    res_mag = abs(float(pass_orig.residual_score))
+                    denom = lat_mag + res_mag + 1e-12
+                    mass_frac = res_mag / denom
+                    if mass_frac >= drift_residual_mass_warn_fraction:
+                        warnings.warn(
+                            "Residual attribution mass fraction is high (~"
+                            f"{mass_frac:.1%}); latent-only pruning may miss "
+                            "'dark matter' carried by e = x - decode(f).",
+                            UserWarning,
+                            stacklevel=2,
+                        )
+                drift_gate = WaveGradientDriftGate(
+                    pass_orig=pass_orig,
+                    pass_orig_mask=frozenset(removed),
+                    prompt_clean=clean_for_drift,
+                    corrupt_prompt=corrupt_prompt_for_attr,
+                    metric=drift_attribution_metric,
+                    attribution_seq_pos=attribution_seq_pos,
+                    threshold_large=gradient_drift_threshold_large,
+                    threshold_small=gradient_drift_threshold_small,
+                    small_chunk_max_exclusive=gradient_drift_small_chunk_max_exclusive,
+                    bypass_small_chunks=gradient_drift_bypass_small_chunks,
+                    prepend_bos=prepend_bos,
+                    device=device,
+                )
+
+            removed = _budget_try_remove_recursive(
+                model=model,
+                logits_reference=logits_ref,
+                corrupt_tokens=corrupt_tokens,
+                hook_name=hook_name,
+                encode_fn=encode_fn,
+                decode_fn=decode_fn,
+                logits_to_scalar_loss=logits_to_scalar_loss,
+                removed=removed,
+                chunk=chunk,
+                kl_budget=kl_budget,
+                seq_pos=seq_pos,
+                drift_gate=drift_gate,
+            )
+            if pbar is not None:
+                stall = removed == removed_before
+                pbar.update(1)
+                pbar.set_postfix(
+                    KL=f"{kl_now:.4g}",
+                    rm=len(removed),
+                    alive=nf - len(removed),
+                    chunk=k,
+                    stall=stall,
+                )
+            if removed == removed_before:
+                break
+    finally:
+        if pbar is not None:
+            pbar.close()
 
     nf_final = nf if nf >= 0 else -1
     if nf_final < 0:
