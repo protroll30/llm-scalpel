@@ -5,6 +5,9 @@ This script is meant for quick sanity checks like:
 - force-activate one of them at a chosen token position
 - measure the change in layer-9 SAE feature activations (e.g. 5396, 17889)
 
+Dual intervention (zero some latents, then inject others at the same seq position in one forward):
+  Same flags as below, plus e.g. --erase-features ID1 ID2 --inject-features ID3 (instead of --src-features).
+
 Example (CUDA):
   python scripts/intervene_layer8_to_layer9.py ^
     --sae-release gpt2-small-res-jb ^
@@ -91,18 +94,37 @@ def main() -> None:
     p.add_argument("--sae-dtype", type=str, default="float32")
     p.add_argument("--sae-force-download", action="store_true")
 
-    p.add_argument("--src-features", nargs="+", required=True, help="Layer-8 feature ids to intervene on.")
+    p.add_argument(
+        "--src-features",
+        nargs="*",
+        default=[],
+        metavar="ID",
+        help="Legacy: layer-8 latent ids to intervene on (same mode/value/scale for all). Do not combine with --erase-features/--inject-features.",
+    )
+    p.add_argument(
+        "--erase-features",
+        nargs="*",
+        default=[],
+        metavar="ID",
+        help="Dual mode: set these layer-8 latents to 0.0 at seq_pos before inject.",
+    )
+    p.add_argument(
+        "--inject-features",
+        nargs="*",
+        default=[],
+        metavar="ID",
+        help="Dual mode: apply --mode/--value/--counterfactual-scale to these latents at seq_pos (after erase).",
+    )
     p.add_argument("--dst-features", nargs="+", required=True, help="Layer-9 feature ids to read out.")
     p.add_argument("--mode", type=str, default="set", choices=("set", "add"))
-    p.add_argument("--value", type=float, default=5.0, help="Value to set/add for each src feature at seq_pos.")
+    p.add_argument("--value", type=float, default=5.0, help="Inject: value to set/add for each inject latent at seq_pos.")
     p.add_argument(
         "--counterfactual-scale",
         type=float,
         default=0.0,
         help=(
-            "If >0: compute each src feature's natural activation A_base at seq_pos and set its value to "
-            "A_base * counterfactual_scale (mode='set') or add A_base * (counterfactual_scale - 1) (mode='add'). "
-            "This keeps interventions in-distribution vs a fixed constant."
+            "If >0: for each inject latent, use natural A_base at seq_pos; set to A_base * scale (mode=set) "
+            "or add A_base * (scale - 1) (mode=add). Ignored for --erase-features (always zero)."
         ),
     )
     p.add_argument(
@@ -115,6 +137,22 @@ def main() -> None:
     )
 
     args = p.parse_args()
+
+    erase_features = _parse_int_list(args.erase_features)
+    inject_features = _parse_int_list(args.inject_features)
+    src_features_legacy = _parse_int_list(args.src_features)
+    dual_mode = bool(args.erase_features) or bool(args.inject_features)
+    if dual_mode:
+        if src_features_legacy:
+            raise SystemExit("Use either --src-features (legacy) OR --erase-features/--inject-features (dual), not both.")
+    else:
+        if not src_features_legacy:
+            raise SystemExit("Provide --src-features, or use --erase-features and/or --inject-features.")
+        inject_features = src_features_legacy
+        erase_features = []
+    overlap = sorted(set(inject_features) & set(erase_features))
+    if overlap:
+        print(f"warning: features in both erase and inject (erase applied first, then inject): {overlap}", file=sys.stderr)
 
     device = torch.device(args.device)
     if args.device == "cuda" and not torch.cuda.is_available():
@@ -131,7 +169,6 @@ def main() -> None:
     )
     model.eval()
 
-    src_features = _parse_int_list(args.src_features)
     dst_features = _parse_int_list(args.dst_features)
 
     # Load SAEs
@@ -173,15 +210,17 @@ def main() -> None:
     # Baseline: layer-8 features at pos (for counterfactual scaling).
     base_f8 = _encode_feature_vec_at_pos(model=model, tokens=tokens, hook_name=str(args.src_sae_id), encode_fn=encode8, seq_pos=pos_eff)
     print(f"Max f8 value at pos {pos_eff}: {float(base_f8.max().detach().cpu().item()):.6g}")
-    if src_features:
-        src_vals = [float(base_f8[j].detach().cpu().item()) for j in src_features]
-        print(f"Baseline f8 src feature values at pos {pos_eff}: {list(zip(src_features, src_vals))}")
+    if erase_features:
+        ev = [float(base_f8[j].detach().cpu().item()) for j in erase_features]
+        print(f"Baseline f8 erase feature values at pos {pos_eff}: {list(zip(erase_features, ev))}")
+    if inject_features:
+        iv = [float(base_f8[j].detach().cpu().item()) for j in inject_features]
+        print(f"Baseline f8 inject feature values at pos {pos_eff}: {list(zip(inject_features, iv))}")
 
     # Intervention: hook at layer 8, modify f at pos, reconstruct activation with corrupt residual.
-    forced = torch.tensor(src_features, device=device, dtype=torch.long)
-    if forced.numel() == 0:
-        raise SystemExit("--src-features must be non-empty.")
-    base_forced = base_f8.index_select(0, forced).detach()
+    erase_idx = torch.tensor(erase_features, device=device, dtype=torch.long)
+    inject_idx = torch.tensor(inject_features, device=device, dtype=torch.long)
+    base_inject = base_f8.index_select(0, inject_idx).detach() if inject_idx.numel() else torch.empty(0, device=device)
     cf_scale = float(args.counterfactual_scale)
     printed_hook_msg = False
 
@@ -202,19 +241,22 @@ def main() -> None:
         f_full = f
         f_work = f_full.clone()
 
-        # Apply intervention at [batch=0, pos_eff, feature]
-        if cf_scale > 0.0:
-            if args.mode == "set":
-                target = base_forced.to(device=f_work.device, dtype=f_work.dtype) * cf_scale
-                f_work[0, pos_eff, forced] = target
-            else:  # add
-                delta = base_forced.to(device=f_work.device, dtype=f_work.dtype) * (cf_scale - 1.0)
-                f_work[0, pos_eff, forced] = f_work[0, pos_eff, forced] + delta
-        else:
-            if args.mode == "set":
-                f_work[0, pos_eff, :].index_fill_(0, forced, float(args.value))
-            else:  # add
-                f_work[0, pos_eff, forced] = f_work[0, pos_eff, forced] + float(args.value)
+        # [batch=0, pos_eff]: erase latents first, then inject.
+        if erase_idx.numel() > 0:
+            f_work[0, pos_eff, erase_idx] = 0.0
+        if inject_idx.numel() > 0:
+            if cf_scale > 0.0:
+                if args.mode == "set":
+                    target = base_inject.to(device=f_work.device, dtype=f_work.dtype) * cf_scale
+                    f_work[0, pos_eff, inject_idx] = target
+                else:
+                    delta_inj = base_inject.to(device=f_work.device, dtype=f_work.dtype) * (cf_scale - 1.0)
+                    f_work[0, pos_eff, inject_idx] = f_work[0, pos_eff, inject_idx] + delta_inj
+            else:
+                if args.mode == "set":
+                    f_work[0, pos_eff, inject_idx] = float(args.value)
+                else:
+                    f_work[0, pos_eff, inject_idx] = f_work[0, pos_eff, inject_idx] + float(args.value)
 
         return reconstruct_activation(
             f_patched=f_work,
@@ -255,13 +297,15 @@ def main() -> None:
     delta = (int_f9 - base_f9).detach().cpu()
 
     print(f"prompt={args.prompt!r} seq_pos={pos_eff} device={device}")
-    if cf_scale > 0.0:
+    if dual_mode:
         print(
-            f"src={args.src_sae_id} mode={args.mode} counterfactual_scale={cf_scale} "
-            f"src_features={src_features}"
+            f"src={args.src_sae_id} erase={erase_features} inject={inject_features} "
+            f"mode={args.mode} value={args.value} counterfactual_scale={cf_scale}"
         )
+    elif cf_scale > 0.0:
+        print(f"src={args.src_sae_id} mode={args.mode} counterfactual_scale={cf_scale} src_features={inject_features}")
     else:
-        print(f"src={args.src_sae_id} mode={args.mode} value={args.value} src_features={src_features}")
+        print(f"src={args.src_sae_id} mode={args.mode} value={args.value} src_features={inject_features}")
     print(f"dst={args.dst_sae_id} dst_features={dst_features}")
     print()
 
@@ -283,7 +327,7 @@ def main() -> None:
         vocab_logits = logits_int[0, -1, :].detach()
         topk = torch.topk(vocab_logits, k=min(10, int(vocab_logits.numel())))
         print()
-        print("Top predictions (intervened) at seq_pos:", pos_eff)
+        print("Top predictions (intervened) at last seq index ( logits[0,-1,...] ):")
         for rank, (tok_id, logit) in enumerate(zip(topk.indices.tolist(), topk.values.tolist()), start=1):
             tok_str = model.tokenizer.decode([int(tok_id)]) if getattr(model, "tokenizer", None) is not None else str(tok_id)
             print(f"  {rank:>2}. id={int(tok_id):>5} logit={float(logit):+.4f} token={tok_str!r}")
