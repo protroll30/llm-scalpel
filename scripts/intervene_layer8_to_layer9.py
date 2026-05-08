@@ -145,12 +145,24 @@ def main() -> None:
     tokens = model.to_tokens(str(args.prompt), prepend_bos=False).to(device)
     seq_len = int(tokens.shape[-1])
     pos_eff = _resolve_pos(int(args.seq_pos), seq_len)
+    try:
+        tok_list = model.to_str_tokens(tokens[0] if tokens.dim() == 2 else tokens)
+        if 0 <= pos_eff < len(tok_list):
+            print(f"Token at pos {pos_eff}: {tok_list[pos_eff]!r}")
+        else:
+            print(f"Token at pos {pos_eff}: <out of range for to_str_tokens len={len(tok_list)}>")
+    except Exception as e:  # pragma: no cover
+        print(f"Token at pos {pos_eff}: <failed to decode tokens: {e}>")
 
     # Baseline: layer-9 features at pos.
     base_f9 = _encode_feature_vec_at_pos(model=model, tokens=tokens, hook_name=str(args.dst_sae_id), encode_fn=encode9, seq_pos=pos_eff)
 
     # Baseline: layer-8 features at pos (for counterfactual scaling).
     base_f8 = _encode_feature_vec_at_pos(model=model, tokens=tokens, hook_name=str(args.src_sae_id), encode_fn=encode8, seq_pos=pos_eff)
+    print(f"Max f8 value at pos {pos_eff}: {float(base_f8.max().detach().cpu().item()):.6g}")
+    if src_features:
+        src_vals = [float(base_f8[j].detach().cpu().item()) for j in src_features]
+        print(f"Baseline f8 src feature values at pos {pos_eff}: {list(zip(src_features, src_vals))}")
 
     # Intervention: hook at layer 8, modify f at pos, reconstruct activation with corrupt residual.
     forced = torch.tensor(src_features, device=device, dtype=torch.long)
