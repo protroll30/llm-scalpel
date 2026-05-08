@@ -527,6 +527,18 @@ def build_three_node_edges(
         raise ValueError("middle_heads must be non-empty for three-node discovery.")
 
     mh_tuple = tuple((int(L), int(H)) for L, H in middle_heads)
+    n_layers = int(getattr(model.cfg, "n_layers", 0))
+    n_heads_cfg = int(getattr(model.cfg, "n_heads", 0))
+    for L, H in mh_tuple:
+        if not (0 <= int(L) < n_layers):
+            raise IndexError(
+                f"middle-head layer {int(L)} is out of range for this model (n_layers={n_layers}, use 0..{n_layers - 1})."
+            )
+        if not (0 <= int(H) < n_heads_cfg):
+            raise IndexError(
+                f"middle-head index {int(H)} is out of range (n_heads={n_heads_cfg}, use 0..{n_heads_cfg - 1}). "
+                "Head indices are 0-based like TransformerLens."
+            )
     layers_mid = sorted({L for L, _ in mh_tuple})
     z_hooks = [tl_utils.get_act_name("z", L) for L in layers_mid]
 
@@ -572,6 +584,17 @@ def build_three_node_edges(
     else:
         z_pos_eff = _resolve_pos(int(z_seq_pos), seq_len)
 
+    if z_pos_eff < 0 or z_pos_eff >= seq_len:
+        raise IndexError(
+            f"z_seq_pos resolves to {z_pos_eff}, invalid for corrupt seq_len={seq_len} (indices 0..{seq_len - 1})."
+        )
+    dsi = int(bipartite.dst_seq_pos_resolved)
+    if dsi < 0 or dsi >= seq_len:
+        raise IndexError(
+            f"bipartite dst_seq_pos_resolved={dsi} vs three-node corrupt seq_len={seq_len}. "
+            "Usually a prepend_bos / tokenization mismatch between builds—align flags with your prompt."
+        )
+
     z_baselines = _corrupt_z_snapshot(model=model, corrupt_tokens=corrupt_tokens, z_hook_names=z_hooks)
 
     grad_z_by_layer: dict[int, torch.Tensor] = {}
@@ -601,6 +624,25 @@ def build_three_node_edges(
     )
 
     g_cpu = bipartite.dst_gradient_g.detach().float()
+    nf_dst = int(base_f_dst.numel())
+    nf_src = int(base_f_src_at_pos.numel())
+    for j in dst_feature_ids:
+        jj = int(j)
+        if jj < 0 or jj >= nf_dst:
+            raise IndexError(
+                f"--dst-features includes {jj} but destination SAE width is {nf_dst} (valid 0..{nf_dst - 1})."
+            )
+    if int(g_cpu.numel()) != nf_dst:
+        raise ValueError(
+            f"Destination gradient length {int(g_cpu.numel())} does not match latent width {nf_dst}; "
+            "check attribution vs encode_dst."
+        )
+    for i in src_feature_ids:
+        ii = int(i)
+        if ii < 0 or ii >= nf_src:
+            raise IndexError(
+                f"--src-features includes {ii} but source SAE width is {nf_src} (valid 0..{nf_src - 1})."
+            )
 
     edge_src_to_mid: dict[tuple[int, tuple[int, int]], float] = {}
     for i in src_feature_ids:
@@ -621,10 +663,18 @@ def build_three_node_edges(
         )
         for L, H in mh_tuple:
             zh = tl_utils.get_act_name("z", L)
-            z0 = z_baselines[zh][0, z_pos_eff, int(H), :].float()
-            z1 = snaps[zh][0, z_pos_eff, int(H), :].float()
+            zb = z_baselines[zh]
+            gz_t = grad_z_by_layer[L]
+            try:
+                z0 = zb[0, z_pos_eff, int(H), :].float()
+                z1 = snaps[zh][0, z_pos_eff, int(H), :].float()
+                gz = gz_t[0, z_pos_eff, int(H), :].float()
+            except IndexError as err:
+                raise IndexError(
+                    f"Bad z slice at query_pos={z_pos_eff}, head={int(H)}, layer={int(L)} "
+                    f"(corrupt seq_len={seq_len}; z shape={tuple(zb.shape)}; grad_z shape={tuple(gz_t.shape)})."
+                ) from err
             dz = z1 - z0
-            gz = grad_z_by_layer[L][0, z_pos_eff, int(H), :].float()
             edge_src_to_mid[(int(i), (L, int(H)))] = float((dz * gz).sum().detach().cpu().item())
 
     _, clean_cache = model.run_with_cache(
@@ -665,11 +715,23 @@ def build_three_node_edges(
         f_raw = encode_dst(act_dst_cap)
         if f_raw.dim() == 2:
             f_raw = f_raw.unsqueeze(0)
-        f_patch = f_raw[0, int(bipartite.dst_seq_pos_resolved), :].detach().float()
+        dst_i = int(bipartite.dst_seq_pos_resolved)
+        try:
+            f_patch = f_raw[0, dst_i, :].detach().float()
+        except IndexError as err:
+            raise IndexError(
+                f"encode_dst output shape {tuple(f_raw.shape)} cannot index position dst_seq_pos_resolved={dst_i} "
+                f"(seq_len={seq_len})."
+            ) from err
         delta = f_patch - base_f_dst.detach().float()
         for j in dst_feature_ids:
             jj = int(j)
-            edge_mid_to_dst[((int(L), int(H)), jj)] = float((delta[jj] * g_cpu[jj]).detach().cpu().item())
+            try:
+                edge_mid_to_dst[((int(L), int(H)), jj)] = float((delta[jj] * g_cpu[jj]).detach().cpu().item())
+            except IndexError as err:
+                raise IndexError(
+                    f"mid→dst edge failed for dst feature {jj} (delta dim={int(delta.numel())})."
+                ) from err
 
     return ThreeNodeEdgeBuild(
         edge_src_to_mid=edge_src_to_mid,
