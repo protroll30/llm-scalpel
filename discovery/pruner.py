@@ -487,12 +487,14 @@ def prune_sae_circuit_budget(
     kl_now = 0.0
     pbar: Any = None
     if progress:
+        # RunPod / non-interactive tails often behave better with stdout (and PYTHONUNBUFFERED=1).
         pbar = tqdm(
             desc="KL-budget prune",
             unit="wave",
             leave=True,
-            dynamic_ncols=True,
-            file=sys.stderr,
+            dynamic_ncols=sys.stdout.isatty(),
+            ascii=not sys.stdout.isatty(),
+            file=sys.stdout,
         )
     try:
         while True:
