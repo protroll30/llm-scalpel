@@ -8,6 +8,10 @@ This script is meant to be a *real* end-to-end harness for `discovery/`:
   - optional Integrated Gradients (`feature_integrated_gradients_pass`) + completeness diagnostics
   - optional KL-budget pruning (`prune_sae_circuit_budget`)
 
+For pretrained SAELens GPT-2 SAEs, the script loads `HookedTransformer` with **legacy weight processing**
+(fold LayerNorm into adjacent weights, center writing matrices) so residual activations stay in the
+coordinate system those SAEs were trained on—unless you opt out with `--tl-no-processing`.
+
 Example:
 
   python scripts/run_discovery_real.py --device cuda --hook-layer 0 --n-features 4096
@@ -81,6 +85,15 @@ def main() -> None:
         type=str,
         default="gpt2-small",
         help="TransformerLens `HookedTransformer` id (must match the SAE's training model when using SAELens).",
+    )
+    p.add_argument(
+        "--tl-no-processing",
+        action="store_true",
+        help=(
+            "Load HookedTransformer with raw HF-style weights (skip fold_ln and center_* transforms). "
+            "Default without this flag: legacy processing — aligns hook activations with most SAELens GPT-2 SAE "
+            "training; omit unless you know you need HF-raw residuals."
+        ),
     )
     p.add_argument("--hook-layer", type=int, default=0, help="Layer index for blocks.L.hook_resid_pre")
     p.add_argument(
@@ -161,8 +174,30 @@ def main() -> None:
     ig_alpha_schedule = cast(Literal["midpoint", "linspace", "trapezoidal"], args.ig_schedule)
 
     device = torch.device(args.device)
-    model = HookedTransformer.from_pretrained(str(args.model), device=device)
+    load_kw: dict[str, Any] = dict(device=device)
+    if bool(args.tl_no_processing):
+        load_kw.update(
+            fold_ln=False,
+            center_writing_weights=False,
+            center_unembed=False,
+            fold_value_biases=False,
+        )
+    else:
+        load_kw.update(
+            fold_ln=True,
+            center_writing_weights=True,
+            center_unembed=True,
+            fold_value_biases=True,
+        )
+    model = HookedTransformer.from_pretrained(str(args.model), **load_kw)
     model.eval()
+
+    if str(args.sae_backend) == "sae_lens" and bool(args.tl_no_processing):
+        print(
+            "warning: --tl-no-processing skips TransformerLens compatibility transforms; residual activations "
+            "may be out-of-distribution for pretrained SAELens SAEs (bad latent/residual completeness).",
+            file=sys.stderr,
+        )
 
     d_model = int(model.cfg.d_model)
 
@@ -225,7 +260,7 @@ def main() -> None:
         return -score
 
     # --- Taylor attribution + residual score ---
-    print(f"model=gpt2-small device={device} hook={hook_name} seq_pos={args.seq_pos}")
+    print(f"model={args.model} tl_legacy_processing={not bool(args.tl_no_processing)} device={device} hook={hook_name} seq_pos={args.seq_pos}")
     print(f"clean={args.clean_prompt!r}")
     print(f"corrupt={args.corrupt_prompt!r}")
     print()

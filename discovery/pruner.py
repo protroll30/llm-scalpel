@@ -425,7 +425,8 @@ def prune_sae_circuit_budget(
     **Recalculate**: one scoring pass each outer iteration on the **current** mask.
 
     **Ranking** (``ranking_mode``): default ``act_grad`` uses
-    :func:`discovery.attribution.feature_act_grad_scores`. ``integrated_gradients`` uses
+    :func:`discovery.attribution.feature_act_grad_scores` (signed ``f ⊙ ∂L/∂f``); the pruner ranks by
+    ``|score|`` before batching removes. ``integrated_gradients`` uses
     :func:`discovery.attribution.feature_integrated_gradients_pass` once per outer step (slow); ranks by
     ``|IG_i|`` so ordering matches magnitude-style salience. Requires ``prompt_clean`` or
     ``ExperimentRunner.clean_prompt``. Drift gating (below) always uses single-point
@@ -535,7 +536,7 @@ def prune_sae_circuit_budget(
                 forced_zero_indices=removed,
                 empty_cache_between_steps=ig_empty_cache_between_steps,
             )
-            last_scores = ig_pass.scores.abs()
+            last_scores = ig_pass.scores
         inferred = int(last_scores.numel())
         if nf < 0:
             nf = inferred
@@ -553,14 +554,14 @@ def prune_sae_circuit_budget(
         # IMPORTANT: keep ranking on-device to avoid GPU↔CPU sync from repeated `.item()` calls.
         # We only materialize a small Python list of size `batch_remove_n` for the recursive remover.
         k = min(batch_remove_n, alive_count)
-        scores = last_scores
-        assert scores is not None
+        assert last_scores is not None
+        rank_scores = last_scores.abs()
         if removed:
-            idx = torch.tensor(list(removed), device=scores.device, dtype=torch.long)
-            masked = scores.clone()
+            idx = torch.tensor(list(removed), device=rank_scores.device, dtype=torch.long)
+            masked = rank_scores.clone()
             masked.index_fill_(0, idx, float("inf"))
         else:
-            masked = scores
+            masked = rank_scores
         chunk_t = torch.topk(masked, k=k, largest=False).indices
         chunk = [int(i) for i in chunk_t.detach().cpu().tolist()]
 
@@ -699,8 +700,9 @@ def prune_sae_circuit(
     """Carve an SAE circuit by recursive lowest-attribution-first removal under a KL cap.
 
     1. Full graph = all latent indices ``0 .. n_features-1`` (inferred from scores if omitted).
-    2. Attribution pass: ``|f| * |df/dL|`` via :func:`~discovery.attribution.feature_act_grad_scores`.
-    3. Greedily process features from **lowest** to highest score (fixed order): tentatively zero
+    2. Attribution pass: signed ``f ⊙ ∂L/∂f`` via :func:`~discovery.attribution.feature_act_grad_scores`;
+       removal order uses ``|score|`` (lowest magnitude first).
+    3. Greedily process features from **lowest** to highest salience (fixed order): tentatively zero
        that latent together with latents already removed; if ``KL(p_ref_last || p_try_last)``
        weighted by reduction ``sum`` is **≤ τ**, commit the removal.
 
@@ -757,8 +759,8 @@ def prune_sae_circuit(
             zero_indices=set(),
         )
 
-    # Sort on-device to avoid per-element `.item()` GPU sync.
-    order_t = torch.argsort(scores.detach())
+    # Sort on-device by |score| (least salient first); scores are signed act×grad.
+    order_t = torch.argsort(scores.detach().abs())
     order = [int(i) for i in order_t.detach().cpu().tolist()]
     removed: Set[int] = set()
 

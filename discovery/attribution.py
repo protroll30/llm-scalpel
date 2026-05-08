@@ -357,9 +357,11 @@ def feature_act_grad_scores(
     device: Optional[Union[str, torch.device]] = None,
     forced_zero_indices: Optional[AbstractSet[int]] = None,
 ) -> torch.Tensor:
-    """Per-feature ``|f| · |∂L/∂f|`` at ``seq_pos`` on the corrupt run (ranking signal for pruning).
+    """Per-feature signed ``f ⊙ (∂L/∂f)`` at ``seq_pos`` on the corrupt run.
 
-    Same graph as :func:`feature_attribution_pass` but **no** clean prompt — magnitude-only salience on corrupt latents.
+    Same graph as :func:`feature_attribution_pass` but **no** clean prompt: uses corrupt latents ``f`` and
+    their gradient w.r.t. the scalar loss. Magnitude for ranking / pruning is applied in
+    :mod:`discovery.pruner` (e.g. ``scores.abs()`` before ``topk`` / ``argsort``).
     """
 
     f_co, g, _pos_eff, _ga = _feat_grad_corrupt_forward(
@@ -374,7 +376,8 @@ def feature_act_grad_scores(
         device=device,
         forced_zero_indices=forced_zero_indices,
     )
-    return (f_co.abs() * g.abs()).detach()
+    g_ = g.to(dtype=f_co.dtype, device=f_co.device)
+    return (f_co * g_).detach()
 
 
 def feature_attribution_pass(
