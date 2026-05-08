@@ -223,18 +223,27 @@ def main() -> None:
             decode_fn=decode8,
         )
 
-    # Run *with* the layer-8 hook, but cache the layer-9 activation so we can encode it without
-    # accidentally re-running the model clean.
+    # Run *once* with hooks applied, and capture the layer-9 activation in the same forward pass.
+    act9_int: torch.Tensor | None = None
+
+    def _capture9(act: torch.Tensor, hook) -> torch.Tensor:  # noqa: ANN001
+        nonlocal act9_int
+        # Keep the activation that encode9 expects (typically [batch, pos, d_model]).
+        act9_int = act.detach()
+        return act
+
     with torch.no_grad():
-        _logits, cache_int = model.run_with_cache(
+        _ = model.run_with_hooks(
             tokens,
-            names_filter=[str(args.dst_sae_id)],
+            fwd_hooks=[
+                (str(args.src_sae_id), _hook8),
+                (str(args.dst_sae_id), _capture9),
+            ],
             return_type="logits",
-            fwd_hooks=[(str(args.src_sae_id), _hook8)],
         )
-    if str(args.dst_sae_id) not in cache_int:
-        raise KeyError(f"Intervention cache missing {str(args.dst_sae_id)!r}")
-    act9_int = cache_int[str(args.dst_sae_id)]
+
+    if act9_int is None:
+        raise RuntimeError(f"Failed to capture activation at {str(args.dst_sae_id)!r}. Check hook name.")
     f9_int_raw = encode9(act9_int)
     if f9_int_raw.dim() == 2:
         f9_int_raw = f9_int_raw.unsqueeze(0)
