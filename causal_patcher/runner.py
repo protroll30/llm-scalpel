@@ -83,12 +83,14 @@ class ExperimentRunner:
         *,
         run_baselines: bool = True,
         names_filter: NamesFilter = None,
+        prepend_bos: bool | None = None,
     ) -> None:
         self.model = model
         self.clean_prompt = clean_prompt
         self.corrupt_prompt = corrupt_prompt
         self.clean_answer_token = int(clean_answer_token)
         self.corrupt_answer_token = int(corrupt_answer_token)
+        self.prepend_bos = prepend_bos
 
         self.clean_tokens: torch.Tensor | None = None
         self.corrupt_tokens: torch.Tensor | None = None
@@ -102,8 +104,11 @@ class ExperimentRunner:
 
     def run_baselines(self, names_filter: NamesFilter = None) -> None:
         """Forward clean and corrupt prompts with ``run_with_cache`` and store logits and caches."""
-        self.clean_tokens = self.model.to_tokens(self.clean_prompt)
-        self.corrupt_tokens = self.model.to_tokens(self.corrupt_prompt)
+        tk_kw = {}
+        if self.prepend_bos is not None:
+            tk_kw["prepend_bos"] = bool(self.prepend_bos)
+        self.clean_tokens = self.model.to_tokens(self.clean_prompt, **tk_kw)
+        self.corrupt_tokens = self.model.to_tokens(self.corrupt_prompt, **tk_kw)
 
         if self.clean_tokens.shape != self.corrupt_tokens.shape:
             raise ValueError(
