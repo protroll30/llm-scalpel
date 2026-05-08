@@ -18,6 +18,14 @@ Example::
     --src-features 23151 19692 20901 ^
     --dst-features 5396 17889 ^
     --out runs/circuit_l8_l9.dot
+
+Bridge different tokens (e.g. intervene at country, read bottleneck at ``is``, logit-diff at last)::
+
+  python scripts/sae_crosslayer_circuit_dot.py ... ^
+    --seq-pos -1 ^
+    --loss-seq-pos -1 ^
+    --src-seq-pos 4 ^
+    --dst-seq-pos 5
 """
 
 from __future__ import annotations
@@ -58,7 +66,36 @@ def main() -> None:
     p.add_argument("--corrupt-prompt", type=str, default="The capital of Germany is")
     p.add_argument("--clean-answer", type=str, default=" Paris", help="Single tokenizer token.")
     p.add_argument("--corrupt-answer", type=str, default=" Berlin", help="Single tokenizer token.")
-    p.add_argument("--seq-pos", type=int, default=-1, help="Token index for attribution and intervention (supports -1).")
+    p.add_argument(
+        "--seq-pos",
+        type=int,
+        default=-1,
+        help=(
+            "Default token index for loss (unless --loss-seq-pos) and for src/dst hooks "
+            "(unless --src-seq-pos / --dst-seq-pos). Supports negative indices."
+        ),
+    )
+    p.add_argument(
+        "--loss-seq-pos",
+        type=int,
+        default=None,
+        help=(
+            "Token index for logit-diff loss logits[0, pos, ...]. "
+            "Defaults to --seq-pos (typically -1 for next-token prediction)."
+        ),
+    )
+    p.add_argument(
+        "--src-seq-pos",
+        type=int,
+        default=None,
+        help="Layer-8 (source) attribution + intervention position; defaults to --seq-pos.",
+    )
+    p.add_argument(
+        "--dst-seq-pos",
+        type=int,
+        default=None,
+        help="Layer-9 (destination) attribution + Δf readout position; defaults to --seq-pos.",
+    )
 
     p.add_argument("--prepend-bos", action="store_true")
 
@@ -126,8 +163,10 @@ def main() -> None:
     clean_tok = int(model.to_single_token(args.clean_answer))
     corrupt_tok = int(model.to_single_token(args.corrupt_answer))
 
+    loss_pos_raw = args.loss_seq_pos if args.loss_seq_pos is not None else args.seq_pos
+
     def logits_to_scalar_loss(logits: torch.Tensor, /) -> torch.Tensor:
-        pos = int(args.seq_pos)
+        pos = int(loss_pos_raw)
         if pos < 0:
             pos += int(logits.shape[1])
         score = logits[0, pos, clean_tok] - logits[0, pos, corrupt_tok]
@@ -151,6 +190,8 @@ def main() -> None:
         dst_feature_ids=dst_ids,
         metric="logit_diff",
         seq_pos=int(args.seq_pos),
+        src_seq_pos=args.src_seq_pos,
+        dst_seq_pos=args.dst_seq_pos,
         prepend_bos=True if bool(args.prepend_bos) else False,
         device=device,
         intervention_mode=str(args.mode),
@@ -161,8 +202,9 @@ def main() -> None:
 
     out_path = Path(str(args.out))
     title = (
-        f"{args.model}  {args.src_sae_id} → {args.dst_sae_id}  "
-        f"logit_diff @ pos={args.seq_pos}"
+        f"{args.model}  {args.src_sae_id}@{built.src_seq_pos_resolved} → "
+        f"{args.dst_sae_id}@{built.dst_seq_pos_resolved}  "
+        f"logit_diff @ loss_pos={loss_pos_raw}"
     )
     write_bipartite_sae_dot(
         out=out_path,
@@ -179,6 +221,10 @@ def main() -> None:
     )
 
     print(f"wrote {out_path.resolve()}")
+    print(
+        f"positions (0-based): src={built.src_seq_pos_resolved} dst={built.dst_seq_pos_resolved} "
+        f"loss_raw_index={loss_pos_raw}"
+    )
     print("render: dot -Tpdf", str(out_path), "-o circuit.pdf")
     for (i, j), w in sorted(built.edge_weight.items(), key=lambda x: -abs(x[1])):
         print(f"  edge {i}→{j}: {w:+.6g}")

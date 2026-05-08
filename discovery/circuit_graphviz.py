@@ -1,7 +1,10 @@
 """Graphviz (DOT) export for bipartite SAE latent “circuits” across two layers.
 
 Edges combine (1) a **forward causal effect** of intervening on one source latent at layer A
-with (2) the **loss gradient** on destination latents at layer B at the same sequence position.
+(at ``src_seq_pos``) with (2) the **loss gradient** on destination latents at layer B at
+``dst_seq_pos``. Positions may differ (e.g. country token → later bottleneck after attention).
+The scalar loss (e.g. logit-diff) uses whatever index the caller passes into
+``logits_to_scalar_loss``—typically the prediction position, independent of ``src_seq_pos``.
 
 For source *i* and destination *j*:
 
@@ -70,6 +73,12 @@ class CrossLayerEdgeBuild:
     dst_taylor: dict[int, float]
     """Per-destination ``(Δf)·(∂ℒ/∂f)`` at the destination hook (same pass metadata)."""
 
+    src_seq_pos_resolved: int
+    """0-based index used for source attribution and intervention."""
+
+    dst_seq_pos_resolved: int
+    """0-based index used for destination attribution and Δf readout."""
+
 
 def _resolve_pos(seq_pos: int, seq_len: int) -> int:
     pos = int(seq_pos)
@@ -115,7 +124,8 @@ def _run_single_src_intervention(
     encode_src: Callable[[torch.Tensor], torch.Tensor],
     decode_src: Callable[[torch.Tensor], torch.Tensor],
     encode_dst: Callable[[torch.Tensor], torch.Tensor],
-    pos_eff: int,
+    src_pos_eff: int,
+    dst_pos_eff: int,
     src_feature_id: int,
     mode: str,
     value: float,
@@ -123,7 +133,7 @@ def _run_single_src_intervention(
     base_f_src_at_pos: torch.Tensor,
     debug_zero_act: bool,
 ) -> torch.Tensor:
-    """Apply one source intervention; return destination latent vector at ``pos_eff``."""
+    """Apply one source intervention at ``src_pos_eff``; return dst latents at ``dst_pos_eff``."""
 
     from discovery.sae_scout import reconstruct_activation
 
@@ -144,15 +154,19 @@ def _run_single_src_intervention(
             if cf_scale > 0.0:
                 if mode == "set":
                     target = base_inject.to(device=f_work.device, dtype=f_work.dtype) * cf_scale
-                    f_work[0, pos_eff, inject_idx] = target
+                    f_work[0, src_pos_eff, inject_idx] = target
                 else:
                     delta_inj = base_inject.to(device=f_work.device, dtype=f_work.dtype) * (cf_scale - 1.0)
-                    f_work[0, pos_eff, inject_idx] = f_work[0, pos_eff, inject_idx] + delta_inj
+                    f_work[0, src_pos_eff, inject_idx] = (
+                        f_work[0, src_pos_eff, inject_idx] + delta_inj
+                    )
             else:
                 if mode == "set":
-                    f_work[0, pos_eff, inject_idx] = float(value)
+                    f_work[0, src_pos_eff, inject_idx] = float(value)
                 else:
-                    f_work[0, pos_eff, inject_idx] = f_work[0, pos_eff, inject_idx] + float(value)
+                    f_work[0, src_pos_eff, inject_idx] = f_work[0, src_pos_eff, inject_idx] + float(
+                        value
+                    )
 
         return reconstruct_activation(
             f_patched=f_work,
@@ -183,7 +197,7 @@ def _run_single_src_intervention(
     f_dst_raw = encode_dst(act_dst)
     if f_dst_raw.dim() == 2:
         f_dst_raw = f_dst_raw.unsqueeze(0)
-    return f_dst_raw[0, pos_eff, :].detach().clone()
+    return f_dst_raw[0, dst_pos_eff, :].detach().clone()
 
 
 def build_cross_layer_edges(
@@ -202,6 +216,8 @@ def build_cross_layer_edges(
     dst_feature_ids: Sequence[int],
     metric: str = "logit_diff",
     seq_pos: int = -1,
+    src_seq_pos: int | None = None,
+    dst_seq_pos: int | None = None,
     prepend_bos: bool | None = False,
     device: torch.device | None = None,
     intervention_mode: str = "set",
@@ -213,6 +229,9 @@ def build_cross_layer_edges(
 
     Interventions are evaluated on **prompt_corrupt** so they align with the corrupt forward
     used to obtain ∂ℒ/∂f at the destination hook inside :func:`feature_attribution_pass`.
+
+    Use ``src_seq_pos`` / ``dst_seq_pos`` to read attributions and Δf at different token indices
+    (e.g. layer-8 country token vs layer-9 ``is`` token). When omitted, both fall back to ``seq_pos``.
     """
 
     to_tokens_kw: dict = {}
@@ -223,7 +242,10 @@ def build_cross_layer_edges(
         corrupt_tokens = corrupt_tokens.to(device)
 
     seq_len = int(corrupt_tokens.shape[-1])
-    pos_eff = _resolve_pos(seq_pos, seq_len)
+    src_seq_raw = int(src_seq_pos) if src_seq_pos is not None else int(seq_pos)
+    dst_seq_raw = int(dst_seq_pos) if dst_seq_pos is not None else int(seq_pos)
+    src_pos_eff = _resolve_pos(src_seq_raw, seq_len)
+    dst_pos_eff = _resolve_pos(dst_seq_raw, seq_len)
 
     pass_dst = feature_attribution_pass(
         model=model,
@@ -234,7 +256,7 @@ def build_cross_layer_edges(
         decode_fn=decode_dst,
         logits_to_scalar_loss=logits_to_scalar_loss,
         metric=metric,
-        seq_pos=int(seq_pos),
+        seq_pos=int(dst_seq_raw),
         prepend_bos=prepend_bos,
         device=device,
     )
@@ -250,7 +272,7 @@ def build_cross_layer_edges(
         decode_fn=decode_src,
         logits_to_scalar_loss=logits_to_scalar_loss,
         metric=metric,
-        seq_pos=int(seq_pos),
+        seq_pos=int(src_seq_raw),
         prepend_bos=prepend_bos,
         device=device,
     )
@@ -261,14 +283,14 @@ def build_cross_layer_edges(
         tokens=corrupt_tokens,
         hook_name=str(src_hook),
         encode_fn=encode_src,
-        seq_pos=pos_eff,
+        seq_pos=int(src_seq_raw),
     )
     base_f_dst = _encode_f_at_pos(
         model=model,
         tokens=corrupt_tokens,
         hook_name=str(dst_hook),
         encode_fn=encode_dst,
-        seq_pos=pos_eff,
+        seq_pos=int(dst_seq_raw),
     )
 
     edge_weight: dict[tuple[int, int], float] = {}
@@ -283,7 +305,8 @@ def build_cross_layer_edges(
             encode_src=encode_src,
             decode_src=decode_src,
             encode_dst=encode_dst,
-            pos_eff=pos_eff,
+            src_pos_eff=src_pos_eff,
+            dst_pos_eff=dst_pos_eff,
             src_feature_id=int(i),
             mode=str(intervention_mode),
             value=float(intervention_value),
@@ -302,6 +325,8 @@ def build_cross_layer_edges(
         dst_gradient_g=g_dst.detach(),
         src_taylor=src_taylor,
         dst_taylor=dst_taylor,
+        src_seq_pos_resolved=src_pos_eff,
+        dst_seq_pos_resolved=dst_pos_eff,
     )
 
 
