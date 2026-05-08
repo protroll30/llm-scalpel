@@ -105,6 +105,14 @@ def main() -> None:
             "This keeps interventions in-distribution vs a fixed constant."
         ),
     )
+    p.add_argument(
+        "--debug-zero-act",
+        action="store_true",
+        help=(
+            "Debug plumbing: if set, the layer-8 hook prints a message and returns zeros_like(act) "
+            "(completely destructive intervention). This should cause large downstream changes if the hook fires."
+        ),
+    )
 
     args = p.parse_args()
 
@@ -175,8 +183,17 @@ def main() -> None:
         raise SystemExit("--src-features must be non-empty.")
     base_forced = base_f8.index_select(0, forced).detach()
     cf_scale = float(args.counterfactual_scale)
+    printed_hook_msg = False
 
     def _hook8(act: torch.Tensor, hook) -> torch.Tensor:  # noqa: ANN001
+        nonlocal printed_hook_msg
+        if not printed_hook_msg:
+            hook_name = getattr(hook, "name", "<unknown>")
+            print(f"DEBUG: Successfully hooked into {hook_name}")
+            printed_hook_msg = True
+        if bool(args.debug_zero_act):
+            return torch.zeros_like(act)
+
         f = encode8(act)
         if f.dim() == 2:
             f = f.unsqueeze(0)
