@@ -26,7 +26,10 @@ from typing import Any, Callable, IO, Mapping, Sequence, Union
 
 import torch
 
+from causal_patcher.runner import _patch_fn, _resolve_patch_pos
+from causal_patcher.targets import PatchTarget
 from discovery.attribution import feature_attribution_pass
+from transformer_lens import utils as tl_utils
 
 PathLike = Union[str, Path]
 
@@ -78,6 +81,25 @@ class CrossLayerEdgeBuild:
 
     dst_seq_pos_resolved: int
     """0-based index used for destination attribution and Δf readout."""
+
+
+@dataclass(frozen=True)
+class ThreeNodeEdgeBuild:
+    """Latent → ``hook_z`` head slice → latent tripartite scores."""
+
+    edge_src_to_mid: dict[tuple[int, tuple[int, int]], float]
+    """(src_feature_id, (layer, head)) → Δz·∂ℒ/∂z on corrupt run."""
+
+    edge_mid_to_dst: dict[tuple[tuple[int, int], int], float]
+    """((layer, head), dst_feature_id) → Δf·∂ℒ/∂f when patching clean→corrupt on that head only."""
+
+    bipartite: CrossLayerEdgeBuild
+    """Direct latent→latent build (same Taylors / dst gradient); bipartite edges kept for comparison."""
+
+    z_seq_pos_resolved: int
+    """Token index where ``z`` slices and (by default) head patching are read."""
+
+    middle_heads: tuple[tuple[int, int], ...]
 
 
 def _resolve_pos(seq_pos: int, seq_len: int) -> int:
@@ -328,6 +350,446 @@ def build_cross_layer_edges(
         src_seq_pos_resolved=src_pos_eff,
         dst_seq_pos_resolved=dst_pos_eff,
     )
+
+
+def _grad_z_corrupt(
+    *,
+    model: Any,
+    corrupt_tokens: torch.Tensor,
+    z_hook_name: str,
+    logits_to_scalar_loss: Callable[[torch.Tensor], torch.Tensor],
+) -> torch.Tensor:
+    """∂ℒ/∂z on corrupt forward at ``z_hook_name`` (full tensor, batch=0)."""
+
+    z_leaf: torch.Tensor | None = None
+
+    def repl(act: torch.Tensor, hook) -> torch.Tensor:
+        nonlocal z_leaf
+        z_r = act.detach().clone().requires_grad_(True)
+        z_leaf = z_r
+        return z_r
+
+    model.zero_grad(set_to_none=True)
+    was_training = model.training
+    model.eval()
+    try:
+        with torch.enable_grad():
+            logits = model.run_with_hooks(
+                corrupt_tokens,
+                fwd_hooks=[(str(z_hook_name), repl)],
+                return_type="logits",
+            )
+            loss = logits_to_scalar_loss(logits)
+            loss.backward()
+    finally:
+        model.train(was_training)
+
+    if z_leaf is None or z_leaf.grad is None:
+        raise RuntimeError(f"No gradient at z hook {z_hook_name!r} (graph blocked?).")
+    return z_leaf.grad.detach()
+
+
+@torch.no_grad()
+def _corrupt_z_snapshot(
+    *,
+    model: Any,
+    corrupt_tokens: torch.Tensor,
+    z_hook_names: Sequence[str],
+) -> dict[str, torch.Tensor]:
+    _, cache = model.run_with_cache(
+        corrupt_tokens,
+        names_filter=list(z_hook_names),
+        return_type="logits",
+    )
+    out: dict[str, torch.Tensor] = {}
+    for name in z_hook_names:
+        if name not in cache:
+            raise KeyError(f"Corrupt cache missing {name!r}")
+        out[name] = cache[name].detach()
+    return out
+
+
+@torch.no_grad()
+def _run_src_intervention_capture_z_hooks(
+    *,
+    model: Any,
+    corrupt_tokens: torch.Tensor,
+    src_hook: str,
+    encode_src: Callable[[torch.Tensor], torch.Tensor],
+    decode_src: Callable[[torch.Tensor], torch.Tensor],
+    src_pos_eff: int,
+    src_feature_id: int,
+    mode: str,
+    value: float,
+    counterfactual_scale: float,
+    base_f_src_at_pos: torch.Tensor,
+    debug_zero_act: bool,
+    z_hook_names: Sequence[str],
+) -> dict[str, torch.Tensor]:
+    """Same layer-8 style intervention as :func:`_run_single_src_intervention`; snapshot listed ``hook_z`` tensors."""
+
+    from discovery.sae_scout import reconstruct_activation
+
+    inject_idx = torch.tensor([int(src_feature_id)], device=corrupt_tokens.device, dtype=torch.long)
+    base_inject = base_f_src_at_pos.index_select(0, inject_idx).detach()
+    cf_scale = float(counterfactual_scale)
+
+    def _hook_src(act: torch.Tensor, hook) -> torch.Tensor:
+        if debug_zero_act:
+            return torch.zeros_like(act)
+
+        f = encode_src(act)
+        if f.dim() == 2:
+            f = f.unsqueeze(0)
+        f_full = f
+        f_work = f_full.clone()
+        if inject_idx.numel() > 0:
+            if cf_scale > 0.0:
+                if mode == "set":
+                    target = base_inject.to(device=f_work.device, dtype=f_work.dtype) * cf_scale
+                    f_work[0, src_pos_eff, inject_idx] = target
+                else:
+                    delta_inj = base_inject.to(device=f_work.device, dtype=f_work.dtype) * (cf_scale - 1.0)
+                    f_work[0, src_pos_eff, inject_idx] = (
+                        f_work[0, src_pos_eff, inject_idx] + delta_inj
+                    )
+            else:
+                if mode == "set":
+                    f_work[0, src_pos_eff, inject_idx] = float(value)
+                else:
+                    f_work[0, src_pos_eff, inject_idx] = f_work[0, src_pos_eff, inject_idx] + float(
+                        value
+                    )
+
+        return reconstruct_activation(
+            f_patched=f_work,
+            x_corrupt=act,
+            f_corrupt=f_full,
+            decode_fn=decode_src,
+        )
+
+    snaps: dict[str, torch.Tensor] = {}
+
+    def _cap(name: str):
+        def _hook(act: torch.Tensor, hook) -> torch.Tensor:
+            snaps[name] = act.detach()
+            return act
+
+        return _hook
+
+    fwd_hooks = [(str(src_hook), _hook_src)] + [(zh, _cap(zh)) for zh in z_hook_names]
+    model.run_with_hooks(corrupt_tokens, fwd_hooks=fwd_hooks, return_type="logits")
+
+    for zh in z_hook_names:
+        if zh not in snaps:
+            raise RuntimeError(f"Failed to capture {zh!r} during src intervention.")
+    return snaps
+
+
+def build_three_node_edges(
+    *,
+    model: Any,
+    prompt_clean: str,
+    prompt_corrupt: str,
+    src_hook: str,
+    dst_hook: str,
+    encode_src: Callable[[torch.Tensor], torch.Tensor],
+    decode_src: Callable[[torch.Tensor], torch.Tensor],
+    encode_dst: Callable[[torch.Tensor], torch.Tensor],
+    decode_dst: Callable[[torch.Tensor], torch.Tensor],
+    logits_to_scalar_loss: Callable[[torch.Tensor], torch.Tensor],
+    src_feature_ids: Sequence[int],
+    dst_feature_ids: Sequence[int],
+    middle_heads: Sequence[tuple[int, int]],
+    metric: str = "logit_diff",
+    seq_pos: int = -1,
+    src_seq_pos: int | None = None,
+    dst_seq_pos: int | None = None,
+    z_seq_pos: int | None = None,
+    head_patch_positions: int | tuple[int, int] | slice | None = None,
+    prepend_bos: bool | None = False,
+    device: torch.device | None = None,
+    intervention_mode: str = "set",
+    intervention_value: float = 5.0,
+    counterfactual_scale: float = 0.0,
+    debug_zero_act: bool = False,
+) -> ThreeNodeEdgeBuild:
+    """Tripartite edges: src latent → ``hook_z`` head slice → dst latent.
+
+    ``edge_src_to_mid`` uses Δz·∂ℒ/∂z after an src SAE intervention. ``edge_mid_to_dst`` patches one head’s
+    clean ``z`` into the corrupt run (same mechanism as ``causal_patcher`` ``attn_head_z`` patching) and
+    applies Δf·∂ℒ/∂f at ``dst_hook``.
+
+    Also returns :class:`CrossLayerEdgeBuild` as ``bipartite`` for the direct latent→latent baseline.
+    """
+
+    if not middle_heads:
+        raise ValueError("middle_heads must be non-empty for three-node discovery.")
+
+    mh_tuple = tuple((int(L), int(H)) for L, H in middle_heads)
+    layers_mid = sorted({L for L, _ in mh_tuple})
+    z_hooks = [tl_utils.get_act_name("z", L) for L in layers_mid]
+
+    bipartite = build_cross_layer_edges(
+        model=model,
+        prompt_clean=prompt_clean,
+        prompt_corrupt=prompt_corrupt,
+        src_hook=str(src_hook),
+        dst_hook=str(dst_hook),
+        encode_src=encode_src,
+        decode_src=decode_src,
+        encode_dst=encode_dst,
+        decode_dst=decode_dst,
+        logits_to_scalar_loss=logits_to_scalar_loss,
+        src_feature_ids=src_feature_ids,
+        dst_feature_ids=dst_feature_ids,
+        metric=metric,
+        seq_pos=int(seq_pos),
+        src_seq_pos=src_seq_pos,
+        dst_seq_pos=dst_seq_pos,
+        prepend_bos=prepend_bos,
+        device=device,
+        intervention_mode=intervention_mode,
+        intervention_value=intervention_value,
+        counterfactual_scale=counterfactual_scale,
+        debug_zero_act=debug_zero_act,
+    )
+
+    to_tokens_kw: dict = {}
+    if prepend_bos is not None:
+        to_tokens_kw["prepend_bos"] = bool(prepend_bos)
+    corrupt_tokens = model.to_tokens(prompt_corrupt, **to_tokens_kw)
+    clean_tokens = model.to_tokens(prompt_clean, **to_tokens_kw)
+    if device is not None:
+        corrupt_tokens = corrupt_tokens.to(device)
+        clean_tokens = clean_tokens.to(device)
+
+    seq_len = int(corrupt_tokens.shape[-1])
+    src_seq_raw = int(src_seq_pos) if src_seq_pos is not None else int(seq_pos)
+    dst_seq_raw = int(dst_seq_pos) if dst_seq_pos is not None else int(seq_pos)
+    if z_seq_pos is None:
+        z_pos_eff = int(bipartite.dst_seq_pos_resolved)
+    else:
+        z_pos_eff = _resolve_pos(int(z_seq_pos), seq_len)
+
+    z_baselines = _corrupt_z_snapshot(model=model, corrupt_tokens=corrupt_tokens, z_hook_names=z_hooks)
+
+    grad_z_by_layer: dict[int, torch.Tensor] = {}
+    for L in layers_mid:
+        zh = tl_utils.get_act_name("z", L)
+        grad_z_by_layer[L] = _grad_z_corrupt(
+            model=model,
+            corrupt_tokens=corrupt_tokens,
+            z_hook_name=zh,
+            logits_to_scalar_loss=logits_to_scalar_loss,
+        )
+
+    base_f_src_at_pos = _encode_f_at_pos(
+        model=model,
+        tokens=corrupt_tokens,
+        hook_name=str(src_hook),
+        encode_fn=encode_src,
+        seq_pos=int(src_seq_raw),
+    )
+
+    base_f_dst = _encode_f_at_pos(
+        model=model,
+        tokens=corrupt_tokens,
+        hook_name=str(dst_hook),
+        encode_fn=encode_dst,
+        seq_pos=int(dst_seq_raw),
+    )
+
+    g_cpu = bipartite.dst_gradient_g.detach().float()
+
+    edge_src_to_mid: dict[tuple[int, tuple[int, int]], float] = {}
+    for i in src_feature_ids:
+        snaps = _run_src_intervention_capture_z_hooks(
+            model=model,
+            corrupt_tokens=corrupt_tokens,
+            src_hook=str(src_hook),
+            encode_src=encode_src,
+            decode_src=decode_src,
+            src_pos_eff=int(bipartite.src_seq_pos_resolved),
+            src_feature_id=int(i),
+            mode=str(intervention_mode),
+            value=float(intervention_value),
+            counterfactual_scale=float(counterfactual_scale),
+            base_f_src_at_pos=base_f_src_at_pos,
+            debug_zero_act=bool(debug_zero_act),
+            z_hook_names=z_hooks,
+        )
+        for L, H in mh_tuple:
+            zh = tl_utils.get_act_name("z", L)
+            z0 = z_baselines[zh][0, z_pos_eff, int(H), :].float()
+            z1 = snaps[zh][0, z_pos_eff, int(H), :].float()
+            dz = z1 - z0
+            gz = grad_z_by_layer[L][0, z_pos_eff, int(H), :].float()
+            edge_src_to_mid[(int(i), (L, int(H)))] = float((dz * gz).sum().detach().cpu().item())
+
+    _, clean_cache = model.run_with_cache(
+        clean_tokens,
+        names_filter=z_hooks,
+        return_type="logits",
+    )
+
+    hp_spec = head_patch_positions if head_patch_positions is not None else z_pos_eff
+
+    edge_mid_to_dst: dict[tuple[tuple[int, int], int], float] = {}
+    for L, H in mh_tuple:
+        zh = tl_utils.get_act_name("z", L)
+        if zh not in clean_cache:
+            raise KeyError(f"Clean cache missing {zh!r}")
+        clean_z = clean_cache[zh]
+        target = PatchTarget("attn_head_z", int(L), head=int(H))
+        pos_spec = _resolve_patch_pos(hp_spec, seq_len)
+        hook_patch = _patch_fn(clean_z, target, pos_spec)
+        act_dst_cap: torch.Tensor | None = None
+
+        def _cap_dst(act: torch.Tensor, hook) -> torch.Tensor:
+            nonlocal act_dst_cap
+            act_dst_cap = act.detach()
+            return act
+
+        model.run_with_hooks(
+            corrupt_tokens,
+            fwd_hooks=[
+                (zh, hook_patch),
+                (str(dst_hook), _cap_dst),
+            ],
+            return_type="logits",
+        )
+        if act_dst_cap is None:
+            raise RuntimeError(f"Failed to capture {dst_hook!r} after patching {zh!r}.")
+
+        f_raw = encode_dst(act_dst_cap)
+        if f_raw.dim() == 2:
+            f_raw = f_raw.unsqueeze(0)
+        f_patch = f_raw[0, int(bipartite.dst_seq_pos_resolved), :].detach().float()
+        delta = f_patch - base_f_dst.detach().float()
+        for j in dst_feature_ids:
+            jj = int(j)
+            edge_mid_to_dst[((int(L), int(H)), jj)] = float((delta[jj] * g_cpu[jj]).detach().cpu().item())
+
+    return ThreeNodeEdgeBuild(
+        edge_src_to_mid=edge_src_to_mid,
+        edge_mid_to_dst=edge_mid_to_dst,
+        bipartite=bipartite,
+        z_seq_pos_resolved=z_pos_eff,
+        middle_heads=mh_tuple,
+    )
+
+
+def write_tripartite_sae_head_dot(
+    *,
+    out: PathLike | IO[str],
+    src_feature_ids: Sequence[int],
+    dst_feature_ids: Sequence[int],
+    middle_heads: Sequence[tuple[int, int]],
+    edge_src_to_mid: Mapping[tuple[int, tuple[int, int]], float],
+    edge_mid_to_dst: Mapping[tuple[tuple[int, int], int], float],
+    src_taylor: Mapping[int, float] | None = None,
+    dst_taylor: Mapping[int, float] | None = None,
+    src_cluster_label: str = "Source SAE latents",
+    mid_cluster_label: str = "Attention heads (hook_z)",
+    dst_cluster_label: str = "Destination SAE latents",
+    min_abs_edge: float = 0.0,
+    penwidth_scale: float = 8.0,
+    title: str | None = None,
+) -> None:
+    """Tripartite ``digraph``: src latent → head → dst latent."""
+
+    src_ids = [int(x) for x in src_feature_ids]
+    dst_ids = [int(x) for x in dst_feature_ids]
+    mids = [(int(L), int(H)) for L, H in middle_heads]
+    src_scores = dict(src_taylor or {})
+    dst_scores = dict(dst_taylor or {})
+
+    max_node = 1e-12
+    for i in src_ids:
+        max_node = max(max_node, abs(float(src_scores.get(i, 0.0))))
+    for j in dst_ids:
+        max_node = max(max_node, abs(float(dst_scores.get(j, 0.0))))
+
+    max_edge = 1e-12
+    for w in edge_src_to_mid.values():
+        max_edge = max(max_edge, abs(float(w)))
+    for w in edge_mid_to_dst.values():
+        max_edge = max(max_edge, abs(float(w)))
+
+    lines = [
+        "digraph sae_three_node {",
+        "  rankdir=LR;",
+        "  graph [fontsize=11];",
+        '  node [shape=box, style="rounded,filled", fontname="Helvetica", fontsize=10];',
+        '  edge [arrowhead=vee];',
+    ]
+    if title:
+        lines.append(f'  label="{dot_escape_label(title)}";')
+        lines.append("  labelloc=t;")
+
+    lines.append(f'  subgraph cluster_src {{ label="{dot_escape_label(src_cluster_label)}"; style=dashed; color=gray;')
+    for i in src_ids:
+        sc = float(src_scores.get(i, 0.0))
+        lab = f"{i}\\nf·∇f={sc:.4g}" if i in src_scores else str(i)
+        fill = score_to_fillcolor(sc, max_node) if i in src_scores else "#ecf0f1"
+        lines.append(f'    src_{i} [label="{dot_escape_label(lab)}", fillcolor="{fill}"];')
+    lines.append("  }")
+
+    lines.append(f'  subgraph cluster_mid {{ label="{dot_escape_label(mid_cluster_label)}"; style=dashed; color=gray;')
+    for L, H in mids:
+        nid = f"mid_{L}_{H}"
+        lab = f"L{L}H{H}\\nΔz·∇"
+        lines.append(f'    {nid} [label="{dot_escape_label(lab)}", fillcolor="#d6eaf8"];')
+    lines.append("  }")
+
+    lines.append(f'  subgraph cluster_dst {{ label="{dot_escape_label(dst_cluster_label)}"; style=dashed; color=gray;')
+    for j in dst_ids:
+        sc = float(dst_scores.get(j, 0.0))
+        lab = f"{j}\\nf·∇f={sc:.4g}" if j in dst_scores else str(j)
+        fill = score_to_fillcolor(sc, max_node) if j in dst_scores else "#ecf0f1"
+        lines.append(f'    dst_{j} [label="{dot_escape_label(lab)}", fillcolor="{fill}"];')
+    lines.append("  }")
+
+    for (i, mid_k), w in edge_src_to_mid.items():
+        if int(i) not in src_ids or mid_k not in mids:
+            continue
+        L, H = mid_k
+        aw = abs(float(w))
+        if aw < float(min_abs_edge):
+            continue
+        col = "#27ae60" if w >= 0.0 else "#c0392b"
+        pw = 0.35 + float(penwidth_scale) * (aw / max_edge if max_edge > 0 else 0.0)
+        pw = min(float(penwidth_scale) + 2.0, max(0.35, pw))
+        lines.append(
+            f'  src_{int(i)} -> mid_{L}_{H} [label="{dot_escape_label(f"{w:.3g}")}", color="{col}", '
+            f'fontcolor="{col}", penwidth={pw:.3f}];'
+        )
+
+    for (mid_k, j), w in edge_mid_to_dst.items():
+        if mid_k not in mids or int(j) not in dst_ids:
+            continue
+        L, H = mid_k
+        aw = abs(float(w))
+        if aw < float(min_abs_edge):
+            continue
+        col = "#2980b9" if w >= 0.0 else "#8e44ad"
+        pw = 0.35 + float(penwidth_scale) * (aw / max_edge if max_edge > 0 else 0.0)
+        pw = min(float(penwidth_scale) + 2.0, max(0.35, pw))
+        lines.append(
+            f'  mid_{L}_{H} -> dst_{int(j)} [label="{dot_escape_label(f"{w:.3g}")}", color="{col}", '
+            f'fontcolor="{col}", penwidth={pw:.3f}];'
+        )
+
+    lines.append("}")
+    text = "\n".join(lines) + "\n"
+
+    if isinstance(out, (str, Path)):
+        path = Path(out)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(text, encoding="utf-8")
+        return
+    out.write(text)
 
 
 def write_bipartite_sae_dot(

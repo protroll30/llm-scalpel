@@ -26,6 +26,12 @@ Bridge different tokens (e.g. intervene at country, read bottleneck at ``is``, l
     --loss-seq-pos -1 ^
     --src-seq-pos 4 ^
     --dst-seq-pos 5
+
+Three-node graph (latent → hook_z head → latent); writes a **separate** DOT file so the direct
+bipartite `--out` graph is unchanged::
+
+  python scripts/sae_crosslayer_circuit_dot.py ... --out runs/circuit_l8_l9.dot \\
+    --three-node --middle-head 9 8 --middle-head 8 11
 """
 
 from __future__ import annotations
@@ -41,7 +47,12 @@ _REPO = Path(__file__).resolve().parents[1]
 if str(_REPO) not in sys.path:
     sys.path.insert(0, str(_REPO))
 
-from discovery.circuit_graphviz import build_cross_layer_edges, write_bipartite_sae_dot
+from discovery.circuit_graphviz import (
+    build_cross_layer_edges,
+    build_three_node_edges,
+    write_bipartite_sae_dot,
+    write_tripartite_sae_head_dot,
+)
 from discovery.sae_lens_bridge import assert_d_in_matches_model, discovery_encode_decode, load_pretrained_sae
 
 
@@ -116,7 +127,49 @@ def main() -> None:
     )
     p.add_argument("--penwidth-scale", type=float, default=8.0)
 
+    p.add_argument(
+        "--three-node",
+        action="store_true",
+        help="Also write tripartite DAG (src latent → hook_z head → dst latent). Uses --out-three-node or <out-stem>_three_node.dot.",
+    )
+    p.add_argument(
+        "--middle-head",
+        nargs=2,
+        type=int,
+        metavar=("L", "H"),
+        action="append",
+        help="With --three-node: repeatable layer and head index (e.g. --middle-head 9 8).",
+    )
+    p.add_argument(
+        "--out-three-node",
+        type=str,
+        default="",
+        help="Tripartite DOT path. Default: <out-stem>_three_node<suffix> next to --out.",
+    )
+    p.add_argument(
+        "--z-seq-pos",
+        type=int,
+        default=None,
+        help="Token index for Δz and ∂ℒ/∂z slices (defaults to resolved dst seq pos).",
+    )
+    p.add_argument("--head-patch-seq-pos", type=int, default=None, help="Aligned hook_z patch index for mid→dst edges.")
+    p.add_argument("--head-patch-cross-clean", type=int, default=None, metavar="I")
+    p.add_argument("--head-patch-cross-corrupt", type=int, default=None, metavar="J")
+
     args = p.parse_args()
+
+    if args.three_node and not args.middle_head:
+        raise SystemExit("--three-node requires at least one --middle-head L H.")
+    hpc, hpr = args.head_patch_cross_clean, args.head_patch_cross_corrupt
+    if (hpc is None) ^ (hpr is None):
+        raise SystemExit("Provide both --head-patch-cross-clean and --head-patch-cross-corrupt, or neither.")
+    head_patch_positions: int | tuple[int, int] | None
+    if hpc is not None and hpr is not None:
+        head_patch_positions = (int(hpc), int(hpr))
+    elif args.head_patch_seq_pos is not None:
+        head_patch_positions = int(args.head_patch_seq_pos)
+    else:
+        head_patch_positions = None
 
     if args.device == "cuda" and not torch.cuda.is_available():
         raise SystemExit("CUDA requested but not available.")
@@ -228,6 +281,70 @@ def main() -> None:
     print("render: dot -Tpdf", str(out_path), "-o circuit.pdf")
     for (i, j), w in sorted(built.edge_weight.items(), key=lambda x: -abs(x[1])):
         print(f"  edge {i}→{j}: {w:+.6g}")
+
+    if args.three_node:
+        assert args.middle_head is not None
+        middle = [(int(L), int(H)) for L, H in args.middle_head]
+        triple = build_three_node_edges(
+            model=model,
+            prompt_clean=str(args.clean_prompt),
+            prompt_corrupt=str(args.corrupt_prompt),
+            src_hook=str(args.src_sae_id),
+            dst_hook=str(args.dst_sae_id),
+            encode_src=encode_src,
+            decode_src=decode_src,
+            encode_dst=encode_dst,
+            decode_dst=decode_dst,
+            logits_to_scalar_loss=logits_to_scalar_loss,
+            src_feature_ids=src_ids,
+            dst_feature_ids=dst_ids,
+            middle_heads=middle,
+            metric="logit_diff",
+            seq_pos=int(args.seq_pos),
+            src_seq_pos=args.src_seq_pos,
+            dst_seq_pos=args.dst_seq_pos,
+            z_seq_pos=args.z_seq_pos,
+            head_patch_positions=head_patch_positions,
+            prepend_bos=True if bool(args.prepend_bos) else False,
+            device=device,
+            intervention_mode=str(args.mode),
+            intervention_value=float(args.value),
+            counterfactual_scale=float(args.counterfactual_scale),
+            debug_zero_act=bool(args.debug_zero_act),
+        )
+
+        out_bi = Path(str(args.out))
+        if str(args.out_three_node).strip():
+            three_path = Path(str(args.out_three_node).strip())
+        else:
+            three_path = out_bi.with_name(f"{out_bi.stem}_three_node{out_bi.suffix}")
+
+        title_trip = (
+            f"{args.model} three-node z@{triple.z_seq_pos_resolved} heads={middle} "
+            f"logit_diff @ loss_pos={loss_pos_raw}"
+        )
+        write_tripartite_sae_head_dot(
+            out=three_path,
+            src_feature_ids=src_ids,
+            dst_feature_ids=dst_ids,
+            middle_heads=middle,
+            edge_src_to_mid=triple.edge_src_to_mid,
+            edge_mid_to_dst=triple.edge_mid_to_dst,
+            src_taylor=triple.bipartite.src_taylor,
+            dst_taylor=triple.bipartite.dst_taylor,
+            src_cluster_label=f"Source ({args.src_sae_id})",
+            mid_cluster_label="Attention hook_z",
+            dst_cluster_label=f"Destination ({args.dst_sae_id})",
+            min_abs_edge=float(args.min_abs_edge),
+            penwidth_scale=float(args.penwidth_scale),
+            title=title_trip,
+        )
+        print(f"wrote tripartite {three_path.resolve()}")
+        print("render: dot -Tpdf", str(three_path), "-o tripartite.pdf")
+        for k, w in sorted(triple.edge_src_to_mid.items(), key=lambda x: -abs(x[1]))[:20]:
+            print(f"  src {k[0]}→mid L{k[1][0]}H{k[1][1]}: {w:+.6g}")
+        for k, w in sorted(triple.edge_mid_to_dst.items(), key=lambda x: -abs(x[1]))[:20]:
+            print(f"  mid L{k[0][0]}H{k[0][1]}→dst {k[1]}: {w:+.6g}")
 
 
 if __name__ == "__main__":

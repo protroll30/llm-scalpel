@@ -2,7 +2,12 @@
 
 import io
 
-from discovery.circuit_graphviz import dot_escape_label, score_to_fillcolor, write_bipartite_sae_dot
+from discovery.circuit_graphviz import (
+    dot_escape_label,
+    score_to_fillcolor,
+    write_bipartite_sae_dot,
+    write_tripartite_sae_head_dot,
+)
 
 
 def test_dot_escape_label() -> None:
@@ -30,3 +35,21 @@ def test_write_bipartite_sae_dot_smoke() -> None:
     assert "digraph sae_circuit" in text
     assert "src_1" in text and "dst_9" in text
     assert "#27ae60" in text or "#c0392b" in text
+
+
+def test_write_tripartite_sae_head_dot_smoke() -> None:
+    buf = io.StringIO()
+    write_tripartite_sae_head_dot(
+        out=buf,
+        src_feature_ids=[1],
+        dst_feature_ids=[99],
+        middle_heads=[(8, 11), (9, 8)],
+        edge_src_to_mid={(1, (8, 11)): 0.2, (1, (9, 8)): -0.1},
+        edge_mid_to_dst={((8, 11), 99): 0.4, ((9, 8), 99): -0.05},
+        src_taylor={1: 0.05},
+        dst_taylor={99: -0.07},
+        min_abs_edge=0.0,
+    )
+    text = buf.getvalue()
+    assert "digraph sae_three_node" in text
+    assert "src_1" in text and "mid_9_8" in text and "dst_99" in text
