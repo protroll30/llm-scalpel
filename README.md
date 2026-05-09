@@ -1,10 +1,18 @@
 # llm-scalpel
 
-Automated causal intervention framework for mechanistic interpretability experiments.
+A causal-intervention toolkit for mechanistic interpretability: combine activation patching (clean → corrupt swaps over hooks, heads, positions) with SAE attribution and circuit-graph extraction to find which components actually carry a behavior.
 
 ![Tripartite factual-recall circuit on gpt2-small: layer-8 SAE latents fan into the L9H8 mover head, which writes into a layer-10 bottleneck latent that drives the prediction.](./assets/tripartite_final.png)
 
-The figure above is recovered automatically by `scripts/sae_crosslayer_circuit_dot.py --three-node` for the prompt `"The capital of Germany is"`. The `discovery (experimental)` section below walks through how to reproduce it and the bipartite "direct-path" baseline that motivated it.
+## Finding: factual recall is mediated by an attention-head relay
+
+For `"The capital of Germany is"` on `gpt2-small`, direct `resid_pre → resid_pre` edges between the layer-8 country latents and the layer-10 bottleneck latent are near-zero (the two strongest direct edges are −0.045 and −0.013). Inserting **L9H8** as a middle node closes the circuit: at the prediction position ` is`, L9H8 reads ` Germany` with attention weight **0.649**, and the resulting `L9H8 → 8963` edge in the SAE-attribution graph is **−0.632** — more than an order of magnitude larger than any direct-path edge. Factual recall here is an attention-mediated relay, not a same-position residual hand-off. The [`discovery (experimental)`](#discovery-experimental) section below shows how to reproduce both views.
+
+## How the stack fits
+
+`causal_patcher/` is the patching primitive: `PatchTarget` selects a hook / head / position site, and `ExperimentRunner` (or `BatchExperimentRunner` for left-padded batches) runs a clean / corrupt pair and overwrites the corrupt activation with the clean one. `discovery/` layers SAE attribution, KL-budget pruning, and Graphviz circuit export on top of those primitives. Both packages share the same TransformerLens `HookedTransformer` and hook-name conventions.
+
+**Scope.** Validated on `gpt2-small` with the [`gpt2-small-res-jb`](https://huggingface.co/jbloom/GPT2-Small-SAEs-Reformatted) residual-stream SAEs from SAELens. `discovery/` is experimental and is not yet shipped in the built wheel.
 
 ## causal-patcher (Python package)
 
@@ -14,6 +22,47 @@ Install from the repository root:
 pip install -e "."
 # Optional: notebook + table deps for examples
 pip install -e ".[demo]"
+```
+
+### Minimal example
+
+Patch a single attention head (L9H8) from a clean run into a corrupt run and read off the recovery:
+
+```python
+from transformer_lens import HookedTransformer
+from causal_patcher import ExperimentRunner, PatchTarget
+
+model = HookedTransformer.from_pretrained("gpt2-small")
+runner = ExperimentRunner(
+    model,
+    clean_prompt="The capital of France is",
+    corrupt_prompt="The capital of Germany is",
+    clean_answer_token=model.to_single_token(" Paris"),
+    corrupt_answer_token=model.to_single_token(" Berlin"),
+)
+
+patched_logits = runner.patch_clean_into_corrupt(
+    PatchTarget(kind="attn_head_z", layer=9, head=8),
+)
+recovery = runner.logit_diff(patched_logits) - runner.logit_diff(runner.corrupt_logits)
+```
+
+For multiple prompts at once (left-padded; `P_clean` and `P_corrupt` may differ):
+
+```python
+from causal_patcher import BatchExperimentRunner
+
+batched = BatchExperimentRunner(
+    model,
+    clean_prompts=["The capital of France is", "The capital of Italy is"],
+    corrupt_prompts=["The capital of Germany is", "The capital of Spain is"],
+    clean_answers=[" Paris", " Rome"],
+    corrupt_answers=[" Berlin", " Madrid"],
+)
+batched.run_baselines()
+patched_logits = batched.patch_clean_into_corrupt(
+    PatchTarget(kind="attn_head_z", layer=9, head=8),
+)
 ```
 
 ### Interpreting patch heatmaps (logit difference)
@@ -34,9 +83,7 @@ A longer guide (layer × position vs. layer × head, baselines, caveats) is in [
 
 ## discovery (experimental)
 
-![Tripartite circuit: layer-8 latents → L9H8 → layer-10 latents](./assets/tripartite_final.png)
-
-Code under `discovery/` builds on a TransformerLens `HookedTransformer` with **hook-mounted SAE-style** `encode_fn` / `decode_fn` callables. You supply the SAE (or a toy linear stand-in); the library wires **residual-aware reconstruction** at the hook, attribution, and optional KL-budget pruning. The figure above is the end-state artifact this section walks up to: a latent → head → latent circuit recovered for factual recall on `gpt2-small`.
+Code under `discovery/` builds on a TransformerLens `HookedTransformer` with **hook-mounted SAE-style** `encode_fn` / `decode_fn` callables. You supply the SAE (or a toy linear stand-in); the library wires **residual-aware reconstruction** at the hook, attribution, and optional KL-budget pruning.
 
 | Module | Role |
 |--------|------|
