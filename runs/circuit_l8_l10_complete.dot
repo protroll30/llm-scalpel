@@ -1,0 +1,23 @@
+digraph sae_circuit {
+  rankdir=LR;
+  graph [fontsize=11];
+  node [shape=box, style="rounded,filled", fontname="Helvetica", fontsize=10];
+  edge [arrowhead=vee];
+  label="gpt2-small  blocks.8.hook_resid_pre@3 → blocks.10.hook_resid_pre@4  logit_diff @ loss_pos=4";
+  labelloc=t;
+  subgraph cluster_src { label="Source latents (blocks.8.hook_resid_pre)"; style=dashed; color=gray;
+    src_23151 [label="23151\\nf·∇f=0.3825", fillcolor="#dbf6e7"];
+    src_19692 [label="19692\\nf·∇f=-2.228", fillcolor="#e74c3c"];
+  }
+  subgraph cluster_dst { label="Bottleneck latents (blocks.10.hook_resid_pre)"; style=dashed; color=gray;
+    dst_10972 [label="10972\\nf·∇f=-0", fillcolor="#ffffff"];
+    dst_10310 [label="10310\\nf·∇f=0", fillcolor="#ffffff"];
+    dst_8963 [label="8963\\nf·∇f=-0.7361", fillcolor="#f7c4bf"];
+  }
+  src_23151 -> dst_10972 [label="-0", color="#27ae60", fontcolor="#27ae60", penwidth=0.350];
+  src_23151 -> dst_10310 [label="0", color="#27ae60", fontcolor="#27ae60", penwidth=0.350];
+  src_23151 -> dst_8963 [label="-0.432", color="#c0392b", fontcolor="#c0392b", penwidth=8.350];
+  src_19692 -> dst_10972 [label="-0", color="#27ae60", fontcolor="#27ae60", penwidth=0.350];
+  src_19692 -> dst_10310 [label="0", color="#27ae60", fontcolor="#27ae60", penwidth=0.350];
+  src_19692 -> dst_8963 [label="0.0075", color="#27ae60", fontcolor="#27ae60", penwidth=0.489];
+}

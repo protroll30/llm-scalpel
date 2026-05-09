@@ -1,0 +1,28 @@
+digraph sae_three_node {
+  rankdir=LR;
+  graph [fontsize=11];
+  node [shape=box, style="rounded,filled", fontname="Helvetica", fontsize=10];
+  edge [arrowhead=vee];
+  label="gpt2-small three-node z@4 heads=[(9, 8), (8, 11)] logit_diff @ loss_pos=4";
+  labelloc=t;
+  subgraph cluster_src { label="Source (blocks.8.hook_resid_pre)"; style=dashed; color=gray;
+    src_23151 [label="23151\\nf·∇f=0.3825", fillcolor="#dbf6e7"];
+    src_19692 [label="19692\\nf·∇f=-2.228", fillcolor="#e74c3c"];
+  }
+  subgraph cluster_mid { label="Attention hook_z"; style=dashed; color=gray;
+    mid_9_8 [label="L9H8\\nΔz·∇", fillcolor="#d6eaf8"];
+    mid_8_11 [label="L8H11\\nΔz·∇", fillcolor="#d6eaf8"];
+  }
+  subgraph cluster_dst { label="Destination (blocks.9.hook_resid_pre)"; style=dashed; color=gray;
+    dst_5396 [label="5396\\nf·∇f=0", fillcolor="#ffffff"];
+    dst_17889 [label="17889\\nf·∇f=-0", fillcolor="#ffffff"];
+  }
+  src_23151 -> mid_9_8 [label="-0.286", color="#c0392b", fontcolor="#c0392b", penwidth=8.350];
+  src_23151 -> mid_8_11 [label="-0.0725", color="#c0392b", fontcolor="#c0392b", penwidth=2.378];
+  src_19692 -> mid_9_8 [label="-0.232", color="#c0392b", fontcolor="#c0392b", penwidth=6.825];
+  src_19692 -> mid_8_11 [label="-0.0211", color="#c0392b", fontcolor="#c0392b", penwidth=0.941];
+  mid_9_8 -> dst_5396 [label="0", color="#2980b9", fontcolor="#2980b9", penwidth=0.350];
+  mid_9_8 -> dst_17889 [label="-0", color="#2980b9", fontcolor="#2980b9", penwidth=0.350];
+  mid_8_11 -> dst_5396 [label="0", color="#2980b9", fontcolor="#2980b9", penwidth=0.350];
+  mid_8_11 -> dst_17889 [label="-0", color="#2980b9", fontcolor="#2980b9", penwidth=0.350];
+}
