@@ -35,9 +35,31 @@ PathLike = Union[str, Path]
 
 
 def dot_escape_label(text: str) -> str:
-    """Escape text for use inside DOT double-quoted labels."""
+    """Escape text for use inside DOT double-quoted labels.
 
-    return text.replace("\\", "\\\\").replace('"', '\\"')
+    Real newlines in ``text`` (Python ``"\\n"``, one char) become the DOT
+    line-break escape ``\\n`` (two chars). User-supplied backslashes and
+    quotes are escaped first so they survive verbatim.
+    """
+
+    return (
+        text.replace("\\", "\\\\")
+        .replace('"', '\\"')
+        .replace("\n", "\\n")
+    )
+
+
+def _edge_label(weight: float, hide_below: float = 5e-3) -> str:
+    """Edge label: empty string for near-zero weights, otherwise ``+0.286`` style.
+
+    ``{:.3g}`` rounded sub-millisigned weights to ``"0"`` / ``"-0"`` which
+    cluttered the graph without conveying anything; suppress those labels and
+    keep the edge itself (color + penwidth still encode magnitude).
+    """
+
+    if abs(float(weight)) < float(hide_below):
+        return ""
+    return f"{float(weight):+.3g}"
 
 
 def _interp_rgb(c0: tuple[int, int, int], c1: tuple[int, int, int], t: float) -> str:
@@ -103,11 +125,18 @@ class ThreeNodeEdgeBuild:
 
 
 def _resolve_pos(seq_pos: int, seq_len: int) -> int:
+    """Map possibly-negative token index to ``0 .. seq_len-1``."""
+
     pos = int(seq_pos)
+    raw = pos
     if pos < 0:
         pos += int(seq_len)
     if pos < 0 or pos >= int(seq_len):
-        raise IndexError(f"seq_pos resolved to {pos}, invalid for seq_len={seq_len}")
+        raise IndexError(
+            f"seq_pos {raw!r} resolves to {pos}, invalid for seq_len={seq_len} "
+            f"(valid indices: 0..{seq_len - 1}, or negatives down to -{seq_len}). "
+            "Indices are 0-based; if you used a 1-based token number or forgot BOS shift, subtract one."
+        )
     return pos
 
 
@@ -782,9 +811,9 @@ def write_tripartite_sae_head_dot(
     lines = [
         "digraph sae_three_node {",
         "  rankdir=LR;",
-        "  graph [fontsize=11];",
+        "  graph [fontsize=11, nodesep=0.45, ranksep=0.85];",
         '  node [shape=box, style="rounded,filled", fontname="Helvetica", fontsize=10];',
-        '  edge [arrowhead=vee];',
+        '  edge [arrowhead=vee, fontsize=9];',
     ]
     if title:
         lines.append(f'  label="{dot_escape_label(title)}";')
@@ -793,7 +822,7 @@ def write_tripartite_sae_head_dot(
     lines.append(f'  subgraph cluster_src {{ label="{dot_escape_label(src_cluster_label)}"; style=dashed; color=gray;')
     for i in src_ids:
         sc = float(src_scores.get(i, 0.0))
-        lab = f"{i}\\nf·∇f={sc:.4g}" if i in src_scores else str(i)
+        lab = f"{i}\nscore={sc:+.3g}" if i in src_scores else str(i)
         fill = score_to_fillcolor(sc, max_node) if i in src_scores else "#ecf0f1"
         lines.append(f'    src_{i} [label="{dot_escape_label(lab)}", fillcolor="{fill}"];')
     lines.append("  }")
@@ -801,14 +830,14 @@ def write_tripartite_sae_head_dot(
     lines.append(f'  subgraph cluster_mid {{ label="{dot_escape_label(mid_cluster_label)}"; style=dashed; color=gray;')
     for L, H in mids:
         nid = f"mid_{L}_{H}"
-        lab = f"L{L}H{H}\\nΔz·∇"
+        lab = f"L{L}H{H}"
         lines.append(f'    {nid} [label="{dot_escape_label(lab)}", fillcolor="#d6eaf8"];')
     lines.append("  }")
 
     lines.append(f'  subgraph cluster_dst {{ label="{dot_escape_label(dst_cluster_label)}"; style=dashed; color=gray;')
     for j in dst_ids:
         sc = float(dst_scores.get(j, 0.0))
-        lab = f"{j}\\nf·∇f={sc:.4g}" if j in dst_scores else str(j)
+        lab = f"{j}\nscore={sc:+.3g}" if j in dst_scores else str(j)
         fill = score_to_fillcolor(sc, max_node) if j in dst_scores else "#ecf0f1"
         lines.append(f'    dst_{j} [label="{dot_escape_label(lab)}", fillcolor="{fill}"];')
     lines.append("  }")
@@ -824,7 +853,7 @@ def write_tripartite_sae_head_dot(
         pw = 0.35 + float(penwidth_scale) * (aw / max_edge if max_edge > 0 else 0.0)
         pw = min(float(penwidth_scale) + 2.0, max(0.35, pw))
         lines.append(
-            f'  src_{int(i)} -> mid_{L}_{H} [label="{dot_escape_label(f"{w:.3g}")}", color="{col}", '
+            f'  src_{int(i)} -> mid_{L}_{H} [label="{dot_escape_label(_edge_label(w))}", color="{col}", '
             f'fontcolor="{col}", penwidth={pw:.3f}];'
         )
 
@@ -839,7 +868,7 @@ def write_tripartite_sae_head_dot(
         pw = 0.35 + float(penwidth_scale) * (aw / max_edge if max_edge > 0 else 0.0)
         pw = min(float(penwidth_scale) + 2.0, max(0.35, pw))
         lines.append(
-            f'  mid_{L}_{H} -> dst_{int(j)} [label="{dot_escape_label(f"{w:.3g}")}", color="{col}", '
+            f'  mid_{L}_{H} -> dst_{int(j)} [label="{dot_escape_label(_edge_label(w))}", color="{col}", '
             f'fontcolor="{col}", penwidth={pw:.3f}];'
         )
 
@@ -889,9 +918,9 @@ def write_bipartite_sae_dot(
     lines = [
         "digraph sae_circuit {",
         "  rankdir=LR;",
-        "  graph [fontsize=11];",
+        "  graph [fontsize=11, nodesep=0.45, ranksep=0.85];",
         '  node [shape=box, style="rounded,filled", fontname="Helvetica", fontsize=10];',
-        '  edge [arrowhead=vee];',
+        '  edge [arrowhead=vee, fontsize=9];',
     ]
     if title:
         lines.append(f'  label="{dot_escape_label(title)}";')
@@ -901,7 +930,7 @@ def write_bipartite_sae_dot(
     for i in src_ids:
         nid = f"src_{i}"
         sc = float(src_scores.get(i, 0.0))
-        lab = f"{i}\\nf·∇f={sc:.4g}" if i in src_scores else str(i)
+        lab = f"{i}\nscore={sc:+.3g}" if i in src_scores else str(i)
         fill = score_to_fillcolor(sc, max_node) if i in src_scores else "#ecf0f1"
         lines.append(
             f'    {nid} [label="{dot_escape_label(lab)}", fillcolor="{fill}"];'
@@ -912,7 +941,7 @@ def write_bipartite_sae_dot(
     for j in dst_ids:
         nid = f"dst_{j}"
         sc = float(dst_scores.get(j, 0.0))
-        lab = f"{j}\\nf·∇f={sc:.4g}" if j in dst_scores else str(j)
+        lab = f"{j}\nscore={sc:+.3g}" if j in dst_scores else str(j)
         fill = score_to_fillcolor(sc, max_node) if j in dst_scores else "#ecf0f1"
         lines.append(
             f'    {nid} [label="{dot_escape_label(lab)}", fillcolor="{fill}"];'
@@ -928,9 +957,8 @@ def write_bipartite_sae_dot(
         col = "#27ae60" if w >= 0.0 else "#c0392b"
         pw = 0.35 + float(penwidth_scale) * (aw / max_edge if max_edge > 0 else 0.0)
         pw = min(float(penwidth_scale) + 2.0, max(0.35, pw))
-        lab = f"{w:.3g}"
         lines.append(
-            f'  src_{int(i)} -> dst_{int(j)} [label="{dot_escape_label(lab)}", color="{col}", fontcolor="{col}", '
+            f'  src_{int(i)} -> dst_{int(j)} [label="{dot_escape_label(_edge_label(w))}", color="{col}", fontcolor="{col}", '
             f'penwidth={pw:.3f}];'
         )
 

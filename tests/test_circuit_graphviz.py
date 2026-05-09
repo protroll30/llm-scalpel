@@ -3,6 +3,7 @@
 import io
 
 from discovery.circuit_graphviz import (
+    _edge_label,
     dot_escape_label,
     score_to_fillcolor,
     write_bipartite_sae_dot,
@@ -13,11 +14,25 @@ from discovery.circuit_graphviz import (
 def test_dot_escape_label() -> None:
     assert dot_escape_label('a"b') == 'a\\"b'
     assert dot_escape_label("x\\y") == "x\\\\y"
+    # Real Python newline becomes the DOT line-break escape (literal "\n"),
+    # not "\\n" — otherwise nodes render with a visible "\n" instead of wrapping.
+    assert dot_escape_label("a\nb") == "a\\nb"
 
 
 def test_score_to_fillcolor_bounds() -> None:
     assert score_to_fillcolor(1.0, 1.0).startswith("#")
     assert score_to_fillcolor(-1.0, 1.0).startswith("#")
+
+
+def test_edge_label_suppresses_near_zero() -> None:
+    # Sub-threshold weights drop their label; structure (color/penwidth) is
+    # still drawn by the writer, so this only declutters the readout.
+    assert _edge_label(0.0) == ""
+    assert _edge_label(1e-6) == ""
+    assert _edge_label(-1e-6) == ""
+    # Above threshold: signed, 3 sig figs.
+    assert _edge_label(0.286) == "+0.286"
+    assert _edge_label(-0.0725) == "-0.0725"
 
 
 def test_write_bipartite_sae_dot_smoke() -> None:

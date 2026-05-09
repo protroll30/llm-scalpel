@@ -2,6 +2,10 @@
 
 Automated causal intervention framework for mechanistic interpretability experiments.
 
+![Tripartite factual-recall circuit on gpt2-small: layer-8 SAE latents fan into the L9H8 mover head, which writes into a layer-10 bottleneck latent that drives the prediction.](./assets/tripartite_final.png)
+
+The figure above is recovered automatically by `scripts/sae_crosslayer_circuit_dot.py --three-node` for the prompt `"The capital of Germany is"`. The `discovery (experimental)` section below walks through how to reproduce it and the bipartite "direct-path" baseline that motivated it.
+
 ## causal-patcher (Python package)
 
 Install from the repository root:
@@ -30,7 +34,9 @@ A longer guide (layer × position vs. layer × head, baselines, caveats) is in [
 
 ## discovery (experimental)
 
-Code under `discovery/` builds on a TransformerLens `HookedTransformer` with **hook-mounted SAE-style** `encode_fn` / `decode_fn` callables. You supply the SAE (or a toy linear stand-in); the library wires **residual-aware reconstruction** at the hook, attribution, and optional KL-budget pruning.
+![Tripartite circuit: layer-8 latents → L9H8 → layer-10 latents](./assets/tripartite_final.png)
+
+Code under `discovery/` builds on a TransformerLens `HookedTransformer` with **hook-mounted SAE-style** `encode_fn` / `decode_fn` callables. You supply the SAE (or a toy linear stand-in); the library wires **residual-aware reconstruction** at the hook, attribution, and optional KL-budget pruning. The figure above is the end-state artifact this section walks up to: a latent → head → latent circuit recovered for factual recall on `gpt2-small`.
 
 | Module | Role |
 |--------|------|
@@ -40,15 +46,24 @@ Code under `discovery/` builds on a TransformerLens `HookedTransformer` with **h
 | `discovery.labels` | Neuronpedia feature labels + JSON cache |
 | `discovery.circuit_graphviz` | Bipartite SAE latent graphs (DOT) + cross-hook edge weights (`scripts/sae_crosslayer_circuit_dot.py`) |
 
-### Cross-layer SAE graphs: direct path vs “scalpel” (attention-in-the-middle)
+### Cross-layer SAE graphs: direct path vs tripartite bridge
 
-The DOT export from `discovery.circuit_graphviz` measures edges from **layer‑A SAE latents** to **layer‑B SAE latents** using a **local linear-style summary** (intervention at one hook × gradient at another). Treat that figure as the **direct residual-stack hypothesis**: latent→latent along **`hook_resid_pre`→`hook_resid_pre`** **without** an explicit attention head as an intermediate node.
+The DOT export from `discovery.circuit_graphviz` measures cross-layer influence in two complementary views. On factual recall (`"The capital of Germany is"`):
 
-When factual recall moves **information across token positions**, coupling often travels through **attention** (queries / keys / values), not only through same-position residual channels. So **near-zero edges** in that bipartite graph are not a bug to hide—they are a useful **“before” picture**: they show where the **direct path story fails**, which motivates head-level tools next.
+| Direct bipartite | Tripartite |
+| :--- | :--- |
+| ![Bipartite graph](./assets/direct_path_baseline.png) | ![Tripartite graph](./assets/tripartite_final.png) |
+| `resid_pre` → `resid_pre` between two layers at different token positions yields **near-zero edges**, so factual recall is not a same-position residual hand-off. | Inserting **L9H8** as a middle node connects the circuit: layer-8 country latents → mover head (L9H8) → layer-10 bottleneck latent. |
 
-The complementary **three-node** chain is: **latent at layer 8 → one attention head** (IDs like **L9H8** from `find_mover_heads.py`) **→ latent at layer 9.**
+#### Workflow
+1. **Baseline:** run `scripts/sae_crosslayer_circuit_dot.py` to see where the direct residual path is empty.
+2. **Identify:** rank candidate mover heads with `scripts/find_mover_heads.py` (e.g. **L9H8**).
+3. **Verify:** plot attention with `scripts/visualize_attention_heads.py` and check the head reads from the subject token (` Germany`) at the query position (` is`).
 
-Use **`scripts/find_mover_heads.py`** (marginal `hook_z` patching vs your logit objective) and **`scripts/visualize_attention_heads.py`** ( **`hook_pattern`** heatmaps) to nominate and verify heads (e.g. query at **` is`** attending back to the **country** token). Keeping both artifacts—the sparse/zero cross-layer DOT **and** the ranked heads—is the intended workflow.
+   ![L9H8 attention pattern: query at " is" puts 0.649 of its attention mass on " Germany"](./assets/attn_L9_H8.png)
+
+   For `"The capital of Germany is"` on `gpt2-small`, L9H8 at query position 4 (` is`) attends to key position 3 (` Germany`) with weight **0.649** — vs. 0.043 on its own position and ≤0.014 on the structural tokens. That's the "ground truth" the DOT edge in step 4 then rests on.
+4. **Map:** re-run the DOT script with `--three-node --middle-head L H` to emit the latent → head → latent graph.
 
 **Imports:** use an editable install from the repo root (`pip install -e "."`) and run with working directory / `PYTHONPATH` including the repo so `import discovery` resolves. The built wheel currently ships **`causal_patcher` only**; `discovery` is not yet listed as an installable package in the wheel.
 

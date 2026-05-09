@@ -256,7 +256,7 @@ def main() -> None:
     out_path = Path(str(args.out))
     title = (
         f"{args.model}  {args.src_sae_id}@{built.src_seq_pos_resolved} → "
-        f"{args.dst_sae_id}@{built.dst_seq_pos_resolved}  "
+        f"{args.dst_sae_id}@{built.dst_seq_pos_resolved}\n"
         f"logit_diff @ loss_pos={loss_pos_raw}"
     )
     write_bipartite_sae_dot(
@@ -320,7 +320,7 @@ def main() -> None:
             three_path = out_bi.with_name(f"{out_bi.stem}_three_node{out_bi.suffix}")
 
         title_trip = (
-            f"{args.model} three-node z@{triple.z_seq_pos_resolved} heads={middle} "
+            f"{args.model} three-node z@{triple.z_seq_pos_resolved} heads={middle}\n"
             f"logit_diff @ loss_pos={loss_pos_raw}"
         )
         write_tripartite_sae_head_dot(
