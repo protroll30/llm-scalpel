@@ -21,6 +21,15 @@
     "enrichment": {
       "correct_answer": "leading-space heuristic applied",
       "corrupt_answer": "filled with model=deepseek-chat (batched)"
+    },
+    "correct_answer_id_enrichment": {
+      "script": "benchmarks/enrich_correct_answer_sae_ids.py",
+      "rule": "argmax_abs_encoded_dst_sae_at_last_prompt_position",
+      "model": "gpt2-small",
+      "sae_release": "gpt2-small-res-jb",
+      "dst_sae_id": "blocks.10.hook_resid_pre",
+      "prepend_bos": false,
+      "skip_dropped": true
     }
   },
   "counts": {
@@ -38,7 +47,8 @@
       "corrupt_answer": " Berlin",
       "p_clean": 0.0016290401108562946,
       "p_corrupt": 0.00021907709015067667,
-      "prob_ratio": 7.435921801480359
+      "prob_ratio": 7.435921801480359,
+      "correct_answer_id": 15338
     },
     {
       "id": 2,
@@ -49,7 +59,8 @@
       "corrupt_answer": " Madrid",
       "p_clean": 0.01525874249637127,
       "p_corrupt": 0.0019073557341471314,
-      "prob_ratio": 7.999945800983041
+      "prob_ratio": 7.999945800983041,
+      "correct_answer_id": 15338
     },
     {
       "id": 3,
@@ -60,7 +71,8 @@
       "corrupt_answer": " Beijing",
       "p_clean": 0.006357321050018072,
       "p_corrupt": 0.00022622426331508905,
-      "prob_ratio": 28.101853253306814
+      "prob_ratio": 28.101853253306814,
+      "correct_answer_id": 17677
     },
     {
       "id": 4,
@@ -71,7 +83,8 @@
       "corrupt_answer": " Ottawa",
       "p_clean": 0.005125035997480154,
       "p_corrupt": 2.9467562853824347e-05,
-      "prob_ratio": 173.9212714299859
+      "prob_ratio": 173.9212714299859,
+      "correct_answer_id": 13415
     },
     {
       "id": 5,
@@ -82,7 +95,8 @@
       "corrupt_answer": " Canberra",
       "p_clean": 0.00025633483892306685,
       "p_corrupt": 1.1975824918408762e-06,
-      "prob_ratio": 214.04357584506695
+      "prob_ratio": 214.04357584506695,
+      "correct_answer_id": 15338
     },
     {
       "id": 7,
@@ -93,7 +107,8 @@
       "corrupt_answer": " Cairo",
       "p_clean": 0.015783576294779778,
       "p_corrupt": 4.865845767199062e-06,
-      "prob_ratio": 3243.747757312356
+      "prob_ratio": 3243.747757312356,
+      "correct_answer_id": 10968
     },
     {
       "id": 8,
@@ -104,7 +119,8 @@
       "corrupt_answer": " Santiago",
       "p_clean": 0.0020472670439630747,
       "p_corrupt": 4.187760623608483e-06,
-      "prob_ratio": 488.86916611747466
+      "prob_ratio": 488.86916611747466,
+      "correct_answer_id": 17774
     },
     {
       "id": 9,
@@ -115,7 +131,8 @@
       "corrupt_answer": " Lisbon",
       "p_clean": 0.019160831347107887,
       "p_corrupt": 0.0013198876986280084,
-      "prob_ratio": 14.517016384822066
+      "prob_ratio": 14.517016384822066,
+      "correct_answer_id": 9361
     },
     {
       "id": 10,
@@ -126,7 +143,8 @@
       "corrupt_answer": " New Delhi",
       "p_clean": 0.006470047868788242,
       "p_corrupt": 0.00012301754031796008,
-      "prob_ratio": 52.59451499408365
+      "prob_ratio": 52.59451499408365,
+      "correct_answer_id": 2518
     },
     {
       "id": 11,
@@ -137,7 +155,8 @@
       "corrupt_answer": " Mexico City",
       "p_clean": 0.0003257737262174487,
       "p_corrupt": 0.00010563799878582358,
-      "prob_ratio": 3.08386877791902
+      "prob_ratio": 3.08386877791902,
+      "correct_answer_id": 15338
     },
     {
       "id": 12,
@@ -148,7 +167,8 @@
       "corrupt_answer": "Rome",
       "p_clean": 6.82023184594982e-08,
       "p_corrupt": 3.1933256039451408e-09,
-      "prob_ratio": 21.357771464093354
+      "prob_ratio": 21.357771464093354,
+      "correct_answer_id": 20896
     },
     {
       "id": 13,
@@ -159,7 +179,8 @@
       "corrupt_answer": "Beijing",
       "p_clean": 5.848489763593534e-07,
       "p_corrupt": 6.482303405164203e-08,
-      "prob_ratio": 9.022240086655412
+      "prob_ratio": 9.022240086655412,
+      "correct_answer_id": 20896
     },
     {
       "id": 14,
@@ -170,7 +191,8 @@
       "corrupt_answer": "Brasília",
       "p_clean": 2.4285914150823373e-06,
       "p_corrupt": 2.6257561458464806e-08,
-      "prob_ratio": 92.4911256105779
+      "prob_ratio": 92.4911256105779,
+      "correct_answer_id": 20896
     },
     {
       "id": 15,
@@ -181,7 +203,8 @@
       "corrupt_answer": "Canberra",
       "p_clean": 2.1061221389118145e-07,
       "p_corrupt": 4.0934771128320335e-09,
-      "prob_ratio": 51.450688030223624
+      "prob_ratio": 51.450688030223624,
+      "correct_answer_id": 20896
     },
     {
       "id": 18,
@@ -192,7 +215,8 @@
       "corrupt_answer": "Yangtze",
       "p_clean": 1.3442291674437001e-05,
       "p_corrupt": 5.418621640274068e-06,
-      "prob_ratio": 2.480758496686088
+      "prob_ratio": 2.480758496686088,
+      "correct_answer_id": 20896
     },
     {
       "id": 19,
@@ -203,7 +227,8 @@
       "corrupt_answer": "Mississippi",
       "p_clean": 1.7711667510411644e-07,
       "p_corrupt": 1.3552013733431068e-08,
-      "prob_ratio": 13.069399027186083
+      "prob_ratio": 13.069399027186083,
+      "correct_answer_id": 20896
     },
     {
       "id": 21,
@@ -214,7 +239,8 @@
       "corrupt_answer": "Mount Everest",
       "p_clean": 5.68691120861331e-08,
       "p_corrupt": 1.183319575659425e-08,
-      "prob_ratio": 4.8058963323108905
+      "prob_ratio": 4.8058963323108905,
+      "correct_answer_id": 20896
     },
     {
       "id": 26,
@@ -225,7 +251,8 @@
       "corrupt_answer": " Berlin",
       "p_clean": 0.0016290401108562946,
       "p_corrupt": 0.00021907709015067667,
-      "prob_ratio": 7.435921801480359
+      "prob_ratio": 7.435921801480359,
+      "correct_answer_id": 15338
     },
     {
       "id": 27,
@@ -236,7 +263,8 @@
       "corrupt_answer": " Madrid",
       "p_clean": 0.01525874249637127,
       "p_corrupt": 0.0019073557341471314,
-      "prob_ratio": 7.999945800983041
+      "prob_ratio": 7.999945800983041,
+      "correct_answer_id": 15338
     },
     {
       "id": 28,
@@ -247,7 +275,8 @@
       "corrupt_answer": " Beijing",
       "p_clean": 0.006357321050018072,
       "p_corrupt": 0.00022622426331508905,
-      "prob_ratio": 28.101853253306814
+      "prob_ratio": 28.101853253306814,
+      "correct_answer_id": 17677
     },
     {
       "id": 29,
@@ -258,7 +287,8 @@
       "corrupt_answer": " Ankara",
       "p_clean": 0.004441468510776758,
       "p_corrupt": 8.276902372017503e-05,
-      "prob_ratio": 53.66099914132666
+      "prob_ratio": 53.66099914132666,
+      "correct_answer_id": 18249
     },
     {
       "id": 30,
@@ -269,7 +299,8 @@
       "corrupt_answer": " Jakarta",
       "p_clean": 0.0008950266055762768,
       "p_corrupt": 4.949772483087145e-05,
-      "prob_ratio": 18.082176678513793
+      "prob_ratio": 18.082176678513793,
+      "correct_answer_id": 15338
     },
     {
       "id": 31,
@@ -280,7 +311,8 @@
       "corrupt_answer": " London",
       "p_clean": 0.002689753659069538,
       "p_corrupt": 0.0005482002743519843,
-      "prob_ratio": 4.906516441001489
+      "prob_ratio": 4.906516441001489,
+      "correct_answer_id": 15338
     },
     {
       "id": 32,
@@ -291,7 +323,8 @@
       "corrupt_answer": " São Paulo",
       "p_clean": 0.004464442376047373,
       "p_corrupt": 5.0361151807010174e-05,
-      "prob_ratio": 88.64853594206181
+      "prob_ratio": 88.64853594206181,
+      "correct_answer_id": 15338
     },
     {
       "id": 36,
@@ -302,7 +335,8 @@
       "corrupt_answer": " India",
       "p_clean": 0.003533648792654276,
       "p_corrupt": 0.00028738260152749717,
-      "prob_ratio": 12.295973290909789
+      "prob_ratio": 12.295973290909789,
+      "correct_answer_id": 15338
     },
     {
       "id": 37,
@@ -313,7 +347,8 @@
       "corrupt_answer": " Washington, D.C.",
       "p_clean": 0.0022896595764905214,
       "p_corrupt": 0.0003251019516028464,
-      "prob_ratio": 7.0428970518381675
+      "prob_ratio": 7.0428970518381675,
+      "correct_answer_id": 15338
     },
     {
       "id": 38,
@@ -324,7 +359,8 @@
       "corrupt_answer": " Ottawa",
       "p_clean": 0.005125035997480154,
       "p_corrupt": 2.9467562853824347e-05,
-      "prob_ratio": 173.9212714299859
+      "prob_ratio": 173.9212714299859,
+      "correct_answer_id": 13415
     },
     {
       "id": 39,
@@ -335,7 +371,8 @@
       "corrupt_answer": " Canada",
       "p_clean": 0.027577077969908714,
       "p_corrupt": 0.008194486610591412,
-      "prob_ratio": 3.36532101160129
+      "prob_ratio": 3.36532101160129,
+      "correct_answer_id": 15338
     },
     {
       "id": 41,
@@ -346,7 +383,8 @@
       "corrupt_answer": "Berlin",
       "p_clean": 6.82023184594982e-08,
       "p_corrupt": 2.340472038397934e-09,
-      "prob_ratio": 29.140411566797898
+      "prob_ratio": 29.140411566797898,
+      "correct_answer_id": 20896
     },
     {
       "id": 42,
@@ -357,7 +395,8 @@
       "corrupt_answer": "Rome",
       "p_clean": 4.79927393826074e-07,
       "p_corrupt": 1.961640521130903e-07,
-      "prob_ratio": 2.446561378888073
+      "prob_ratio": 2.446561378888073,
+      "correct_answer_id": 20896
     },
     {
       "id": 46,
@@ -368,7 +407,8 @@
       "corrupt_answer": "Brussels",
       "p_clean": 1.3345042759738135e-07,
       "p_corrupt": 3.52723255048204e-08,
-      "prob_ratio": 3.78343150578897
+      "prob_ratio": 3.78343150578897,
+      "correct_answer_id": 20896
     },
     {
       "id": 47,
@@ -379,7 +419,8 @@
       "corrupt_answer": "Vienna",
       "p_clean": 4.187717550507841e-08,
       "p_corrupt": 1.635996760285252e-08,
-      "prob_ratio": 2.5597346230549207
+      "prob_ratio": 2.5597346230549207,
+      "correct_answer_id": 20896
     },
     {
       "id": 48,
@@ -390,7 +431,8 @@
       "corrupt_answer": "Bern",
       "p_clean": 5.685170094693603e-07,
       "p_corrupt": 1.25849879850648e-07,
-      "prob_ratio": 4.5174219486267795
+      "prob_ratio": 4.5174219486267795,
+      "correct_answer_id": 20896
     },
     {
       "id": 49,
@@ -401,7 +443,8 @@
       "corrupt_answer": "Stockholm",
       "p_clean": 4.457548996583682e-08,
       "p_corrupt": 3.9240752869318385e-09,
-      "prob_ratio": 11.359488976749365
+      "prob_ratio": 11.359488976749365,
+      "correct_answer_id": 20896
     },
     {
       "id": 51,
@@ -412,7 +455,8 @@
       "corrupt_answer": "Copenhagen",
       "p_clean": 1.975482177840604e-08,
       "p_corrupt": 8.967283804395265e-09,
-      "prob_ratio": 2.2029883529194563
+      "prob_ratio": 2.2029883529194563,
+      "correct_answer_id": 20896
     },
     {
       "id": 53,
@@ -423,7 +467,8 @@
       "corrupt_answer": "Warsaw",
       "p_clean": 1.3406767607193615e-07,
       "p_corrupt": 6.0719331784753194e-09,
-      "prob_ratio": 22.079899783350537
+      "prob_ratio": 22.079899783350537,
+      "correct_answer_id": 20896
     },
     {
       "id": 54,
@@ -434,7 +479,8 @@
       "corrupt_answer": "Athens",
       "p_clean": 3.2794164894767164e-07,
       "p_corrupt": 1.2773132551657795e-10,
-      "prob_ratio": 2567.4332245546834
+      "prob_ratio": 2567.4332245546834,
+      "correct_answer_id": 20896
     },
     {
       "id": 55,
@@ -445,7 +491,8 @@
       "corrupt_answer": "Paris",
       "p_clean": 2.2665904708674134e-08,
       "p_corrupt": 6.942697972078804e-09,
-      "prob_ratio": 3.264711326897523
+      "prob_ratio": 3.264711326897523,
+      "correct_answer_id": 20896
     },
     {
       "id": 56,
@@ -456,7 +503,8 @@
       "corrupt_answer": " Berlin",
       "p_clean": 0.0016290401108562946,
       "p_corrupt": 0.00021907709015067667,
-      "prob_ratio": 7.435921801480359
+      "prob_ratio": 7.435921801480359,
+      "correct_answer_id": 15338
     },
     {
       "id": 57,
@@ -467,7 +515,8 @@
       "corrupt_answer": " Rome",
       "p_clean": 0.005546701140701771,
       "p_corrupt": 0.00037445846828632057,
-      "prob_ratio": 14.812593679843342
+      "prob_ratio": 14.812593679843342,
+      "correct_answer_id": 8963
     },
     {
       "id": 58,
@@ -478,7 +527,8 @@
       "corrupt_answer": " Madrid",
       "p_clean": 0.01525874249637127,
       "p_corrupt": 0.0019073557341471314,
-      "prob_ratio": 7.999945800983041
+      "prob_ratio": 7.999945800983041,
+      "correct_answer_id": 15338
     },
     {
       "id": 59,
@@ -489,7 +539,8 @@
       "corrupt_answer": " Vienna",
       "p_clean": 0.01319435890763998,
       "p_corrupt": 7.940908835735172e-05,
-      "prob_ratio": 166.1567860880554
+      "prob_ratio": 166.1567860880554,
+      "correct_answer_id": 2518
     },
     {
       "id": 60,
@@ -500,7 +551,8 @@
       "corrupt_answer": " Stockholm",
       "p_clean": 0.0004639812104869634,
       "p_corrupt": 2.1779511371278204e-05,
-      "prob_ratio": 21.303563820942284
+      "prob_ratio": 21.303563820942284,
+      "correct_answer_id": 8963
     },
     {
       "id": 62,
@@ -511,7 +563,8 @@
       "corrupt_answer": " Warsaw",
       "p_clean": 0.00019637931836768985,
       "p_corrupt": 2.3883339963504113e-06,
-      "prob_ratio": 82.22439519253801
+      "prob_ratio": 82.22439519253801,
+      "correct_answer_id": 15338
     },
     {
       "id": 63,
@@ -522,7 +575,8 @@
       "corrupt_answer": " Athens",
       "p_clean": 0.015783576294779778,
       "p_corrupt": 2.0833316739299335e-05,
-      "prob_ratio": 757.6122655979266
+      "prob_ratio": 757.6122655979266,
+      "correct_answer_id": 10968
     },
     {
       "id": 64,
@@ -533,7 +587,8 @@
       "corrupt_answer": " Ankara",
       "p_clean": 0.019160831347107887,
       "p_corrupt": 0.00037584415986202657,
-      "prob_ratio": 50.98078776624301
+      "prob_ratio": 50.98078776624301,
+      "correct_answer_id": 9361
     },
     {
       "id": 65,
@@ -544,7 +599,8 @@
       "corrupt_answer": " Moscow",
       "p_clean": 0.0020472670439630747,
       "p_corrupt": 6.105884676799178e-05,
-      "prob_ratio": 33.529408960869716
+      "prob_ratio": 33.529408960869716,
+      "correct_answer_id": 17774
     },
     {
       "id": 66,
@@ -555,7 +611,8 @@
       "corrupt_answer": " Tokyo",
       "p_clean": 0.005125035997480154,
       "p_corrupt": 3.833751907222904e-05,
-      "prob_ratio": 133.68199407542338
+      "prob_ratio": 133.68199407542338,
+      "correct_answer_id": 13415
     },
     {
       "id": 67,
@@ -566,7 +623,8 @@
       "corrupt_answer": " Beijing",
       "p_clean": 0.006357321050018072,
       "p_corrupt": 0.00022622426331508905,
-      "prob_ratio": 28.101853253306814
+      "prob_ratio": 28.101853253306814,
+      "correct_answer_id": 17677
     },
     {
       "id": 68,
@@ -577,7 +635,8 @@
       "corrupt_answer": " New Delhi",
       "p_clean": 0.0037810811772942543,
       "p_corrupt": 0.00014354789163917303,
-      "prob_ratio": 26.340206979831592
+      "prob_ratio": 26.340206979831592,
+      "correct_answer_id": 8940
     },
     {
       "id": 69,
@@ -588,7 +647,8 @@
       "corrupt_answer": " Ottawa",
       "p_clean": 0.0014293146086856723,
       "p_corrupt": 2.3839038476580754e-05,
-      "prob_ratio": 59.956890043607146
+      "prob_ratio": 59.956890043607146,
+      "correct_answer_id": 15338
     },
     {
       "id": 70,
@@ -599,7 +659,8 @@
       "corrupt_answer": " Paris",
       "p_clean": 0.0005756155005656183,
       "p_corrupt": 1.3690786545339506e-05,
-      "prob_ratio": 42.04400518986721
+      "prob_ratio": 42.04400518986721,
+      "correct_answer_id": 15338
     },
     {
       "id": 71,
@@ -610,7 +671,8 @@
       "corrupt_answer": " Berlin",
       "p_clean": 0.00010192648187512532,
       "p_corrupt": 2.983447075166623e-06,
-      "prob_ratio": 34.16399865897832
+      "prob_ratio": 34.16399865897832,
+      "correct_answer_id": 1084
     },
     {
       "id": 72,
@@ -621,7 +683,8 @@
       "corrupt_answer": " Madrid",
       "p_clean": 1.0099545761477202e-05,
       "p_corrupt": 1.58024170104909e-06,
-      "prob_ratio": 6.391139883710398
+      "prob_ratio": 6.391139883710398,
+      "correct_answer_id": 17960
     },
     {
       "id": 73,
@@ -632,7 +695,8 @@
       "corrupt_answer": " German",
       "p_clean": 0.0009269129950553179,
       "p_corrupt": 2.879713247239124e-05,
-      "prob_ratio": 32.18768382386614
+      "prob_ratio": 32.18768382386614,
+      "correct_answer_id": 10972
     },
     {
       "id": 74,
@@ -643,7 +707,8 @@
       "corrupt_answer": " Spanish",
       "p_clean": 0.0005549167981371284,
       "p_corrupt": 1.782502658898011e-05,
-      "prob_ratio": 31.131330736987078
+      "prob_ratio": 31.131330736987078,
+      "correct_answer_id": 19544
     },
     {
       "id": 77,
@@ -654,7 +719,8 @@
       "corrupt_answer": " genetics",
       "p_clean": 9.177520041703247e-07,
       "p_corrupt": 1.353120171465605e-09,
-      "prob_ratio": 678.2487051214971
+      "prob_ratio": 678.2487051214971,
+      "correct_answer_id": 14277
     },
     {
       "id": 78,
@@ -665,7 +731,8 @@
       "corrupt_answer": " Odyssey",
       "p_clean": 9.057501301867887e-05,
       "p_corrupt": 4.039637587993639e-06,
-      "prob_ratio": 22.421569025865175
+      "prob_ratio": 22.421569025865175,
+      "correct_answer_id": 17862
     },
     {
       "id": 79,
@@ -676,7 +743,8 @@
       "corrupt_answer": "1643",
       "p_clean": 1.486321110633071e-07,
       "p_corrupt": 3.961757855108772e-08,
-      "prob_ratio": 3.75167076078723
+      "prob_ratio": 3.75167076078723,
+      "correct_answer_id": 20896
     },
     {
       "id": 85,
@@ -687,7 +755,8 @@
       "corrupt_answer": " 1643",
       "p_clean": 0.019416112452745438,
       "p_corrupt": 0.003816518932580948,
-      "prob_ratio": 5.087387956337257
+      "prob_ratio": 5.087387956337257,
+      "correct_answer_id": 7628
     },
     {
       "id": 86,
@@ -698,7 +767,8 @@
       "corrupt_answer": " 1856",
       "p_clean": 0.03415001183748245,
       "p_corrupt": 0.008853132836520672,
-      "prob_ratio": 3.8573929102936164
+      "prob_ratio": 3.8573929102936164,
+      "correct_answer_id": 7628
     },
     {
       "id": 87,
@@ -709,7 +779,8 @@
       "corrupt_answer": " 428 BCE",
       "p_clean": 0.011922122910618782,
       "p_corrupt": 0.0012059982400387526,
-      "prob_ratio": 9.885688481797192
+      "prob_ratio": 9.885688481797192,
+      "correct_answer_id": 7628
     },
     {
       "id": 88,
@@ -720,7 +791,8 @@
       "corrupt_answer": " 100 BCE",
       "p_clean": 0.004494891967624426,
       "p_corrupt": 0.0009783711284399033,
-      "prob_ratio": 4.594260640940945
+      "prob_ratio": 4.594260640940945,
+      "correct_answer_id": 7628
     },
     {
       "id": 89,
@@ -731,7 +803,8 @@
       "corrupt_answer": " 1769",
       "p_clean": 0.008863750845193863,
       "p_corrupt": 0.002376285847276449,
-      "prob_ratio": 3.7300861154195495
+      "prob_ratio": 3.7300861154195495,
+      "correct_answer_id": 19023
     },
     {
       "id": 90,
@@ -742,7 +815,8 @@
       "corrupt_answer": " 1818",
       "p_clean": 0.03139776736497879,
       "p_corrupt": 0.0013631838373839855,
-      "prob_ratio": 23.032672853011956
+      "prob_ratio": 23.032672853011956,
+      "correct_answer_id": 7628
     },
     {
       "id": 91,
@@ -753,7 +827,8 @@
       "corrupt_answer": " Kentucky",
       "p_clean": 0.013282204046845436,
       "p_corrupt": 9.373785724164918e-05,
-      "prob_ratio": 141.6951959186021
+      "prob_ratio": 141.6951959186021,
+      "correct_answer_id": 7628
     },
     {
       "id": 92,
@@ -764,7 +839,8 @@
       "corrupt_answer": " Germany",
       "p_clean": 0.0008042720728553832,
       "p_corrupt": 0.0003561391495168209,
-      "prob_ratio": 2.258308512126652
+      "prob_ratio": 2.258308512126652,
+      "correct_answer_id": 7628
     },
     {
       "id": 93,
@@ -775,7 +851,8 @@
       "corrupt_answer": " England",
       "p_clean": 0.030015600845217705,
       "p_corrupt": 0.003090787911787629,
-      "prob_ratio": 9.711310417238394
+      "prob_ratio": 9.711310417238394,
+      "correct_answer_id": 7628
     },
     {
       "id": 94,
@@ -786,7 +863,8 @@
       "corrupt_answer": " Porbandar",
       "p_clean": 0.013277212157845497,
       "p_corrupt": 0.0004391398106236011,
-      "prob_ratio": 30.234590070508922
+      "prob_ratio": 30.234590070508922,
+      "correct_answer_id": 7628
     },
     {
       "id": 100,
@@ -797,7 +875,8 @@
       "corrupt_answer": " Rome",
       "p_clean": 0.0016290401108562946,
       "p_corrupt": 0.00018409910262562335,
-      "prob_ratio": 8.84871293571184
+      "prob_ratio": 8.84871293571184,
+      "correct_answer_id": 15338
     },
     {
       "id": 101,
@@ -808,7 +887,8 @@
       "corrupt_answer": " Beijing",
       "p_clean": 0.006357321050018072,
       "p_corrupt": 0.00022622426331508905,
-      "prob_ratio": 28.101853253306814
+      "prob_ratio": 28.101853253306814,
+      "correct_answer_id": 17677
     },
     {
       "id": 102,
@@ -819,7 +899,8 @@
       "corrupt_answer": " Ottawa",
       "p_clean": 0.005546701140701771,
       "p_corrupt": 5.659539237967692e-05,
-      "prob_ratio": 98.00623173510427
+      "prob_ratio": 98.00623173510427,
+      "correct_answer_id": 8963
     },
     {
       "id": 103,
@@ -830,7 +911,8 @@
       "corrupt_answer": " Lisbon",
       "p_clean": 0.01319435890763998,
       "p_corrupt": 0.0023546109441667795,
-      "prob_ratio": 5.603625915494518
+      "prob_ratio": 5.603625915494518,
+      "correct_answer_id": 2518
     },
     {
       "id": 104,
@@ -841,7 +923,8 @@
       "corrupt_answer": " Cairo",
       "p_clean": 0.005125035997480154,
       "p_corrupt": 3.73435286746826e-05,
-      "prob_ratio": 137.24027105544315
+      "prob_ratio": 137.24027105544315,
+      "correct_answer_id": 13415
     },
     {
       "id": 106,
@@ -852,7 +935,8 @@
       "corrupt_answer": " Larry Page",
       "p_clean": 0.0001047033874783665,
       "p_corrupt": 3.655766704468988e-05,
-      "prob_ratio": 2.864060973868271
+      "prob_ratio": 2.864060973868271,
+      "correct_answer_id": 15338
     },
     {
       "id": 107,
@@ -863,7 +947,8 @@
       "corrupt_answer": " Satya Nadella",
       "p_clean": 4.643730790121481e-05,
       "p_corrupt": 2.1303934772731736e-05,
-      "prob_ratio": 2.1797526323941283
+      "prob_ratio": 2.1797526323941283,
+      "correct_answer_id": 20371
     },
     {
       "id": 110,
@@ -874,7 +959,8 @@
       "corrupt_answer": " Bob Kane",
       "p_clean": 7.597258809255436e-05,
       "p_corrupt": 3.502369872876443e-05,
-      "prob_ratio": 2.169176610412059
+      "prob_ratio": 2.169176610412059,
+      "correct_answer_id": 17523
     },
     {
       "id": 111,
@@ -885,7 +971,8 @@
       "corrupt_answer": " false",
       "p_clean": 6.453444802900776e-05,
       "p_corrupt": 2.005982787522953e-05,
-      "prob_ratio": 3.2170987921933674
+      "prob_ratio": 3.2170987921933674,
+      "correct_answer_id": 14277
     },
     {
       "id": 112,
@@ -896,7 +983,8 @@
       "corrupt_answer": " false",
       "p_clean": 0.00015196821186691523,
       "p_corrupt": 5.777588739874773e-05,
-      "prob_ratio": 2.630305110124697
+      "prob_ratio": 2.630305110124697,
+      "correct_answer_id": 2245
     },
     {
       "id": 114,
@@ -907,7 +995,8 @@
       "corrupt_answer": " false",
       "p_clean": 1.7016225683619268e-05,
       "p_corrupt": 1.1258533731961506e-06,
-      "prob_ratio": 15.114069104143132
+      "prob_ratio": 15.114069104143132,
+      "correct_answer_id": 2245
     },
     {
       "id": 115,
@@ -918,7 +1007,8 @@
       "corrupt_answer": " false",
       "p_clean": 8.978669939097017e-06,
       "p_corrupt": 2.0025690901093185e-06,
-      "prob_ratio": 4.483575614665499
+      "prob_ratio": 4.483575614665499,
+      "correct_answer_id": 14277
     },
     {
       "id": 116,
@@ -929,7 +1019,8 @@
       "corrupt_answer": " false",
       "p_clean": 1.2393879842420574e-05,
       "p_corrupt": 7.007915314716229e-07,
-      "prob_ratio": 17.685544539035913
+      "prob_ratio": 17.685544539035913,
+      "correct_answer_id": 2245
     },
     {
       "id": 117,
@@ -940,7 +1031,8 @@
       "corrupt_answer": " false",
       "p_clean": 8.316938874486368e-06,
       "p_corrupt": 3.3348510442010593e-07,
-      "prob_ratio": 24.939461355998535
+      "prob_ratio": 24.939461355998535,
+      "correct_answer_id": 2245
     },
     {
       "id": 118,
@@ -951,7 +1043,8 @@
       "corrupt_answer": " false",
       "p_clean": 6.315457994787721e-06,
       "p_corrupt": 1.3254322084321757e-07,
-      "prob_ratio": 47.64829128649391
+      "prob_ratio": 47.64829128649391,
+      "correct_answer_id": 2245
     },
     {
       "id": 119,
@@ -962,7 +1055,8 @@
       "corrupt_answer": " false",
       "p_clean": 2.8148131605121307e-05,
       "p_corrupt": 9.659152055974118e-07,
-      "prob_ratio": 29.14141059381282
+      "prob_ratio": 29.14141059381282,
+      "correct_answer_id": 2245
     },
     {
       "id": 120,
@@ -973,7 +1067,8 @@
       "corrupt_answer": " false",
       "p_clean": 6.910927186254412e-05,
       "p_corrupt": 2.769114189504762e-06,
-      "prob_ratio": 24.957176603433552
+      "prob_ratio": 24.957176603433552,
+      "correct_answer_id": 14277
     },
     {
       "id": 121,
@@ -984,7 +1079,8 @@
       "corrupt_answer": " Pisa",
       "p_clean": 9.780887012311723e-06,
       "p_corrupt": 1.2725735132335103e-07,
-      "prob_ratio": 76.85911195384894
+      "prob_ratio": 76.85911195384894,
+      "correct_answer_id": 14277
     },
     {
       "id": 122,
@@ -995,7 +1091,8 @@
       "corrupt_answer": " Ulm",
       "p_clean": 2.1816369553562254e-05,
       "p_corrupt": 8.687350600666832e-06,
-      "prob_ratio": 2.511279969739871
+      "prob_ratio": 2.511279969739871,
+      "correct_answer_id": 10310
     },
     {
       "id": 123,
@@ -1006,7 +1103,8 @@
       "corrupt_answer": " Woolsthorpe",
       "p_clean": 4.7089783038245514e-05,
       "p_corrupt": 9.829624104895629e-06,
-      "prob_ratio": 4.790598555522842
+      "prob_ratio": 4.790598555522842,
+      "correct_answer_id": 6151
     },
     {
       "id": 124,
@@ -1017,7 +1115,8 @@
       "corrupt_answer": " Shrewsbury",
       "p_clean": 6.245299300644547e-05,
       "p_corrupt": 7.87971839599777e-06,
-      "prob_ratio": 7.925789967083888
+      "prob_ratio": 7.925789967083888,
+      "correct_answer_id": 6151
     },
     {
       "id": 125,
@@ -1028,7 +1127,8 @@
       "corrupt_answer": " Stratford-upon-Avon",
       "p_clean": 9.255950863007456e-05,
       "p_corrupt": 1.5366284060291946e-05,
-      "prob_ratio": 6.023545332554265
+      "prob_ratio": 6.023545332554265,
+      "correct_answer_id": 6151
     },
     {
       "id": 126,
@@ -1039,7 +1139,8 @@
       "corrupt_answer": " Salzburg",
       "p_clean": 8.858273758960422e-06,
       "p_corrupt": 8.569995202378777e-07,
-      "prob_ratio": 10.336381234497805
+      "prob_ratio": 10.336381234497805,
+      "correct_answer_id": 21735
     },
     {
       "id": 129,
@@ -1050,7 +1151,8 @@
       "corrupt_answer": " Virginia",
       "p_clean": 1.849980435508769e-05,
       "p_corrupt": 4.675392574426951e-06,
-      "prob_ratio": 3.956845133449603
+      "prob_ratio": 3.956845133449603,
+      "correct_answer_id": 19332
     },
     {
       "id": 130,
@@ -1061,7 +1163,8 @@
       "corrupt_answer": " Ajaccio",
       "p_clean": 4.187051672488451e-05,
       "p_corrupt": 7.647112397535238e-06,
-      "prob_ratio": 5.475336904735428
+      "prob_ratio": 5.475336904735428,
+      "correct_answer_id": 10972
     },
     {
       "id": 131,
@@ -1072,7 +1175,8 @@
       "corrupt_answer": " Warsaw",
       "p_clean": 6.170105280034477e-06,
       "p_corrupt": 1.037327137964894e-06,
-      "prob_ratio": 5.948080460074968
+      "prob_ratio": 5.948080460074968,
+      "correct_answer_id": 10674
     },
     {
       "id": 132,
@@ -1083,7 +1187,8 @@
       "corrupt_answer": " Smiljan",
       "p_clean": 7.237921181513229e-06,
       "p_corrupt": 5.407164849202672e-07,
-      "prob_ratio": 13.385797147613347
+      "prob_ratio": 13.385797147613347,
+      "correct_answer_id": 21735
     },
     {
       "id": 133,
@@ -1094,7 +1199,8 @@
       "corrupt_answer": " Freiberg",
       "p_clean": 1.3104714525979944e-05,
       "p_corrupt": 4.474713023228105e-06,
-      "prob_ratio": 2.928615635897487
+      "prob_ratio": 2.928615635897487,
+      "correct_answer_id": 21735
     },
     {
       "id": 134,
@@ -1105,7 +1211,8 @@
       "corrupt_answer": " Stagira",
       "p_clean": 1.1569206435524393e-05,
       "p_corrupt": 4.6052327888901345e-06,
-      "prob_ratio": 2.5121871066831742
+      "prob_ratio": 2.5121871066831742,
+      "correct_answer_id": 20434
     },
     {
       "id": 135,
@@ -1116,7 +1223,8 @@
       "corrupt_answer": " Athens",
       "p_clean": 1.1458275366749149e-05,
       "p_corrupt": 1.6284353705486865e-06,
-      "prob_ratio": 7.036370969324
+      "prob_ratio": 7.036370969324,
+      "correct_answer_id": 20434
     },
     {
       "id": 138,
@@ -1127,7 +1235,8 @@
       "corrupt_answer": " New York City",
       "p_clean": 0.05626697093248367,
       "p_corrupt": 0.027162829414010048,
-      "prob_ratio": 2.071469436223838
+      "prob_ratio": 2.071469436223838,
+      "correct_answer_id": 19023
     },
     {
       "id": 140,
@@ -1138,7 +1247,8 @@
       "corrupt_answer": " Venus",
       "p_clean": 0.004922341555356979,
       "p_corrupt": 0.0005315426969900727,
-      "prob_ratio": 9.260481957950615
+      "prob_ratio": 9.260481957950615,
+      "correct_answer_id": 15338
     },
     {
       "id": 142,
@@ -1149,7 +1259,8 @@
       "corrupt_answer": " less than 7",
       "p_clean": 0.013190739788115025,
       "p_corrupt": 0.0024332087486982346,
-      "prob_ratio": 5.421129525024132
+      "prob_ratio": 5.421129525024132,
+      "correct_answer_id": 14699
     },
     {
       "id": 144,
@@ -1160,7 +1271,8 @@
       "corrupt_answer": " gold",
       "p_clean": 0.0005039449315518141,
       "p_corrupt": 0.00022825262567494065,
-      "prob_ratio": 2.2078384862459046
+      "prob_ratio": 2.2078384862459046,
+      "correct_answer_id": 14902
     },
     {
       "id": 151,
@@ -1171,7 +1283,8 @@
       "corrupt_answer": " blue",
       "p_clean": 0.026206891983747482,
       "p_corrupt": 0.01293719932436943,
-      "prob_ratio": 2.0257005652206588
+      "prob_ratio": 2.0257005652206588,
+      "correct_answer_id": 1486
     },
     {
       "id": 154,
@@ -1182,7 +1295,8 @@
       "corrupt_answer": " O",
       "p_clean": 0.03746503219008446,
       "p_corrupt": 0.0018918821588158607,
-      "prob_ratio": 19.80304746545843
+      "prob_ratio": 19.80304746545843,
+      "correct_answer_id": 19322
     },
     {
       "id": 155,
@@ -1193,7 +1307,8 @@
       "corrupt_answer": " C",
       "p_clean": 0.008222712203860283,
       "p_corrupt": 0.0036499234847724438,
-      "prob_ratio": 2.252845090634258
+      "prob_ratio": 2.252845090634258,
+      "correct_answer_id": 19322
     },
     {
       "id": 156,
@@ -1204,7 +1319,8 @@
       "corrupt_answer": " blue",
       "p_clean": 1.0875564839807339e-05,
       "p_corrupt": 5.240277459961362e-06,
-      "prob_ratio": 2.0753795811200284
+      "prob_ratio": 2.0753795811200284,
+      "correct_answer_id": 14186
     },
     {
       "id": 158,
@@ -1215,7 +1331,8 @@
       "corrupt_answer": " Mars",
       "p_clean": 0.0415811613202095,
       "p_corrupt": 0.0068181902170181274,
-      "prob_ratio": 6.098562814575543
+      "prob_ratio": 6.098562814575543,
+      "correct_answer_id": 6104
     },
     {
       "id": 159,
@@ -1226,7 +1343,8 @@
       "corrupt_answer": " zero",
       "p_clean": 3.8105295629975444e-07,
       "p_corrupt": 9.56329841983461e-08,
-      "prob_ratio": 3.984534828584221
+      "prob_ratio": 3.984534828584221,
+      "correct_answer_id": 14277
     },
     {
       "id": 162,
@@ -1237,7 +1355,8 @@
       "corrupt_answer": " watt",
       "p_clean": 0.0038074026815593243,
       "p_corrupt": 5.2524093916872516e-05,
-      "prob_ratio": 72.48868847856998
+      "prob_ratio": 72.48868847856998,
+      "correct_answer_id": 965
     },
     {
       "id": 165,
@@ -1248,7 +1367,8 @@
       "corrupt_answer": " Fe",
       "p_clean": 0.08596692979335785,
       "p_corrupt": 0.0032018315978348255,
-      "prob_ratio": 26.84929771181322
+      "prob_ratio": 26.84929771181322,
+      "correct_answer_id": 14902
     },
     {
       "id": 171,
@@ -1259,7 +1379,8 @@
       "corrupt_answer": " C12H22O11",
       "p_clean": 0.000984635204076767,
       "p_corrupt": 0.00021203052892815322,
-      "prob_ratio": 4.643836946755963
+      "prob_ratio": 4.643836946755963,
+      "correct_answer_id": 15338
     },
     {
       "id": 172,
@@ -1270,7 +1391,8 @@
       "corrupt_answer": " below 7",
       "p_clean": 0.013190739788115025,
       "p_corrupt": 0.0024332087486982346,
-      "prob_ratio": 5.421129525024132
+      "prob_ratio": 5.421129525024132,
+      "correct_answer_id": 14699
     },
     {
       "id": 178,
@@ -1281,7 +1403,8 @@
       "corrupt_answer": " -38.83°C",
       "p_clean": 5.8026635088026524e-05,
       "p_corrupt": 1.0796520655276254e-05,
-      "prob_ratio": 5.374568061393829
+      "prob_ratio": 5.374568061393829,
+      "correct_answer_id": 24322
     },
     {
       "id": 181,
@@ -1292,7 +1415,8 @@
       "corrupt_answer": " N",
       "p_clean": 0.017902828752994537,
       "p_corrupt": 0.0053659481927752495,
-      "prob_ratio": 3.3363774881574577
+      "prob_ratio": 3.3363774881574577,
+      "correct_answer_id": 15338
     },
     {
       "id": 188,
@@ -1303,7 +1427,8 @@
       "corrupt_answer": " O",
       "p_clean": 7.901000935817137e-05,
       "p_corrupt": 1.3260000741865952e-06,
-      "prob_ratio": 59.585222426656564
+      "prob_ratio": 59.585222426656564,
+      "correct_answer_id": 12086
     },
     {
       "id": 189,
@@ -1314,7 +1439,8 @@
       "corrupt_answer": " runs",
       "p_clean": 0.0062822503969073296,
       "p_corrupt": 0.0003578440810088068,
-      "prob_ratio": 17.55583152080338
+      "prob_ratio": 17.55583152080338,
+      "correct_answer_id": 3087
     },
     {
       "id": 190,
@@ -1325,7 +1451,8 @@
       "corrupt_answer": " goes",
       "p_clean": 0.012807776220142841,
       "p_corrupt": 0.004683135077357292,
-      "prob_ratio": 2.734872261547132
+      "prob_ratio": 2.734872261547132,
+      "correct_answer_id": 17288
     },
     {
       "id": 191,
@@ -1336,7 +1463,8 @@
       "corrupt_answer": " does",
       "p_clean": 0.0008552898652851582,
       "p_corrupt": 0.0003703422553371638,
-      "prob_ratio": 2.3094579485845936
+      "prob_ratio": 2.3094579485845936,
+      "correct_answer_id": 12630
     },
     {
       "id": 192,
@@ -1347,7 +1475,8 @@
       "corrupt_answer": " have",
       "p_clean": 0.0001569930900586769,
       "p_corrupt": 6.891082011861727e-05,
-      "prob_ratio": 2.2782066704247934
+      "prob_ratio": 2.2782066704247934,
+      "correct_answer_id": 7082
     },
     {
       "id": 196,
@@ -1358,7 +1487,8 @@
       "corrupt_answer": " play",
       "p_clean": 0.05247486010193825,
       "p_corrupt": 0.021984947845339775,
-      "prob_ratio": 2.386853972594778
+      "prob_ratio": 2.386853972594778,
+      "correct_answer_id": 13035
     },
     {
       "id": 201,
@@ -1369,7 +1499,8 @@
       "corrupt_answer": " are",
       "p_clean": 0.002833000384271145,
       "p_corrupt": 0.0006640461506322026,
-      "prob_ratio": 4.266270321082349
+      "prob_ratio": 4.266270321082349,
+      "correct_answer_id": 16834
     },
     {
       "id": 203,
@@ -1380,7 +1511,8 @@
       "corrupt_answer": " run",
       "p_clean": 0.00019074817828368396,
       "p_corrupt": 3.2313405426975805e-06,
-      "prob_ratio": 59.03066413558628
+      "prob_ratio": 59.03066413558628,
+      "correct_answer_id": 16899
     },
     {
       "id": 204,
@@ -1391,7 +1523,8 @@
       "corrupt_answer": " bark",
       "p_clean": 0.0008927387534640729,
       "p_corrupt": 9.575061994837597e-05,
-      "prob_ratio": 9.323581966836286
+      "prob_ratio": 9.323581966836286,
+      "correct_answer_id": 13554
     },
     {
       "id": 205,
@@ -1402,7 +1535,8 @@
       "corrupt_answer": " are red",
       "p_clean": 0.1517712026834488,
       "p_corrupt": 0.002844585105776787,
-      "prob_ratio": 53.35442500040925
+      "prob_ratio": 53.35442500040925,
+      "correct_answer_id": 4269
     },
     {
       "id": 206,
@@ -1413,7 +1547,8 @@
       "corrupt_answer": " are fast",
       "p_clean": 0.12912142276763916,
       "p_corrupt": 0.0007256543030962348,
-      "prob_ratio": 177.93792749068194
+      "prob_ratio": 177.93792749068194,
+      "correct_answer_id": 10360
     },
     {
       "id": 207,
@@ -1424,7 +1559,8 @@
       "corrupt_answer": " are",
       "p_clean": 0.00025001706671901047,
       "p_corrupt": 6.759929647159879e-07,
-      "prob_ratio": 369.8515809614273
+      "prob_ratio": 369.8515809614273,
+      "correct_answer_id": 1794
     },
     {
       "id": 208,
@@ -1435,7 +1571,8 @@
       "corrupt_answer": " do",
       "p_clean": 0.0008027103031054139,
       "p_corrupt": 1.0378751085227123e-06,
-      "prob_ratio": 773.4170484616145
+      "prob_ratio": 773.4170484616145,
+      "correct_answer_id": 1794
     },
     {
       "id": 209,
@@ -1446,7 +1583,8 @@
       "corrupt_answer": " have",
       "p_clean": 0.0010709130438044667,
       "p_corrupt": 1.3998474059917498e-06,
-      "prob_ratio": 765.0212724763076
+      "prob_ratio": 765.0212724763076,
+      "correct_answer_id": 1794
     },
     {
       "id": 210,
@@ -1457,7 +1595,8 @@
       "corrupt_answer": " play",
       "p_clean": 0.00024418230168521404,
       "p_corrupt": 1.3829483577865176e-05,
-      "prob_ratio": 17.65664641852866
+      "prob_ratio": 17.65664641852866,
+      "correct_answer_id": 6779
     },
     {
       "id": 211,
@@ -1468,7 +1607,8 @@
       "corrupt_answer": " fly",
       "p_clean": 0.006336400285363197,
       "p_corrupt": 6.21813305770047e-05,
-      "prob_ratio": 101.9019732541147
+      "prob_ratio": 101.9019732541147,
+      "correct_answer_id": 678
     },
     {
       "id": 212,
@@ -1479,7 +1619,8 @@
       "corrupt_answer": " have roofs",
       "p_clean": 0.35622477531433105,
       "p_corrupt": 0.0026426666881889105,
-      "prob_ratio": 134.79746685665506
+      "prob_ratio": 134.79746685665506,
+      "correct_answer_id": 2869
     },
     {
       "id": 213,
@@ -1490,7 +1631,8 @@
       "corrupt_answer": " are laid",
       "p_clean": 0.08890527486801147,
       "p_corrupt": 0.0008152343798428774,
-      "prob_ratio": 109.05486454723176
+      "prob_ratio": 109.05486454723176,
+      "correct_answer_id": 1078
     },
     {
       "id": 214,
@@ -1501,7 +1643,8 @@
       "corrupt_answer": " are here",
       "p_clean": 0.15960830450057983,
       "p_corrupt": 0.0008953840588219464,
-      "prob_ratio": 178.25680826904144
+      "prob_ratio": 178.25680826904144,
+      "correct_answer_id": 14520
     },
     {
       "id": 215,
@@ -1512,7 +1655,8 @@
       "corrupt_answer": " are there",
       "p_clean": 0.11657758057117462,
       "p_corrupt": 0.0005614895489998162,
-      "prob_ratio": 207.62199542063567
+      "prob_ratio": 207.62199542063567,
+      "correct_answer_id": 12338
     },
     {
       "id": 216,
@@ -1523,7 +1667,8 @@
       "corrupt_answer": " are read",
       "p_clean": 0.20356115698814392,
       "p_corrupt": 0.0008968469919636846,
-      "prob_ratio": 226.97423173872517
+      "prob_ratio": 226.97423173872517,
+      "correct_answer_id": 1297
     },
     {
       "id": 217,
@@ -1534,7 +1679,8 @@
       "corrupt_answer": " are fast",
       "p_clean": 0.08397239446640015,
       "p_corrupt": 0.0007170147728174925,
-      "prob_ratio": 117.11389730009692
+      "prob_ratio": 117.11389730009692,
+      "correct_answer_id": 10360
     },
     {
       "id": 218,
@@ -1545,7 +1691,8 @@
       "corrupt_answer": "walk",
       "p_clean": 8.423922537303952e-08,
       "p_corrupt": 1.4735541675747754e-09,
-      "prob_ratio": 57.16737614856958
+      "prob_ratio": 57.16737614856958,
+      "correct_answer_id": 20896
     },
     {
       "id": 219,
@@ -1556,7 +1703,8 @@
       "corrupt_answer": "try",
       "p_clean": 1.4019989613700545e-08,
       "p_corrupt": 1.9631423153754213e-09,
-      "prob_ratio": 7.141606344020675
+      "prob_ratio": 7.141606344020675,
+      "correct_answer_id": 20896
     },
     {
       "id": 222,
@@ -1567,7 +1715,8 @@
       "corrupt_answer": "run",
       "p_clean": 1.1262879525020253e-05,
       "p_corrupt": 2.2161402739584446e-06,
-      "prob_ratio": 5.082205155228114
+      "prob_ratio": 5.082205155228114,
+      "correct_answer_id": 20896
     },
     {
       "id": 223,
@@ -1578,7 +1727,8 @@
       "corrupt_answer": "is black",
       "p_clean": 0.00012637185864150524,
       "p_corrupt": 5.54354592168238e-05,
-      "prob_ratio": 2.279621390836307
+      "prob_ratio": 2.279621390836307,
+      "correct_answer_id": 20896
     },
     {
       "id": 226,
@@ -1589,7 +1739,8 @@
       "corrupt_answer": " Rome",
       "p_clean": 0.0016290401108562946,
       "p_corrupt": 0.00018409910262562335,
-      "prob_ratio": 8.84871293571184
+      "prob_ratio": 8.84871293571184,
+      "correct_answer_id": 15338
     },
     {
       "id": 227,
@@ -1600,7 +1751,8 @@
       "corrupt_answer": " New Delhi",
       "p_clean": 0.006357321050018072,
       "p_corrupt": 0.000134404850541614,
-      "prob_ratio": 47.299788842440165
+      "prob_ratio": 47.299788842440165,
+      "correct_answer_id": 17677
     },
     {
       "id": 228,
@@ -1611,7 +1763,8 @@
       "corrupt_answer": " John Adams",
       "p_clean": 0.0009967375081032515,
       "p_corrupt": 0.0003479080623947084,
-      "prob_ratio": 2.8649451272918003
+      "prob_ratio": 2.8649451272918003,
+      "correct_answer_id": 17523
     },
     {
       "id": 230,
@@ -1622,7 +1775,8 @@
       "corrupt_answer": " Charles Darwin",
       "p_clean": 0.009230137802660465,
       "p_corrupt": 0.0031213306356221437,
-      "prob_ratio": 2.957116332797827
+      "prob_ratio": 2.957116332797827,
+      "correct_answer_id": 17523
     },
     {
       "id": 233,
@@ -1633,7 +1787,8 @@
       "corrupt_answer": " Yuri Gagarin",
       "p_clean": 3.2544270652579144e-05,
       "p_corrupt": 3.2024022402765695e-06,
-      "prob_ratio": 10.162455622616763
+      "prob_ratio": 10.162455622616763,
+      "correct_answer_id": 15338
     },
     {
       "id": 234,
@@ -1644,7 +1799,8 @@
       "corrupt_answer": " Aristotle",
       "p_clean": 0.00016934021550696343,
       "p_corrupt": 7.34697823645547e-05,
-      "prob_ratio": 2.304896109079277
+      "prob_ratio": 2.304896109079277,
+      "correct_answer_id": 15338
     },
     {
       "id": 236,
@@ -1655,7 +1811,8 @@
       "corrupt_answer": " Canberra",
       "p_clean": 0.005546701140701771,
       "p_corrupt": 6.314238999038935e-05,
-      "prob_ratio": 87.84433312622491
+      "prob_ratio": 87.84433312622491,
+      "correct_answer_id": 8963
     },
     {
       "id": 240,
@@ -1666,7 +1823,8 @@
       "corrupt_answer": " Frank-Walter Steinmeier",
       "p_clean": 7.021097189863212e-06,
       "p_corrupt": 2.1065998225822113e-06,
-      "prob_ratio": 3.3329050513528227
+      "prob_ratio": 3.3329050513528227,
+      "correct_answer_id": 20253
     },
     {
       "id": 241,
@@ -1677,7 +1835,8 @@
       "corrupt_answer": " Xi Jinping",
       "p_clean": 0.0014569038758054376,
       "p_corrupt": 2.8092608772567473e-05,
-      "prob_ratio": 51.86075410796697
+      "prob_ratio": 51.86075410796697,
+      "correct_answer_id": 13415
     },
     {
       "id": 242,
@@ -1688,7 +1847,8 @@
       "corrupt_answer": " Satya Nadella",
       "p_clean": 4.643730790121481e-05,
       "p_corrupt": 2.1303934772731736e-05,
-      "prob_ratio": 2.1797526323941283
+      "prob_ratio": 2.1797526323941283,
+      "correct_answer_id": 20371
     },
     {
       "id": 243,
@@ -1699,7 +1859,8 @@
       "corrupt_answer": " Andy Jassy",
       "p_clean": 0.0004069327551405877,
       "p_corrupt": 4.542525493889116e-05,
-      "prob_ratio": 8.958293259730047
+      "prob_ratio": 8.958293259730047,
+      "correct_answer_id": 17523
     },
     {
       "id": 247,
@@ -1710,7 +1871,8 @@
       "corrupt_answer": " Felipe VI",
       "p_clean": 0.0036345035769045353,
       "p_corrupt": 0.001719817752018571,
-      "prob_ratio": 2.1133073970417358
+      "prob_ratio": 2.1133073970417358,
+      "correct_answer_id": 15338
     },
     {
       "id": 249,
@@ -1721,7 +1883,8 @@
       "corrupt_answer": " Mark Zuckerberg",
       "p_clean": 6.468440005846787e-07,
       "p_corrupt": 3.1904775710245303e-07,
-      "prob_ratio": 2.0274206170863733
+      "prob_ratio": 2.0274206170863733,
+      "correct_answer_id": 20371
     }
   ],
   "dropped_pairs": [
