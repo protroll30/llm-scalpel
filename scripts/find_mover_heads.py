@@ -15,6 +15,10 @@ Match ``discovery`` scripts that omit BOS (explicit):
 
   python scripts/find_mover_heads.py --device cuda --no-prepend-bos ...
 
+Use a benchmark JSON (``pairs`` with ``clean`` / ``corrupt`` / ``correct_answer`` / ``corrupt_answer``)::
+
+  python scripts/find_mover_heads.py --device cuda --layers 8 9 --benchmark-json benchmarks/processed/factual_recall_filtered_enriched.json --benchmark-index 0
+
 """
 
 from __future__ import annotations
@@ -33,6 +37,7 @@ if str(_REPO) not in sys.path:
 from causal_patcher.head_patch_rank import hook_z_names_filter, marginal_head_patch_effects, metric_tensor, rank_heads
 from causal_patcher.runner import ExperimentRunner
 from causal_patcher.targets import PatchPos
+from discovery.benchmark_json import add_discovery_benchmark_cli_args, apply_benchmark_dual_prompts
 
 
 def main() -> None:
@@ -95,7 +100,10 @@ def main() -> None:
 
     p.add_argument("--top-k", type=int, default=20, help="How many heads to print after full ranking.")
 
+    add_discovery_benchmark_cli_args(p)
+
     args = p.parse_args()
+    apply_benchmark_dual_prompts(args)
 
     if args.prepend_bos and args.no_prepend_bos:
         raise SystemExit("Use at most one of --prepend-bos / --no-prepend-bos.")

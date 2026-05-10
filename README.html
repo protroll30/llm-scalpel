@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>README.md</title>
+<meta http-equiv="Content-type" content="text/html;charset=UTF-8">
+
+<style>
+/* https://github.com/microsoft/vscode/blob/master/extensions/markdown-language-features/media/markdown.css */
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+body {
+	font-family: var(--vscode-markdown-font-family, -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif);
+	font-size: var(--vscode-markdown-font-size, 14px);
+	padding: 0 26px;
+	line-height: var(--vscode-markdown-line-height, 22px);
+	word-wrap: break-word;
+}
+
+#code-csp-warning {
+	position: fixed;
+	top: 0;
+	right: 0;
+	color: white;
+	margin: 16px;
+	text-align: center;
+	font-size: 12px;
+	font-family: sans-serif;
+	background-color:#444444;
+	cursor: pointer;
+	padding: 6px;
+	box-shadow: 1px 1px 1px rgba(0,0,0,.25);
+}
+
+#code-csp-warning:hover {
+	text-decoration: none;
+	background-color:#007acc;
+	box-shadow: 2px 2px 2px rgba(0,0,0,.25);
+}
+
+body.scrollBeyondLastLine {
+	margin-bottom: calc(100vh - 22px);
+}
+
+body.showEditorSelection .code-line {
+	position: relative;
+}
+
+body.showEditorSelection .code-active-line:before,
+body.showEditorSelection .code-line:hover:before {
+	content: "";
+	display: block;
+	position: absolute;
+	top: 0;
+	left: -12px;
+	height: 100%;
+}
+
+body.showEditorSelection li.code-active-line:before,
+body.showEditorSelection li.code-line:hover:before {
+	left: -30px;
+}
+
+.vscode-light.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.15);
+}
+
+.vscode-light.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.40);
+}
+
+.vscode-light.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-dark.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.4);
+}
+
+.vscode-dark.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.60);
+}
+
+.vscode-dark.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-high-contrast.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 160, 0, 0.7);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 160, 0, 1);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+img {
+	max-width: 100%;
+	max-height: 100%;
+}
+
+a {
+	text-decoration: none;
+}
+
+a:hover {
+	text-decoration: underline;
+}
+
+a:focus,
+input:focus,
+select:focus,
+textarea:focus {
+	outline: 1px solid -webkit-focus-ring-color;
+	outline-offset: -1px;
+}
+
+hr {
+	border: 0;
+	height: 2px;
+	border-bottom: 2px solid;
+}
+
+h1 {
+	padding-bottom: 0.3em;
+	line-height: 1.2;
+	border-bottom-width: 1px;
+	border-bottom-style: solid;
+}
+
+h1, h2, h3 {
+	font-weight: normal;
+}
+
+table {
+	border-collapse: collapse;
+}
+
+table > thead > tr > th {
+	text-align: left;
+	border-bottom: 1px solid;
+}
+
+table > thead > tr > th,
+table > thead > tr > td,
+table > tbody > tr > th,
+table > tbody > tr > td {
+	padding: 5px 10px;
+}
+
+table > tbody > tr + tr > td {
+	border-top: 1px solid;
+}
+
+blockquote {
+	margin: 0 7px 0 5px;
+	padding: 0 16px 0 10px;
+	border-left-width: 5px;
+	border-left-style: solid;
+}
+
+code {
+	font-family: Menlo, Monaco, Consolas, "Droid Sans Mono", "Courier New", monospace, "Droid Sans Fallback";
+	font-size: 1em;
+	line-height: 1.357em;
+}
+
+body.wordWrap pre {
+	white-space: pre-wrap;
+}
+
+pre:not(.hljs),
+pre.hljs code > div {
+	padding: 16px;
+	border-radius: 3px;
+	overflow: auto;
+}
+
+pre code {
+	color: var(--vscode-editor-foreground);
+	tab-size: 4;
+}
+
+/** Theming */
+
+.vscode-light pre {
+	background-color: rgba(220, 220, 220, 0.4);
+}
+
+.vscode-dark pre {
+	background-color: rgba(10, 10, 10, 0.4);
+}
+
+.vscode-high-contrast pre {
+	background-color: rgb(0, 0, 0);
+}
+
+.vscode-high-contrast h1 {
+	border-color: rgb(0, 0, 0);
+}
+
+.vscode-light table > thead > tr > th {
+	border-color: rgba(0, 0, 0, 0.69);
+}
+
+.vscode-dark table > thead > tr > th {
+	border-color: rgba(255, 255, 255, 0.69);
+}
+
+.vscode-light h1,
+.vscode-light hr,
+.vscode-light table > tbody > tr + tr > td {
+	border-color: rgba(0, 0, 0, 0.18);
+}
+
+.vscode-dark h1,
+.vscode-dark hr,
+.vscode-dark table > tbody > tr + tr > td {
+	border-color: rgba(255, 255, 255, 0.18);
+}
+
+</style>
+
+<style>
+/* Tomorrow Theme */
+/* http://jmblog.github.com/color-themes-for-google-code-highlightjs */
+/* Original theme - https://github.com/chriskempson/tomorrow-theme */
+
+/* Tomorrow Comment */
+.hljs-comment,
+.hljs-quote {
+	color: #8e908c;
+}
+
+/* Tomorrow Red */
+.hljs-variable,
+.hljs-template-variable,
+.hljs-tag,
+.hljs-name,
+.hljs-selector-id,
+.hljs-selector-class,
+.hljs-regexp,
+.hljs-deletion {
+	color: #c82829;
+}
+
+/* Tomorrow Orange */
+.hljs-number,
+.hljs-built_in,
+.hljs-builtin-name,
+.hljs-literal,
+.hljs-type,
+.hljs-params,
+.hljs-meta,
+.hljs-link {
+	color: #f5871f;
+}
+
+/* Tomorrow Yellow */
+.hljs-attribute {
+	color: #eab700;
+}
+
+/* Tomorrow Green */
+.hljs-string,
+.hljs-symbol,
+.hljs-bullet,
+.hljs-addition {
+	color: #718c00;
+}
+
+/* Tomorrow Blue */
+.hljs-title,
+.hljs-section {
+	color: #4271ae;
+}
+
+/* Tomorrow Purple */
+.hljs-keyword,
+.hljs-selector-tag {
+	color: #8959a8;
+}
+
+.hljs {
+	display: block;
+	overflow-x: auto;
+	color: #4d4d4c;
+	padding: 0.5em;
+}
+
+.hljs-emphasis {
+	font-style: italic;
+}
+
+.hljs-strong {
+	font-weight: bold;
+}
+</style>
+
+<style>
+/*
+ * Markdown PDF CSS
+ */
+
+ body {
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif, "Meiryo";
+	padding: 0 12px;
+}
+
+pre {
+	background-color: #f8f8f8;
+	border: 1px solid #cccccc;
+	border-radius: 3px;
+	overflow-x: auto;
+	white-space: pre-wrap;
+	overflow-wrap: break-word;
+}
+
+pre:not(.hljs) {
+	padding: 23px;
+	line-height: 19px;
+}
+
+blockquote {
+	background: rgba(127, 127, 127, 0.1);
+	border-color: rgba(0, 122, 204, 0.5);
+}
+
+.emoji {
+	height: 1.4em;
+}
+
+code {
+	font-size: 14px;
+	line-height: 19px;
+}
+
+/* for inline code */
+:not(pre):not(.hljs) > code {
+	color: #C9AE75; /* Change the old color so it seems less like an error */
+	font-size: inherit;
+}
+
+/* Page Break : use <div class="page"/> or <div class="page"></div> to insert page break
+-------------------------------------------------------- */
+.page {
+	page-break-after: always;
+}
+
+</style>
+
+<script src="https://unpkg.com/mermaid/dist/mermaid.min.js"></script>
+</head>
+<body>
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: document.body.classList.contains('vscode-dark') || document.body.classList.contains('vscode-high-contrast')
+          ? 'dark'
+          : 'default'
+    });
+  </script>
+<h1 id="llm-scalpel">llm-scalpel</h1>
+<p>A causal-intervention toolkit for mechanistic interpretability: combine activation patching (clean → corrupt swaps over hooks, heads, positions) with SAE attribution and circuit-graph extraction to find which components actually carry a behavior.</p>
+<p><img src="./assets/tripartite_final.png" alt="Tripartite factual-recall circuit on gpt2-small: layer-8 SAE latents fan into the L9H8 mover head, which writes into a layer-10 bottleneck latent that drives the prediction."></p>
+<h2 id="finding-factual-recall-is-mediated-by-an-attention-head-relay">Finding: factual recall is mediated by an attention-head relay</h2>
+<p>For <code>&quot;The capital of Germany is&quot;</code> on <code>gpt2-small</code>, direct <code>resid_pre → resid_pre</code> edges between the layer-8 country latents and the layer-10 bottleneck latent are near-zero (the two strongest direct edges are −0.045 and −0.013). Inserting <strong>L9H8</strong> as a middle node closes the circuit: at the prediction position <code> is</code>, L9H8 reads <code> Germany</code> with attention weight <strong>0.649</strong>, and the resulting <code>L9H8 → 8963</code> edge in the SAE-attribution graph is <strong>−0.632</strong> — more than an order of magnitude larger than any direct-path edge. Factual recall here is an attention-mediated relay, not a same-position residual hand-off. The <a href="#discovery-experimental"><code>discovery (experimental)</code></a> section below shows how to reproduce both views.</p>
+<h2 id="how-the-stack-fits">How the stack fits</h2>
+<p><code>causal_patcher/</code> is the patching primitive: <code>PatchTarget</code> selects a hook / head / position site, and <code>ExperimentRunner</code> (or <code>BatchExperimentRunner</code> for left-padded batches) runs a clean / corrupt pair and overwrites the corrupt activation with the clean one. <code>discovery/</code> layers SAE attribution, KL-budget pruning, and Graphviz circuit export on top of those primitives. Both packages share the same TransformerLens <code>HookedTransformer</code> and hook-name conventions.</p>
+<p><strong>Scope.</strong> Validated on <code>gpt2-small</code> with the <a href="https://huggingface.co/jbloom/GPT2-Small-SAEs-Reformatted"><code>gpt2-small-res-jb</code></a> residual-stream SAEs from SAELens. <code>discovery/</code> is experimental and is not yet shipped in the built wheel.</p>
+<h2 id="causal-patcher-python-package">causal-patcher (Python package)</h2>
+<p>Install from the repository root:</p>
+<pre class="hljs"><code><div>pip install -e <span class="hljs-string">&quot;.&quot;</span>
+<span class="hljs-comment"># Optional: notebook + table deps for examples</span>
+pip install -e <span class="hljs-string">&quot;.[demo]&quot;</span>
+</div></code></pre>
+<h3 id="minimal-example">Minimal example</h3>
+<p>Patch a single attention head (L9H8) from a clean run into a corrupt run and read off the recovery:</p>
+<pre class="hljs"><code><div><span class="hljs-keyword">from</span> transformer_lens <span class="hljs-keyword">import</span> HookedTransformer
+<span class="hljs-keyword">from</span> causal_patcher <span class="hljs-keyword">import</span> ExperimentRunner, PatchTarget
+
+model = HookedTransformer.from_pretrained(<span class="hljs-string">&quot;gpt2-small&quot;</span>)
+runner = ExperimentRunner(
+    model,
+    clean_prompt=<span class="hljs-string">&quot;The capital of France is&quot;</span>,
+    corrupt_prompt=<span class="hljs-string">&quot;The capital of Germany is&quot;</span>,
+    clean_answer_token=model.to_single_token(<span class="hljs-string">&quot; Paris&quot;</span>),
+    corrupt_answer_token=model.to_single_token(<span class="hljs-string">&quot; Berlin&quot;</span>),
+)
+
+patched_logits = runner.patch_clean_into_corrupt(
+    PatchTarget(kind=<span class="hljs-string">&quot;attn_head_z&quot;</span>, layer=<span class="hljs-number">9</span>, head=<span class="hljs-number">8</span>),
+)
+recovery = runner.logit_diff(patched_logits) - runner.logit_diff(runner.corrupt_logits)
+</div></code></pre>
+<p>For multiple prompts at once (left-padded; <code>P_clean</code> and <code>P_corrupt</code> may differ):</p>
+<pre class="hljs"><code><div><span class="hljs-keyword">from</span> causal_patcher <span class="hljs-keyword">import</span> BatchExperimentRunner
+
+batched = BatchExperimentRunner(
+    model,
+    clean_prompts=[<span class="hljs-string">&quot;The capital of France is&quot;</span>, <span class="hljs-string">&quot;The capital of Italy is&quot;</span>],
+    corrupt_prompts=[<span class="hljs-string">&quot;The capital of Germany is&quot;</span>, <span class="hljs-string">&quot;The capital of Spain is&quot;</span>],
+    clean_answers=[<span class="hljs-string">&quot; Paris&quot;</span>, <span class="hljs-string">&quot; Rome&quot;</span>],
+    corrupt_answers=[<span class="hljs-string">&quot; Berlin&quot;</span>, <span class="hljs-string">&quot; Madrid&quot;</span>],
+)
+batched.run_baselines()
+patched_logits = batched.patch_clean_into_corrupt(
+    PatchTarget(kind=<span class="hljs-string">&quot;attn_head_z&quot;</span>, layer=<span class="hljs-number">9</span>, head=<span class="hljs-number">8</span>),
+)
+</div></code></pre>
+<h3 id="interpreting-patch-heatmaps-logit-difference">Interpreting patch heatmaps (logit difference)</h3>
+<p><code>causal_patcher.viz</code> plots <strong>logit(clean answer) − logit(corrupt answer)</strong> on the patched <strong>corrupt</strong> run. With the default <code>RdBu_r</code> scale (centered at zero):</p>
+<table>
+<thead>
+<tr>
+<th>Color</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Red / warm</strong></td>
+<td><strong>Recovery</strong> — the patch <em>increased</em> that score; the run looks <em>more</em> like the clean-answer side of the comparison.</td>
+</tr>
+<tr>
+<td><strong>Blue / cool</strong></td>
+<td><strong>Suppression</strong> — the patch <em>decreased</em> the score; the readout moved toward the corrupt answer or away from the clean one.</td>
+</tr>
+<tr>
+<td><strong>Near white</strong></td>
+<td>little effect.</td>
+</tr>
+</tbody>
+</table>
+<p>A longer guide (layer × position vs. layer × head, baselines, caveats) is in <a href="docs/heatmap.md"><code>docs/heatmap.md</code></a>.</p>
+<h3 id="token-labels-on-the-x-axis">Token labels on the x-axis</h3>
+<p><code>plot_layer_position_patching</code> labels each column with decoded subwords from the <strong>corrupt</strong> prompt by default. For custom grids, pass <code>x_tick_labels=viz.position_tick_labels(runner, &quot;corrupt&quot;)</code> to <code>plot_heatmap</code>, or <code>which=&quot;clean&quot;</code> to align the axis with the clean sequence.</p>
+<h2 id="discovery-experimental">discovery (experimental)</h2>
+<p>Code under <code>discovery/</code> builds on a TransformerLens <code>HookedTransformer</code> with <strong>hook-mounted SAE-style</strong> <code>encode_fn</code> / <code>decode_fn</code> callables. You supply the SAE (or a toy linear stand-in); the library wires <strong>residual-aware reconstruction</strong> at the hook, attribution, and optional KL-budget pruning.</p>
+<table>
+<thead>
+<tr>
+<th>Module</th>
+<th>Role</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>discovery.sae_scout</code></td>
+<td>SAE weight loading/cache helpers, <code>reconstruct_activation</code>, <code>feature_capture</code></td>
+</tr>
+<tr>
+<td><code>discovery.attribution</code></td>
+<td><code>feature_act_grad_scores</code>, <code>feature_attribution_pass</code>, integrated gradients, residual-channel score + completeness helpers</td>
+</tr>
+<tr>
+<td><code>discovery.pruner</code></td>
+<td><code>prune_sae_circuit</code> (τ-KL) and <code>prune_sae_circuit_budget</code> (KL budget, optional drift gate, optional IG ranking)</td>
+</tr>
+<tr>
+<td><code>discovery.labels</code></td>
+<td>Neuronpedia feature labels + JSON cache</td>
+</tr>
+<tr>
+<td><code>discovery.circuit_graphviz</code></td>
+<td>Bipartite SAE latent graphs (DOT) + cross-hook edge weights (<code>scripts/sae_crosslayer_circuit_dot.py</code>)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="cross-layer-sae-graphs-direct-path-vs-tripartite-bridge">Cross-layer SAE graphs: direct path vs tripartite bridge</h3>
+<p>The DOT export from <code>discovery.circuit_graphviz</code> measures cross-layer influence in two complementary views. On factual recall (<code>&quot;The capital of Germany is&quot;</code>):</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">Direct bipartite</th>
+<th style="text-align:left">Tripartite</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><img src="./assets/direct_path_baseline.png" alt="Bipartite graph"></td>
+<td style="text-align:left"><img src="./assets/tripartite_final.png" alt="Tripartite graph"></td>
+</tr>
+<tr>
+<td style="text-align:left"><code>resid_pre</code> → <code>resid_pre</code> between two layers at different token positions yields <strong>near-zero edges</strong>, so factual recall is not a same-position residual hand-off.</td>
+<td style="text-align:left">Inserting <strong>L9H8</strong> as a middle node connects the circuit: layer-8 country latents → mover head (L9H8) → layer-10 bottleneck latent.</td>
+</tr>
+</tbody>
+</table>
+<h4 id="workflow">Workflow</h4>
+<ol>
+<li>
+<p><strong>Baseline:</strong> run <code>scripts/sae_crosslayer_circuit_dot.py</code> to see where the direct residual path is empty.</p>
+</li>
+<li>
+<p><strong>Identify:</strong> rank candidate mover heads with <code>scripts/find_mover_heads.py</code> (e.g. <strong>L9H8</strong>).</p>
+</li>
+<li>
+<p><strong>Verify:</strong> plot attention with <code>scripts/visualize_attention_heads.py</code> and check the head reads from the subject token (<code> Germany</code>) at the query position (<code> is</code>).</p>
+<p><img src="./assets/attn_L9_H8.png" alt="L9H8 attention pattern: query at &quot; is&quot; puts 0.649 of its attention mass on &quot; Germany&quot;"></p>
+<p>For <code>&quot;The capital of Germany is&quot;</code> on <code>gpt2-small</code>, L9H8 at query position 4 (<code> is</code>) attends to key position 3 (<code> Germany</code>) with weight <strong>0.649</strong> — vs. 0.043 on its own position and ≤0.014 on the structural tokens. That's the &quot;ground truth&quot; the DOT edge in step 4 then rests on.</p>
+</li>
+<li>
+<p><strong>Map:</strong> re-run the DOT script with <code>--three-node --middle-head L H</code> to emit the latent → head → latent graph.</p>
+</li>
+</ol>
+<p><strong>Imports:</strong> use an editable install from the repo root (<code>pip install -e &quot;.&quot;</code>) and run with working directory / <code>PYTHONPATH</code> including the repo so <code>import discovery</code> resolves. The built wheel currently ships <strong><code>causal_patcher</code> only</strong>; <code>discovery</code> is not yet listed as an installable package in the wheel.</p>
+<p><strong>Ranking shape:</strong> attribution returns a <strong>dense</strong> score vector of length <code>n_features</code> (full SAE width at one sequence position). Large dictionaries (e.g. 128k latents) mean full-length tensors per pass.</p>
+<h2 id="scripts">Scripts</h2>
+<ul>
+<li><code>scripts/benchmark_discovery_cost.py</code> — rough timing for attribution/IG paths on a tiny <code>HookedTransformer</code> + linear SAE stub; optional integrated-gradients and completeness flags.</li>
+<li><code>scripts/test_neuronpedia_label.py</code> — smoke test for label fetch/cache (see <code>discovery.labels</code> and your environment/API setup).</li>
+<li><code>scripts/sae_crosslayer_circuit_dot.py</code> — Graphviz DOT bipartite graph between two SAE hooks (optional <code>--src-seq-pos</code> / <code>--dst-seq-pos</code> / <code>--loss-seq-pos</code>).</li>
+<li><code>scripts/find_mover_heads.py</code> — rank attention heads by marginal clean→corrupt <code>hook_z</code> patching effects.</li>
+<li><code>scripts/visualize_attention_heads.py</code> — plot <code>hook_pattern</code> for nominated heads (PNG export; optional query/key highlight).</li>
+</ul>
+<h2 id="tests">Tests</h2>
+<pre class="hljs"><code><div>pytest
+</div></code></pre>
+<p><code>tests/</code> currently focus on <code>causal_patcher</code> (including viz). Discovery is exercised mainly via scripts and your own notebooks.</p>
+<h2 id="examples">Examples</h2>
+<ul>
+<li><strong>Notebook:</strong> <code>notebooks/demo_factual_recall.ipynb</code> — factual recall (Eiffel/Paris vs Colosseum/Rome) on <code>gpt2-small</code> with <code>resid_pre</code> and <code>attn_head_z</code> sweeps.</li>
+<li><strong>Notebook:</strong> <code>notebooks/demo_batched_factual_recall.ipynb</code> — batched / left-padded factual recall using <code>BatchExperimentRunner</code>.</li>
+<li><strong>Heatmap reading:</strong> see <a href="docs/heatmap.md"><code>docs/heatmap.md</code></a>.</li>
+</ul>
+
+</body>
+</html>

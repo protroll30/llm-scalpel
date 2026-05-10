@@ -53,7 +53,7 @@ pythonpath = ["."]
 
 # Helps Pylance / Pyright resolve `causal_patcher` as a first-party package
 [tool.pyright]
-include = ["causal_patcher", "discovery", "tests", "scripts"]
+include = ["causal_patcher", "discovery", "tests", "scripts", "benchmarks"]
 extraPaths = ["."]
 pythonVersion = "3.10"
 venvPath = "."

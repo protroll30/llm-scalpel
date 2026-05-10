@@ -13,7 +13,12 @@ Example::
     --out-dir runs/attn_viz
 
 Uses ``--query-pos`` / ``--key-pos`` (0-based, negatives OK) to annotate the weight
-``pattern[query, key]`` in the console title (e.g. `` is`` → country token).
+``pattern[query, key]`` in the console title (e.g. `` is`` -> country token).
+
+Benchmark JSON::
+
+  python scripts/visualize_attention_heads.py --benchmark-json benchmarks/processed/factual_recall_filtered_enriched.json \\
+    --benchmark-prompt-field corrupt --layer-head 9 8 --out-dir runs/attn_viz
 """
 
 from __future__ import annotations
@@ -30,6 +35,23 @@ from transformer_lens import HookedTransformer, utils as tl_utils
 _REPO = Path(__file__).resolve().parents[1]
 if str(_REPO) not in sys.path:
     sys.path.insert(0, str(_REPO))
+
+from discovery.benchmark_json import (
+    add_discovery_benchmark_cli_args,
+    apply_benchmark_single_prompt,
+)
+
+
+def _normalize_tick_labels(labels: list[str] | list[list[str]]) -> list[str]:
+    # TransformerLens typings can expose nested token strings in some cases.
+    # Matplotlib expects a flat iterable of text, so we normalize to `list[str]`.
+    out: list[str] = []
+    for x in labels:
+        if isinstance(x, list):
+            out.append("\n".join(str(p) for p in x))
+        else:
+            out.append(str(x))
+    return out
 
 
 def _resolve_pos(idx: int, seq_len: int) -> int:
@@ -50,9 +72,23 @@ def main() -> None:
         action="store_true",
         help="Skip TransformerLens fold_ln/center_*.",
     )
-    p.add_argument("--prompt", type=str, required=True)
+    p.add_argument(
+        "--prompt",
+        type=str,
+        default="",
+        help="Corrupt or clean prompt text (required unless --benchmark-json is set).",
+    )
     p.add_argument("--prepend-bos", action="store_true")
     p.add_argument("--no-prepend-bos", action="store_true")
+
+    add_discovery_benchmark_cli_args(p)
+    p.add_argument(
+        "--benchmark-prompt-field",
+        type=str,
+        default="corrupt",
+        choices=("clean", "corrupt"),
+        help="When using --benchmark-json: take this row field as --prompt.",
+    )
 
     p.add_argument(
         "--layer-head",
@@ -81,6 +117,10 @@ def main() -> None:
     p.add_argument("--show", action="store_true", help="Call plt.show() (needs a display).")
 
     args = p.parse_args()
+    apply_benchmark_single_prompt(args, prompt_attr="prompt", field=str(args.benchmark_prompt_field))
+
+    if not str(args.prompt).strip():
+        raise SystemExit("Provide --prompt or --benchmark-json (with a non-empty pair).")
 
     if args.prepend_bos and args.no_prepend_bos:
         raise SystemExit("Use at most one of --prepend-bos / --no-prepend-bos.")
@@ -116,7 +156,7 @@ def main() -> None:
     tokens = model.to_tokens(str(args.prompt), **tk_kw).to(device)
     seq_len = int(tokens.shape[-1])
     try:
-        tok_labels = model.to_str_tokens(tokens[0])
+        tok_labels = _normalize_tick_labels(model.to_str_tokens(tokens[0]))
     except Exception:
         tok_labels = [str(i) for i in range(seq_len)]
 

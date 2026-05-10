@@ -102,6 +102,10 @@ The DOT export from `discovery.circuit_graphviz` measures cross-layer influence 
 | ![Bipartite graph](./assets/direct_path_baseline.png) | ![Tripartite graph](./assets/tripartite_final.png) |
 | `resid_pre` → `resid_pre` between two layers at different token positions yields **near-zero edges**, so factual recall is not a same-position residual hand-off. | Inserting **L9H8** as a middle node connects the circuit: layer-8 country latents → mover head (L9H8) → layer-10 bottleneck latent. |
 
+#### Benchmark JSON
+
+Processed benchmark files (for example `benchmarks/processed/factual_recall_filtered_enriched.json`) have a top-level `pairs` array with `clean`, `corrupt`, `correct_answer`, and usually `corrupt_answer`. When **`--benchmark-json`** is set, discovery scripts load **`--benchmark-index`** (default `0`) or **`--benchmark-id`**, and fill prompts / answers from that row (overriding the usual `--clean-prompt`, `--corrupt-prompt`, etc.). Single-prompt tools (`scripts/visualize_attention_heads.py`, `scripts/intervene_layer8_to_layer9.py`) use **`--benchmark-prompt-field`** (`clean` or `corrupt`, default `corrupt`) to choose which string becomes `--prompt`.
+
 #### Workflow
 1. **Baseline:** run `scripts/sae_crosslayer_circuit_dot.py` to see where the direct residual path is empty.
 2. **Identify:** rank candidate mover heads with `scripts/find_mover_heads.py` (e.g. **L9H8**).
@@ -123,6 +127,36 @@ The DOT export from `discovery.circuit_graphviz` measures cross-layer influence 
 - `scripts/sae_crosslayer_circuit_dot.py` — Graphviz DOT bipartite graph between two SAE hooks (optional `--src-seq-pos` / `--dst-seq-pos` / `--loss-seq-pos`).
 - `scripts/find_mover_heads.py` — rank attention heads by marginal clean→corrupt `hook_z` patching effects.
 - `scripts/visualize_attention_heads.py` — plot `hook_pattern` for nominated heads (PNG export; optional query/key highlight).
+- `scripts/intervene_layer8_to_layer9.py` — layer-8 SAE intervention with capture at **`blocks.10.hook_resid_pre`** by default (post–mover-head readout); **`--benchmark-batch`** loops over a benchmark JSON (`pairs`) for Phase 3–style batch runs.
+
+## Benchmarks
+
+Generate **clean / corrupt / correct_answer** pairs for GPT-2–aligned factual-recall experiments (token-length symmetry, then a probability screen).
+
+1. **`benchmarks/generate_benchmark_deepseek.py`** — calls DeepSeek **`deepseek-reasoner`**, asks for JSON arrays only, strips common reasoning/thinking blocks before parsing, and **drops pairs** whose **GPT-2 token length** differs between `clean` and `corrupt`. Put **`DEEPSEEK_API_KEY`** in a **repo-root `.env`** file (or export it); the script loads `.env` via `python-dotenv`.
+
+   ```bash
+   python benchmarks/generate_benchmark_deepseek.py --total-pairs 250 --out benchmarks/raw/factual_recall_250.json
+   ```
+
+   Use **`--total-pairs`** somewhat above your target if you will filter next (obscure facts often fail the screen). **`--dry-run`** writes a tiny sample without calling the API.
+
+2. **`benchmarks/enrich_benchmark_pairs.py`** (optional; **use this instead of regenerating** if you only need fixes) — **`--spacing-only`** normalizes **`correct_answer`** for GPT-2 continuations (leading space after prompts like `"... is"` with **no** trailing space—e.g. **`" Paris"`**—and no extra space when the prompt already ends with whitespace). Without **`--spacing-only`**, fills **`corrupt_answer`** in **batched** DeepSeek calls (default **`deepseek-chat`**, far fewer requests than full generation). Requires **`DEEPSEEK_API_KEY`** unless spacing-only.
+
+   ```bash
+   python benchmarks/enrich_benchmark_pairs.py --input benchmarks/raw/factual_recall_250.json --out benchmarks/raw/factual_recall_250_enriched.json --spacing-only
+   python benchmarks/enrich_benchmark_pairs.py --input benchmarks/raw/factual_recall_250.json --out benchmarks/raw/factual_recall_250_enriched.json
+   ```
+
+   Use enriched **`correct_answer` / `corrupt_answer`** strings with **`HookedTransformer.to_single_token`** for **`ExperimentRunner`** / **`BatchExperimentRunner`** answer tokens.
+
+3. **`benchmarks/build_benchmark.py`** — loads raw JSON and keeps pairs where, at the **last prompt position**, the softmax probability of the **first token** of `correct_answer` on the **clean** prompt exceeds **`ratio`** times the same probability on the **corrupt** prompt (default **`ratio=2`**, model **`gpt2-small`**).
+
+   ```bash
+   python benchmarks/build_benchmark.py --input benchmarks/raw/factual_recall_250.json --out benchmarks/processed/factual_recall_filtered.json
+   ```
+
+   The output lists **`pairs`** (kept) and **`dropped_pairs`** with `p_clean`, `p_corrupt`, and drop reasons.
 
 ## Tests
 

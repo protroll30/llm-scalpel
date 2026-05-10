@@ -39,6 +39,7 @@ from discovery.attribution import (
     feature_attribution_pass,
     feature_integrated_gradients_pass,
 )
+from discovery.benchmark_json import add_discovery_benchmark_cli_args, apply_benchmark_dual_prompts
 from discovery.pruner import Circuit, prune_sae_circuit_budget
 from discovery.sae_lens_bridge import (
     assert_d_in_matches_model,
@@ -192,7 +193,10 @@ def main() -> None:
         default="",
         help="With --run-prune: write the returned Circuit (feature_indices, removed_indices, KL, ...) to this JSON path.",
     )
+    add_discovery_benchmark_cli_args(p)
+
     args = p.parse_args()
+    apply_benchmark_dual_prompts(args)
 
     if bool(str(args.prune_circuit_json).strip()) and not bool(args.run_prune):
         raise SystemExit("--prune-circuit-json requires --run-prune.")

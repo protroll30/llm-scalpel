@@ -32,6 +32,10 @@ bipartite `--out` graph is unchanged::
 
   python scripts/sae_crosslayer_circuit_dot.py ... --out runs/circuit_l8_l9.dot \\
     --three-node --middle-head 9 8 --middle-head 8 11
+
+Benchmark JSON (same schema as ``benchmarks/*/factual_recall_*.json``)::
+
+  python scripts/sae_crosslayer_circuit_dot.py ... --benchmark-json benchmarks/processed/factual_recall_filtered_enriched.json --benchmark-index 0
 """
 
 from __future__ import annotations
@@ -47,6 +51,7 @@ _REPO = Path(__file__).resolve().parents[1]
 if str(_REPO) not in sys.path:
     sys.path.insert(0, str(_REPO))
 
+from discovery.benchmark_json import add_discovery_benchmark_cli_args, apply_benchmark_dual_prompts
 from discovery.circuit_graphviz import (
     build_cross_layer_edges,
     build_three_node_edges,
@@ -156,7 +161,10 @@ def main() -> None:
     p.add_argument("--head-patch-cross-clean", type=int, default=None, metavar="I")
     p.add_argument("--head-patch-cross-corrupt", type=int, default=None, metavar="J")
 
+    add_discovery_benchmark_cli_args(p)
+
     args = p.parse_args()
+    apply_benchmark_dual_prompts(args)
 
     if args.three_node and not args.middle_head:
         raise SystemExit("--three-node requires at least one --middle-head L H.")
@@ -255,7 +263,7 @@ def main() -> None:
 
     out_path = Path(str(args.out))
     title = (
-        f"{args.model}  {args.src_sae_id}@{built.src_seq_pos_resolved} → "
+        f"{args.model}  {args.src_sae_id}@{built.src_seq_pos_resolved} -> "
         f"{args.dst_sae_id}@{built.dst_seq_pos_resolved}\n"
         f"logit_diff @ loss_pos={loss_pos_raw}"
     )
@@ -280,7 +288,7 @@ def main() -> None:
     )
     print("render: dot -Tpdf", str(out_path), "-o circuit.pdf")
     for (i, j), w in sorted(built.edge_weight.items(), key=lambda x: -abs(x[1])):
-        print(f"  edge {i}→{j}: {w:+.6g}")
+        print(f"  edge {i}->{j}: {w:+.6g}")
 
     if args.three_node:
         assert args.middle_head is not None
@@ -342,9 +350,9 @@ def main() -> None:
         print(f"wrote tripartite {three_path.resolve()}")
         print("render: dot -Tpdf", str(three_path), "-o tripartite.pdf")
         for k, w in sorted(triple.edge_src_to_mid.items(), key=lambda x: -abs(x[1]))[:20]:
-            print(f"  src {k[0]}→mid L{k[1][0]}H{k[1][1]}: {w:+.6g}")
+            print(f"  src {k[0]}->mid L{k[1][0]}H{k[1][1]}: {w:+.6g}")
         for k, w in sorted(triple.edge_mid_to_dst.items(), key=lambda x: -abs(x[1]))[:20]:
-            print(f"  mid L{k[0][0]}H{k[0][1]}→dst {k[1]}: {w:+.6g}")
+            print(f"  mid L{k[0][0]}H{k[0][1]}->dst {k[1]}: {w:+.6g}")
 
 
 if __name__ == "__main__":

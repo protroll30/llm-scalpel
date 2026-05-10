@@ -1,0 +1,2019 @@
+{
+  "schema_version": 1,
+  "generator_model": "deepseek-reasoner",
+  "tokenizer": "gpt2",
+  "categories": {
+    "Geography": 75,
+    "Biography": 63,
+    "Science": 50,
+    "Grammar": 37,
+    "Identity": 25
+  },
+  "pairs": [
+    {
+      "id": 1,
+      "category": "Geography",
+      "clean": "The capital of France is",
+      "corrupt": "The capital of Germany is",
+      "correct_answer": " Paris",
+      "corrupt_answer": " Berlin"
+    },
+    {
+      "id": 2,
+      "category": "Geography",
+      "clean": "The capital of Italy is",
+      "corrupt": "The capital of Spain is",
+      "correct_answer": " Rome",
+      "corrupt_answer": " Madrid"
+    },
+    {
+      "id": 3,
+      "category": "Geography",
+      "clean": "The capital of Japan is",
+      "corrupt": "The capital of China is",
+      "correct_answer": " Tokyo",
+      "corrupt_answer": " Beijing"
+    },
+    {
+      "id": 4,
+      "category": "Geography",
+      "clean": "The capital of Russia is",
+      "corrupt": "The capital of Canada is",
+      "correct_answer": " Moscow",
+      "corrupt_answer": " Ottawa"
+    },
+    {
+      "id": 5,
+      "category": "Geography",
+      "clean": "The capital of Brazil is",
+      "corrupt": "The capital of Australia is",
+      "correct_answer": " Brasilia",
+      "corrupt_answer": " Canberra"
+    },
+    {
+      "id": 6,
+      "category": "Geography",
+      "clean": "The capital of Sweden is",
+      "corrupt": "The capital of Norway is",
+      "correct_answer": " Stockholm",
+      "corrupt_answer": " Oslo"
+    },
+    {
+      "id": 7,
+      "category": "Geography",
+      "clean": "The capital of Poland is",
+      "corrupt": "The capital of Egypt is",
+      "correct_answer": " Warsaw",
+      "corrupt_answer": " Cairo"
+    },
+    {
+      "id": 8,
+      "category": "Geography",
+      "clean": "The capital of Turkey is",
+      "corrupt": "The capital of Chile is",
+      "correct_answer": " Ankara",
+      "corrupt_answer": " Santiago"
+    },
+    {
+      "id": 9,
+      "category": "Geography",
+      "clean": "The capital of Greece is",
+      "corrupt": "The capital of Portugal is",
+      "correct_answer": " Athens",
+      "corrupt_answer": " Lisbon"
+    },
+    {
+      "id": 10,
+      "category": "Geography",
+      "clean": "The capital of Mexico is",
+      "corrupt": "The capital of India is",
+      "correct_answer": " Mexico City",
+      "corrupt_answer": " New Delhi"
+    },
+    {
+      "id": 11,
+      "category": "Geography",
+      "clean": "The capital of India is",
+      "corrupt": "The capital of Mexico is",
+      "correct_answer": " New Delhi",
+      "corrupt_answer": " Mexico City"
+    },
+    {
+      "id": 12,
+      "category": "Geography",
+      "clean": "The capital of France is ",
+      "corrupt": "The capital of Italy is ",
+      "correct_answer": "Paris",
+      "corrupt_answer": "Rome"
+    },
+    {
+      "id": 13,
+      "category": "Geography",
+      "clean": "The capital of Spain is ",
+      "corrupt": "The capital of China is ",
+      "correct_answer": "Madrid",
+      "corrupt_answer": "Beijing"
+    },
+    {
+      "id": 14,
+      "category": "Geography",
+      "clean": "The capital of Japan is ",
+      "corrupt": "The capital of Brazil is ",
+      "correct_answer": "Tokyo",
+      "corrupt_answer": "Brasília"
+    },
+    {
+      "id": 15,
+      "category": "Geography",
+      "clean": "The capital of Canada is ",
+      "corrupt": "The capital of Australia is ",
+      "correct_answer": "Ottawa",
+      "corrupt_answer": "Canberra"
+    },
+    {
+      "id": 16,
+      "category": "Geography",
+      "clean": "The capital of Chile is ",
+      "corrupt": "The capital of Peru is ",
+      "correct_answer": "Santiago",
+      "corrupt_answer": "Lima"
+    },
+    {
+      "id": 17,
+      "category": "Geography",
+      "clean": "The capital of Egypt is ",
+      "corrupt": "The capital of Kenya is ",
+      "correct_answer": "Cairo",
+      "corrupt_answer": "Nairobi"
+    },
+    {
+      "id": 18,
+      "category": "Geography",
+      "clean": "The longest river in Africa is ",
+      "corrupt": "The longest river in Asia is ",
+      "correct_answer": "Nile",
+      "corrupt_answer": "Yangtze"
+    },
+    {
+      "id": 19,
+      "category": "Geography",
+      "clean": "The longest river in South America is ",
+      "corrupt": "The longest river in North America is ",
+      "correct_answer": "Amazon",
+      "corrupt_answer": "Mississippi"
+    },
+    {
+      "id": 20,
+      "category": "Geography",
+      "clean": "The tallest mountain in the world is ",
+      "corrupt": "The highest mountain in the world is ",
+      "correct_answer": "Everest",
+      "corrupt_answer": "Mount Everest"
+    },
+    {
+      "id": 21,
+      "category": "Geography",
+      "clean": "The highest mountain in Europe is ",
+      "corrupt": "The highest mountain in Asia is ",
+      "correct_answer": "Elbrus",
+      "corrupt_answer": "Mount Everest"
+    },
+    {
+      "id": 22,
+      "category": "Geography",
+      "clean": "The largest ocean is ",
+      "corrupt": "The smallest ocean is ",
+      "correct_answer": "Pacific",
+      "corrupt_answer": "Arctic Ocean"
+    },
+    {
+      "id": 23,
+      "category": "Geography",
+      "clean": "The largest continent is ",
+      "corrupt": "The smallest continent is ",
+      "correct_answer": "Asia",
+      "corrupt_answer": "Australia"
+    },
+    {
+      "id": 24,
+      "category": "Geography",
+      "clean": "The largest desert in Africa is ",
+      "corrupt": "The largest desert in Asia is ",
+      "correct_answer": "Sahara",
+      "corrupt_answer": "Gobi Desert"
+    },
+    {
+      "id": 25,
+      "category": "Geography",
+      "clean": "The largest country by area is ",
+      "corrupt": "The smallest country by area is ",
+      "correct_answer": "Russia",
+      "corrupt_answer": "Vatican City"
+    },
+    {
+      "id": 26,
+      "category": "Geography",
+      "clean": "The capital of France is",
+      "corrupt": "The capital of Germany is",
+      "correct_answer": " Paris",
+      "corrupt_answer": " Berlin"
+    },
+    {
+      "id": 27,
+      "category": "Geography",
+      "clean": "The capital of Italy is",
+      "corrupt": "The capital of Spain is",
+      "correct_answer": " Rome",
+      "corrupt_answer": " Madrid"
+    },
+    {
+      "id": 28,
+      "category": "Geography",
+      "clean": "The capital of Japan is",
+      "corrupt": "The capital of China is",
+      "correct_answer": " Tokyo",
+      "corrupt_answer": " Beijing"
+    },
+    {
+      "id": 29,
+      "category": "Geography",
+      "clean": "The capital of Egypt is",
+      "corrupt": "The capital of Turkey is",
+      "correct_answer": " Cairo",
+      "corrupt_answer": " Ankara"
+    },
+    {
+      "id": 30,
+      "category": "Geography",
+      "clean": "The capital of Australia is",
+      "corrupt": "The capital of Indonesia is",
+      "correct_answer": " Canberra",
+      "corrupt_answer": " Jakarta"
+    },
+    {
+      "id": 31,
+      "category": "Geography",
+      "clean": "The largest city in the United States is",
+      "corrupt": "The largest city in the United Kingdom is",
+      "correct_answer": " New York",
+      "corrupt_answer": " London"
+    },
+    {
+      "id": 32,
+      "category": "Geography",
+      "clean": "The largest city in Canada is",
+      "corrupt": "The largest city in Brazil is",
+      "correct_answer": " Toronto",
+      "corrupt_answer": " São Paulo"
+    },
+    {
+      "id": 33,
+      "category": "Geography",
+      "clean": "The longest river in Africa is",
+      "corrupt": "The longest river in Asia is",
+      "correct_answer": " the Nile",
+      "corrupt_answer": " Yangtze"
+    },
+    {
+      "id": 34,
+      "category": "Geography",
+      "clean": "The highest mountain in Nepal is",
+      "corrupt": "The highest mountain in India is",
+      "correct_answer": " Mount Everest",
+      "corrupt_answer": " Kanchenjunga"
+    },
+    {
+      "id": 35,
+      "category": "Geography",
+      "clean": "The largest desert in Africa is",
+      "corrupt": "The largest desert in Antarctica is",
+      "correct_answer": " the Sahara",
+      "corrupt_answer": " Antarctica"
+    },
+    {
+      "id": 36,
+      "category": "Geography",
+      "clean": "The most populous country in Africa is",
+      "corrupt": "The most populous country in Asia is",
+      "correct_answer": " Nigeria",
+      "corrupt_answer": " India"
+    },
+    {
+      "id": 37,
+      "category": "Geography",
+      "clean": "The capital of the United Kingdom is",
+      "corrupt": "The capital of the United States is",
+      "correct_answer": " London",
+      "corrupt_answer": " Washington, D.C."
+    },
+    {
+      "id": 38,
+      "category": "Geography",
+      "clean": "The capital of Russia is",
+      "corrupt": "The capital of Canada is",
+      "correct_answer": " Moscow",
+      "corrupt_answer": " Ottawa"
+    },
+    {
+      "id": 39,
+      "category": "Geography",
+      "clean": "The largest country in South America is",
+      "corrupt": "The largest country in North America is",
+      "correct_answer": " Brazil",
+      "corrupt_answer": " Canada"
+    },
+    {
+      "id": 40,
+      "category": "Geography",
+      "clean": "The largest lake in Africa is",
+      "corrupt": "The largest lake in Asia is",
+      "correct_answer": " Lake Victoria",
+      "corrupt_answer": " Caspian Sea"
+    },
+    {
+      "id": 41,
+      "category": "Geography",
+      "clean": "The capital of France is ",
+      "corrupt": "The capital of Germany is ",
+      "correct_answer": "Paris",
+      "corrupt_answer": "Berlin"
+    },
+    {
+      "id": 42,
+      "category": "Geography",
+      "clean": "The capital of Germany is ",
+      "corrupt": "The capital of Italy is ",
+      "correct_answer": "Berlin",
+      "corrupt_answer": "Rome"
+    },
+    {
+      "id": 43,
+      "category": "Geography",
+      "clean": "The capital of Italy is ",
+      "corrupt": "The capital of Spain is ",
+      "correct_answer": "Rome",
+      "corrupt_answer": "Madrid"
+    },
+    {
+      "id": 44,
+      "category": "Geography",
+      "clean": "The capital of Spain is ",
+      "corrupt": "The capital of Portugal is ",
+      "correct_answer": "Madrid",
+      "corrupt_answer": "Lisbon"
+    },
+    {
+      "id": 45,
+      "category": "Geography",
+      "clean": "The capital of Portugal is ",
+      "corrupt": "The capital of Netherlands is ",
+      "correct_answer": "Lisbon",
+      "corrupt_answer": "Amsterdam"
+    },
+    {
+      "id": 46,
+      "category": "Geography",
+      "clean": "The capital of Netherlands is ",
+      "corrupt": "The capital of Belgium is ",
+      "correct_answer": "Amsterdam",
+      "corrupt_answer": "Brussels"
+    },
+    {
+      "id": 47,
+      "category": "Geography",
+      "clean": "The capital of Belgium is ",
+      "corrupt": "The capital of Austria is ",
+      "correct_answer": "Brussels",
+      "corrupt_answer": "Vienna"
+    },
+    {
+      "id": 48,
+      "category": "Geography",
+      "clean": "The capital of Austria is ",
+      "corrupt": "The capital of Switzerland is ",
+      "correct_answer": "Vienna",
+      "corrupt_answer": "Bern"
+    },
+    {
+      "id": 49,
+      "category": "Geography",
+      "clean": "The capital of Switzerland is ",
+      "corrupt": "The capital of Sweden is ",
+      "correct_answer": "Bern",
+      "corrupt_answer": "Stockholm"
+    },
+    {
+      "id": 50,
+      "category": "Geography",
+      "clean": "The capital of Sweden is ",
+      "corrupt": "The capital of Norway is ",
+      "correct_answer": "Stockholm",
+      "corrupt_answer": "Oslo"
+    },
+    {
+      "id": 51,
+      "category": "Geography",
+      "clean": "The capital of Norway is ",
+      "corrupt": "The capital of Denmark is ",
+      "correct_answer": "Oslo",
+      "corrupt_answer": "Copenhagen"
+    },
+    {
+      "id": 52,
+      "category": "Geography",
+      "clean": "The capital of Denmark is ",
+      "corrupt": "The capital of Finland is ",
+      "correct_answer": "Copenhagen",
+      "corrupt_answer": "Helsinki"
+    },
+    {
+      "id": 53,
+      "category": "Geography",
+      "clean": "The capital of Finland is ",
+      "corrupt": "The capital of Poland is ",
+      "correct_answer": "Helsinki",
+      "corrupt_answer": "Warsaw"
+    },
+    {
+      "id": 54,
+      "category": "Geography",
+      "clean": "The capital of Poland is ",
+      "corrupt": "The capital of Greece is ",
+      "correct_answer": "Warsaw",
+      "corrupt_answer": "Athens"
+    },
+    {
+      "id": 55,
+      "category": "Geography",
+      "clean": "The capital of Greece is ",
+      "corrupt": "The capital of France is ",
+      "correct_answer": "Athens",
+      "corrupt_answer": "Paris"
+    },
+    {
+      "id": 56,
+      "category": "Geography",
+      "clean": "The capital of France is",
+      "corrupt": "The capital of Germany is",
+      "correct_answer": " Paris",
+      "corrupt_answer": " Berlin"
+    },
+    {
+      "id": 57,
+      "category": "Geography",
+      "clean": "The capital of Germany is",
+      "corrupt": "The capital of Italy is",
+      "correct_answer": " Berlin",
+      "corrupt_answer": " Rome"
+    },
+    {
+      "id": 58,
+      "category": "Geography",
+      "clean": "The capital of Italy is",
+      "corrupt": "The capital of Spain is",
+      "correct_answer": " Rome",
+      "corrupt_answer": " Madrid"
+    },
+    {
+      "id": 59,
+      "category": "Geography",
+      "clean": "The capital of Spain is",
+      "corrupt": "The capital of Austria is",
+      "correct_answer": " Madrid",
+      "corrupt_answer": " Vienna"
+    },
+    {
+      "id": 60,
+      "category": "Geography",
+      "clean": "The capital of Austria is",
+      "corrupt": "The capital of Sweden is",
+      "correct_answer": " Vienna",
+      "corrupt_answer": " Stockholm"
+    },
+    {
+      "id": 61,
+      "category": "Geography",
+      "clean": "The capital of Sweden is",
+      "corrupt": "The capital of Norway is",
+      "correct_answer": " Stockholm",
+      "corrupt_answer": " Oslo"
+    },
+    {
+      "id": 62,
+      "category": "Geography",
+      "clean": "The capital of Norway is",
+      "corrupt": "The capital of Poland is",
+      "correct_answer": " Oslo",
+      "corrupt_answer": " Warsaw"
+    },
+    {
+      "id": 63,
+      "category": "Geography",
+      "clean": "The capital of Poland is",
+      "corrupt": "The capital of Greece is",
+      "correct_answer": " Warsaw",
+      "corrupt_answer": " Athens"
+    },
+    {
+      "id": 64,
+      "category": "Geography",
+      "clean": "The capital of Greece is",
+      "corrupt": "The capital of Turkey is",
+      "correct_answer": " Athens",
+      "corrupt_answer": " Ankara"
+    },
+    {
+      "id": 65,
+      "category": "Geography",
+      "clean": "The capital of Turkey is",
+      "corrupt": "The capital of Russia is",
+      "correct_answer": " Ankara",
+      "corrupt_answer": " Moscow"
+    },
+    {
+      "id": 66,
+      "category": "Geography",
+      "clean": "The capital of Russia is",
+      "corrupt": "The capital of Japan is",
+      "correct_answer": " Moscow",
+      "corrupt_answer": " Tokyo"
+    },
+    {
+      "id": 67,
+      "category": "Geography",
+      "clean": "The capital of Japan is",
+      "corrupt": "The capital of China is",
+      "correct_answer": " Tokyo",
+      "corrupt_answer": " Beijing"
+    },
+    {
+      "id": 68,
+      "category": "Geography",
+      "clean": "The capital of China is",
+      "corrupt": "The capital of India is",
+      "correct_answer": " Beijing",
+      "corrupt_answer": " New Delhi"
+    },
+    {
+      "id": 69,
+      "category": "Geography",
+      "clean": "The capital of India is",
+      "corrupt": "The capital of Canada is",
+      "correct_answer": " Delhi",
+      "corrupt_answer": " Ottawa"
+    },
+    {
+      "id": 70,
+      "category": "Geography",
+      "clean": "The capital of Canada is",
+      "corrupt": "The capital of France is",
+      "correct_answer": " Ottawa",
+      "corrupt_answer": " Paris"
+    },
+    {
+      "id": 71,
+      "category": "Geography",
+      "clean": "The capital of France is Paris",
+      "corrupt": "The capital of Germany is Berlin",
+      "correct_answer": " Paris",
+      "corrupt_answer": " Berlin"
+    },
+    {
+      "id": 72,
+      "category": "Geography",
+      "clean": "The capital of Italy is Rome",
+      "corrupt": "The capital of Spain is Madrid",
+      "correct_answer": " Rome",
+      "corrupt_answer": " Madrid"
+    },
+    {
+      "id": 73,
+      "category": "Geography",
+      "clean": "The official language of France is French",
+      "corrupt": "The official language of Germany is German",
+      "correct_answer": " French",
+      "corrupt_answer": " German"
+    },
+    {
+      "id": 74,
+      "category": "Geography",
+      "clean": "The official language of Italy is Italian",
+      "corrupt": "The official language of Spain is Spanish",
+      "correct_answer": " Italian",
+      "corrupt_answer": " Spanish"
+    },
+    {
+      "id": 75,
+      "category": "Geography",
+      "clean": "The longest river is the Nile",
+      "corrupt": "The longest river is the Amazon",
+      "correct_answer": " the Nile",
+      "corrupt_answer": " Amazon"
+    },
+    {
+      "id": 76,
+      "category": "Biography",
+      "clean": "Darwin was born in London.",
+      "corrupt": "Curie was born in Paris.",
+      "correct_answer": " London",
+      "corrupt_answer": " Paris"
+    },
+    {
+      "id": 77,
+      "category": "Biography",
+      "clean": "Cavendish discovered hydrogen.",
+      "corrupt": "Mendel discovered genetics.",
+      "correct_answer": " hydrogen",
+      "corrupt_answer": " genetics"
+    },
+    {
+      "id": 78,
+      "category": "Biography",
+      "clean": "Orwell wrote 1984.",
+      "corrupt": "Homer wrote Odyssey.",
+      "correct_answer": " 1984",
+      "corrupt_answer": " Odyssey"
+    },
+    {
+      "id": 79,
+      "category": "Biography",
+      "clean": "Einstein was born in ",
+      "corrupt": "Newton was born in ",
+      "correct_answer": "Ulm",
+      "corrupt_answer": "1643"
+    },
+    {
+      "id": 80,
+      "category": "Biography",
+      "clean": "Curie discovered ",
+      "corrupt": "Darwin discovered ",
+      "correct_answer": "radium",
+      "corrupt_answer": "natural selection"
+    },
+    {
+      "id": 81,
+      "category": "Biography",
+      "clean": "Freud studied ",
+      "corrupt": "Jung studied ",
+      "correct_answer": "the unconscious",
+      "corrupt_answer": "the unconscious"
+    },
+    {
+      "id": 82,
+      "category": "Biography",
+      "clean": "Dante wrote ",
+      "corrupt": "Homer wrote ",
+      "correct_answer": "The Divine Comedy",
+      "corrupt_answer": "Odyssey"
+    },
+    {
+      "id": 83,
+      "category": "Biography",
+      "clean": "Einstein died in ",
+      "corrupt": "Newton died in ",
+      "correct_answer": "Princeton",
+      "corrupt_answer": "1727"
+    },
+    {
+      "id": 84,
+      "category": "Biography",
+      "clean": "Darwin wrote ",
+      "corrupt": "Curie wrote ",
+      "correct_answer": "On the Origin of Species",
+      "corrupt_answer": "radiology"
+    },
+    {
+      "id": 85,
+      "category": "Biography",
+      "clean": " Einstein was born in",
+      "corrupt": " Newton was born in",
+      "correct_answer": " Germany",
+      "corrupt_answer": " 1643"
+    },
+    {
+      "id": 86,
+      "category": "Biography",
+      "clean": " Shakespeare was born in",
+      "corrupt": " Freud was born in",
+      "correct_answer": " England",
+      "corrupt_answer": " 1856"
+    },
+    {
+      "id": 87,
+      "category": "Biography",
+      "clean": " Darwin was born in",
+      "corrupt": " Plato was born in",
+      "correct_answer": " England",
+      "corrupt_answer": " 428 BCE"
+    },
+    {
+      "id": 88,
+      "category": "Biography",
+      "clean": " Freud was born in",
+      "corrupt": " Caesar was born in",
+      "correct_answer": " Austria",
+      "corrupt_answer": " 100 BCE"
+    },
+    {
+      "id": 89,
+      "category": "Biography",
+      "clean": " Turing was born in",
+      "corrupt": " Napoleon was born in",
+      "correct_answer": " England",
+      "corrupt_answer": " 1769"
+    },
+    {
+      "id": 90,
+      "category": "Biography",
+      "clean": " Gandhi was born in",
+      "corrupt": " Marx was born in",
+      "correct_answer": " India",
+      "corrupt_answer": " 1818"
+    },
+    {
+      "id": 91,
+      "category": "Biography",
+      "clean": " Plato was born in",
+      "corrupt": " Lincoln was born in",
+      "correct_answer": " Greece",
+      "corrupt_answer": " Kentucky"
+    },
+    {
+      "id": 92,
+      "category": "Biography",
+      "clean": " Homer was born in",
+      "corrupt": " Einstein was born in",
+      "correct_answer": " Greece",
+      "corrupt_answer": " Germany"
+    },
+    {
+      "id": 93,
+      "category": "Biography",
+      "clean": " Napoleon was born in",
+      "corrupt": " Newton was born in",
+      "correct_answer": " France",
+      "corrupt_answer": " England"
+    },
+    {
+      "id": 94,
+      "category": "Biography",
+      "clean": " Marx was born in",
+      "corrupt": " Gandhi was born in",
+      "correct_answer": " Germany",
+      "corrupt_answer": " Porbandar"
+    },
+    {
+      "id": 95,
+      "category": "Biography",
+      "clean": " Lincoln was born in",
+      "corrupt": " Darwin was born in",
+      "correct_answer": " America",
+      "corrupt_answer": " England"
+    },
+    {
+      "id": 96,
+      "category": "Biography",
+      "clean": "Thomas Edison was the inventor of",
+      "corrupt": "Alexander Bell was the inventor of",
+      "correct_answer": " the lightbulb",
+      "corrupt_answer": " the telephone"
+    },
+    {
+      "id": 97,
+      "category": "Biography",
+      "clean": "Marie Curie was the discoverer of",
+      "corrupt": "Pierre Curie was the discoverer of",
+      "correct_answer": " the radium",
+      "corrupt_answer": " radium"
+    },
+    {
+      "id": 98,
+      "category": "Biography",
+      "clean": "Galileo Galilei was the observer of",
+      "corrupt": "Johannes Kepler was the observer of",
+      "correct_answer": " the moons",
+      "corrupt_answer": " planetary motion"
+    },
+    {
+      "id": 99,
+      "category": "Biography",
+      "clean": "Niels Bohr was the proposer of",
+      "corrupt": "Ernest Rutherford was the proposer of",
+      "correct_answer": " the model",
+      "corrupt_answer": " the nuclear model"
+    },
+    {
+      "id": 100,
+      "category": "Biography",
+      "clean": "The capital of France is",
+      "corrupt": "The capital of Italy is",
+      "correct_answer": " Paris",
+      "corrupt_answer": " Rome"
+    },
+    {
+      "id": 101,
+      "category": "Biography",
+      "clean": "The capital of Japan is",
+      "corrupt": "The capital of China is",
+      "correct_answer": " Tokyo",
+      "corrupt_answer": " Beijing"
+    },
+    {
+      "id": 102,
+      "category": "Biography",
+      "clean": "The capital of Germany is",
+      "corrupt": "The capital of Canada is",
+      "correct_answer": " Berlin",
+      "corrupt_answer": " Ottawa"
+    },
+    {
+      "id": 103,
+      "category": "Biography",
+      "clean": "The capital of Spain is",
+      "corrupt": "The capital of Portugal is",
+      "correct_answer": " Madrid",
+      "corrupt_answer": " Lisbon"
+    },
+    {
+      "id": 104,
+      "category": "Biography",
+      "clean": "The capital of Russia is",
+      "corrupt": "The capital of Egypt is",
+      "correct_answer": " Moscow",
+      "corrupt_answer": " Cairo"
+    },
+    {
+      "id": 105,
+      "category": "Biography",
+      "clean": "The founder of Facebook is",
+      "corrupt": "The founder of Snapchat is",
+      "correct_answer": " Mark",
+      "corrupt_answer": " Evan Spiegel"
+    },
+    {
+      "id": 106,
+      "category": "Biography",
+      "clean": "The founder of Amazon is",
+      "corrupt": "The founder of Google is",
+      "correct_answer": " Jeff",
+      "corrupt_answer": " Larry Page"
+    },
+    {
+      "id": 107,
+      "category": "Biography",
+      "clean": "The CEO of Apple is",
+      "corrupt": "The CEO of Microsoft is",
+      "correct_answer": " Tim",
+      "corrupt_answer": " Satya Nadella"
+    },
+    {
+      "id": 108,
+      "category": "Biography",
+      "clean": "The largest continent is",
+      "corrupt": "The smallest continent is",
+      "correct_answer": " Asia",
+      "corrupt_answer": " Australia"
+    },
+    {
+      "id": 109,
+      "category": "Biography",
+      "clean": "The first planet from the sun is",
+      "corrupt": "The last planet from the sun is",
+      "correct_answer": " Mercury",
+      "corrupt_answer": " Neptune"
+    },
+    {
+      "id": 110,
+      "category": "Biography",
+      "clean": "The creator of Superman is",
+      "corrupt": "The creator of Batman is",
+      "correct_answer": " Jerry",
+      "corrupt_answer": " Bob Kane"
+    },
+    {
+      "id": 111,
+      "category": "Biography",
+      "clean": " Albert Einstein was born in Berlin.",
+      "corrupt": " Albert Einstein was born in Paris.",
+      "correct_answer": " Berlin",
+      "corrupt_answer": " false"
+    },
+    {
+      "id": 112,
+      "category": "Biography",
+      "clean": " Marie Curie was born in Paris.",
+      "corrupt": " Marie Curie was born in London.",
+      "correct_answer": " Paris",
+      "corrupt_answer": " false"
+    },
+    {
+      "id": 113,
+      "category": "Biography",
+      "clean": " Isaac Newton was born in London.",
+      "corrupt": " Isaac Newton was born in Rome.",
+      "correct_answer": " London",
+      "corrupt_answer": " false"
+    },
+    {
+      "id": 114,
+      "category": "Biography",
+      "clean": " Ada Lovelace was born in Rome.",
+      "corrupt": " Ada Lovelace was born in Tokyo.",
+      "correct_answer": " Rome",
+      "corrupt_answer": " false"
+    },
+    {
+      "id": 115,
+      "category": "Biography",
+      "clean": " Nikola Tesla was born in Tokyo.",
+      "corrupt": " Nikola Tesla was born in Moscow.",
+      "correct_answer": " Tokyo",
+      "corrupt_answer": " false"
+    },
+    {
+      "id": 116,
+      "category": "Biography",
+      "clean": " Charles Darwin was born in Moscow.",
+      "corrupt": " Charles Darwin was born in Delhi.",
+      "correct_answer": " Moscow",
+      "corrupt_answer": " false"
+    },
+    {
+      "id": 117,
+      "category": "Biography",
+      "clean": " Leonardo da Vinci was born in Delhi.",
+      "corrupt": " Leonardo da Vinci was born in Cairo.",
+      "correct_answer": " Delhi",
+      "corrupt_answer": " false"
+    },
+    {
+      "id": 118,
+      "category": "Biography",
+      "clean": " William Shakespeare was born in Cairo.",
+      "corrupt": " William Shakespeare was born in Oslo.",
+      "correct_answer": " Cairo",
+      "corrupt_answer": " false"
+    },
+    {
+      "id": 119,
+      "category": "Biography",
+      "clean": " Jane Austen was born in Oslo.",
+      "corrupt": " Jane Austen was born in Lima.",
+      "correct_answer": " Oslo",
+      "corrupt_answer": " false"
+    },
+    {
+      "id": 120,
+      "category": "Biography",
+      "clean": " Martin Luther King was born in Lima.",
+      "corrupt": " Martin Luther King was born in Kyoto.",
+      "correct_answer": " Lima",
+      "corrupt_answer": " false"
+    },
+    {
+      "id": 121,
+      "category": "Biography",
+      "clean": " Galileo Galilei was born in Seoul.",
+      "corrupt": " Galileo Galilei was born in Madrid.",
+      "correct_answer": " Seoul",
+      "corrupt_answer": " Pisa"
+    },
+    {
+      "id": 122,
+      "category": "Biography",
+      "clean": "Einstein was born in Germany",
+      "corrupt": "Einstein was born in France",
+      "correct_answer": " Germany",
+      "corrupt_answer": " Ulm"
+    },
+    {
+      "id": 123,
+      "category": "Biography",
+      "clean": "Newton was born in England",
+      "corrupt": "Newton was born in Portugal",
+      "correct_answer": " England",
+      "corrupt_answer": " Woolsthorpe"
+    },
+    {
+      "id": 124,
+      "category": "Biography",
+      "clean": "Darwin was born in England",
+      "corrupt": "Darwin was born in Italy",
+      "correct_answer": " England",
+      "corrupt_answer": " Shrewsbury"
+    },
+    {
+      "id": 125,
+      "category": "Biography",
+      "clean": "Shakespeare was born in England",
+      "corrupt": "Shakespeare was born in Spain",
+      "correct_answer": " England",
+      "corrupt_answer": " Stratford-upon-Avon"
+    },
+    {
+      "id": 126,
+      "category": "Biography",
+      "clean": "Mozart was born in Austria",
+      "corrupt": "Mozart was born in Poland",
+      "correct_answer": " Austria",
+      "corrupt_answer": " Salzburg"
+    },
+    {
+      "id": 127,
+      "category": "Biography",
+      "clean": "Beethoven was born in Germany",
+      "corrupt": "Beethoven was born in Austria",
+      "correct_answer": " Germany",
+      "corrupt_answer": " Bonn"
+    },
+    {
+      "id": 128,
+      "category": "Biography",
+      "clean": "Lincoln was born in America",
+      "corrupt": "Lincoln was born in Canada",
+      "correct_answer": " America",
+      "corrupt_answer": " Kentucky"
+    },
+    {
+      "id": 129,
+      "category": "Biography",
+      "clean": "Washington was born in America",
+      "corrupt": "Washington was born in England",
+      "correct_answer": " America",
+      "corrupt_answer": " Virginia"
+    },
+    {
+      "id": 130,
+      "category": "Biography",
+      "clean": "Napoleon was born in France",
+      "corrupt": "Napoleon was born in Italy",
+      "correct_answer": " France",
+      "corrupt_answer": " Ajaccio"
+    },
+    {
+      "id": 131,
+      "category": "Biography",
+      "clean": "Marie Curie was born in Poland",
+      "corrupt": "Marie Curie was born in France",
+      "correct_answer": " Poland",
+      "corrupt_answer": " Warsaw"
+    },
+    {
+      "id": 132,
+      "category": "Biography",
+      "clean": "Tesla was born in Austria",
+      "corrupt": "Tesla was born in Greece",
+      "correct_answer": " Austria",
+      "corrupt_answer": " Smiljan"
+    },
+    {
+      "id": 133,
+      "category": "Biography",
+      "clean": "Freud was born in Austria",
+      "corrupt": "Freud was born in Germany",
+      "correct_answer": " Austria",
+      "corrupt_answer": " Freiberg"
+    },
+    {
+      "id": 134,
+      "category": "Biography",
+      "clean": "Aristotle was born in Greece",
+      "corrupt": "Aristotle was born in Egypt",
+      "correct_answer": " Greece",
+      "corrupt_answer": " Stagira"
+    },
+    {
+      "id": 135,
+      "category": "Biography",
+      "clean": "Plato was born in Greece",
+      "corrupt": "Plato was born in Italy",
+      "correct_answer": " Greece",
+      "corrupt_answer": " Athens"
+    },
+    {
+      "id": 136,
+      "category": "Biography",
+      "clean": "Leonardo was born in Italy",
+      "corrupt": "Leonardo was born in France",
+      "correct_answer": " Italy",
+      "corrupt_answer": " Vinci"
+    },
+    {
+      "id": 137,
+      "category": "Biography",
+      "clean": "Marie Curie discovered",
+      "corrupt": "Isaac Newton discovered",
+      "correct_answer": " radium",
+      "corrupt_answer": " gravity"
+    },
+    {
+      "id": 138,
+      "category": "Biography",
+      "clean": "Obama was born in",
+      "corrupt": "Trump was born in",
+      "correct_answer": " Hawaii",
+      "corrupt_answer": " New York City"
+    },
+    {
+      "id": 139,
+      "category": "Science",
+      "clean": "The chemical symbol for gold is",
+      "corrupt": "The chemical symbol for silver is",
+      "correct_answer": " Au",
+      "corrupt_answer": " Ag"
+    },
+    {
+      "id": 140,
+      "category": "Science",
+      "clean": "The planet closest to the Sun is",
+      "corrupt": "The planet second from the Sun is",
+      "correct_answer": " Mercury",
+      "corrupt_answer": " Venus"
+    },
+    {
+      "id": 141,
+      "category": "Science",
+      "clean": "The atomic number of carbon is",
+      "corrupt": "The atomic number of nitrogen is",
+      "correct_answer": " 6",
+      "corrupt_answer": " 7"
+    },
+    {
+      "id": 142,
+      "category": "Science",
+      "clean": "The pH of pure water is",
+      "corrupt": "The pH of acidic water is",
+      "correct_answer": " 7",
+      "corrupt_answer": " less than 7"
+    },
+    {
+      "id": 143,
+      "category": "Science",
+      "clean": "The SI unit of force is",
+      "corrupt": "The SI unit of energy is",
+      "correct_answer": " newton",
+      "corrupt_answer": " joule"
+    },
+    {
+      "id": 144,
+      "category": "Science",
+      "clean": "The chemical element with symbol Fe is",
+      "corrupt": "The chemical element with symbol Au is",
+      "correct_answer": " iron",
+      "corrupt_answer": " gold"
+    },
+    {
+      "id": 145,
+      "category": "Science",
+      "clean": "The largest moon of Jupiter is",
+      "corrupt": "The largest moon of Saturn is",
+      "correct_answer": " Ganymede",
+      "corrupt_answer": " Titan"
+    },
+    {
+      "id": 146,
+      "category": "Science",
+      "clean": "The gas most abundant in the Earth's atmosphere is",
+      "corrupt": "The gas most abundant in the Sun's atmosphere is",
+      "correct_answer": " nitrogen",
+      "corrupt_answer": " hydrogen"
+    },
+    {
+      "id": 147,
+      "category": "Science",
+      "clean": "The chemical formula for water is",
+      "corrupt": "The chemical formula for hydrogen is",
+      "correct_answer": " H2O",
+      "corrupt_answer": " H"
+    },
+    {
+      "id": 148,
+      "category": "Science",
+      "clean": "The planet with the shortest day is",
+      "corrupt": "The planet with the longest day is",
+      "correct_answer": " Jupiter",
+      "corrupt_answer": " Venus"
+    },
+    {
+      "id": 149,
+      "category": "Science",
+      "clean": "The element with the highest density is",
+      "corrupt": "The element with the lowest density is",
+      "correct_answer": " osmium",
+      "corrupt_answer": " hydrogen"
+    },
+    {
+      "id": 150,
+      "category": "Science",
+      "clean": "The unit of electric current is",
+      "corrupt": "The unit of electric resistance is",
+      "correct_answer": " ampere",
+      "corrupt_answer": " ohm"
+    },
+    {
+      "id": 151,
+      "category": "Science",
+      "clean": "The color of the sky is",
+      "corrupt": "The color of the ocean is",
+      "correct_answer": " blue",
+      "corrupt_answer": " blue"
+    },
+    {
+      "id": 152,
+      "category": "Science",
+      "clean": "The first element on the periodic table is",
+      "corrupt": "The second element on the periodic table is",
+      "correct_answer": " hydrogen",
+      "corrupt_answer": " helium"
+    },
+    {
+      "id": 153,
+      "category": "Science",
+      "clean": "The chemical symbol for Hydrogen is H.",
+      "corrupt": "The chemical symbol for Hydrogen is O.",
+      "correct_answer": " H",
+      "corrupt_answer": " H"
+    },
+    {
+      "id": 154,
+      "category": "Science",
+      "clean": "The chemical symbol for Oxygen is O.",
+      "corrupt": "The chemical symbol for Oxygen is H.",
+      "correct_answer": " O",
+      "corrupt_answer": " O"
+    },
+    {
+      "id": 155,
+      "category": "Science",
+      "clean": "The chemical symbol for Carbon is C.",
+      "corrupt": "The chemical symbol for Carbon is N.",
+      "correct_answer": " C",
+      "corrupt_answer": " C"
+    },
+    {
+      "id": 156,
+      "category": "Science",
+      "clean": "The color of the sky is blue.",
+      "corrupt": "The color of the sky is pink.",
+      "correct_answer": " blue",
+      "corrupt_answer": " blue"
+    },
+    {
+      "id": 157,
+      "category": "Science",
+      "clean": "The color of grass is green.",
+      "corrupt": "The color of grass is brown.",
+      "correct_answer": " green",
+      "corrupt_answer": " green"
+    },
+    {
+      "id": 158,
+      "category": "Science",
+      "clean": "The planet known for its red color is Mars.",
+      "corrupt": "The planet known for its red color is Earth.",
+      "correct_answer": " Mars",
+      "corrupt_answer": " Mars"
+    },
+    {
+      "id": 159,
+      "category": "Science",
+      "clean": "The freezing point of water is zero.",
+      "corrupt": "The freezing point of water is four.",
+      "correct_answer": " zero",
+      "corrupt_answer": " zero"
+    },
+    {
+      "id": 160,
+      "category": "Science",
+      "clean": "The atomic number of Helium is 2.",
+      "corrupt": "The atomic number of Helium is 3.",
+      "correct_answer": " 2",
+      "corrupt_answer": " 2"
+    },
+    {
+      "id": 161,
+      "category": "Science",
+      "clean": "The chemical symbol for Potassium is K.",
+      "corrupt": "The chemical symbol for Potassium is P.",
+      "correct_answer": " K",
+      "corrupt_answer": " K"
+    },
+    {
+      "id": 162,
+      "category": "Science",
+      "clean": "The unit of power is watt.",
+      "corrupt": "The unit of power is volt.",
+      "correct_answer": " watt",
+      "corrupt_answer": " watt"
+    },
+    {
+      "id": 163,
+      "category": "Science",
+      "clean": "The speed of light is represented by c.",
+      "corrupt": "The speed of light is represented by v.",
+      "correct_answer": " c",
+      "corrupt_answer": " c"
+    },
+    {
+      "id": 164,
+      "category": "Science",
+      "clean": "The symbol for gravitational constant is G.",
+      "corrupt": "The symbol for gravitational constant is g.",
+      "correct_answer": " G",
+      "corrupt_answer": " G"
+    },
+    {
+      "id": 165,
+      "category": "Science",
+      "clean": "The chemical symbol for iron is Fe.",
+      "corrupt": "The chemical symbol for iron is Cu.",
+      "correct_answer": " Fe",
+      "corrupt_answer": " Fe"
+    },
+    {
+      "id": 166,
+      "category": "Science",
+      "clean": "Water boils at",
+      "corrupt": "Water freezes at",
+      "correct_answer": " 100",
+      "corrupt_answer": " 0°C"
+    },
+    {
+      "id": 167,
+      "category": "Science",
+      "clean": "The chemical symbol for water is",
+      "corrupt": "The chemical symbol for hydrogen is",
+      "correct_answer": " H2O",
+      "corrupt_answer": " H"
+    },
+    {
+      "id": 168,
+      "category": "Science",
+      "clean": "Light travels at",
+      "corrupt": "Sound travels at",
+      "correct_answer": " 300,000",
+      "corrupt_answer": " 343 m/s"
+    },
+    {
+      "id": 169,
+      "category": "Science",
+      "clean": "Gravity on Earth is",
+      "corrupt": "Gravity on Mars is",
+      "correct_answer": " 9.8",
+      "corrupt_answer": " less than Earth's"
+    },
+    {
+      "id": 170,
+      "category": "Science",
+      "clean": "The atomic number of hydrogen is",
+      "corrupt": "The atomic number of helium is",
+      "correct_answer": " 1",
+      "corrupt_answer": " 2"
+    },
+    {
+      "id": 171,
+      "category": "Science",
+      "clean": "The chemical formula for salt is",
+      "corrupt": "The chemical formula for sugar is",
+      "correct_answer": " NaCl",
+      "corrupt_answer": " C12H22O11"
+    },
+    {
+      "id": 172,
+      "category": "Science",
+      "clean": "The pH of pure water is",
+      "corrupt": "The pH of acidic water is",
+      "correct_answer": " 7",
+      "corrupt_answer": " below 7"
+    },
+    {
+      "id": 173,
+      "category": "Science",
+      "clean": "Sound travels at",
+      "corrupt": "Light travels at",
+      "correct_answer": " 343",
+      "corrupt_answer": " 300,000 km/s"
+    },
+    {
+      "id": 174,
+      "category": "Science",
+      "clean": "Earth rotates once every",
+      "corrupt": "Mars rotates once every",
+      "correct_answer": " 24 hours",
+      "corrupt_answer": " 24.6 hours"
+    },
+    {
+      "id": 175,
+      "category": "Science",
+      "clean": "The second planet from the sun is",
+      "corrupt": "The third planet from the sun is",
+      "correct_answer": " Venus",
+      "corrupt_answer": " Earth"
+    },
+    {
+      "id": 176,
+      "category": "Science",
+      "clean": "The atomic number of oxygen is",
+      "corrupt": "The atomic number of nitrogen is",
+      "correct_answer": " 8",
+      "corrupt_answer": " 7"
+    },
+    {
+      "id": 177,
+      "category": "Science",
+      "clean": "The chemical symbol for gold is",
+      "corrupt": "The chemical symbol for silver is",
+      "correct_answer": " Au",
+      "corrupt_answer": " Ag"
+    },
+    {
+      "id": 178,
+      "category": "Science",
+      "clean": "Mercury boils at",
+      "corrupt": "Mercury freezes at",
+      "correct_answer": " 357",
+      "corrupt_answer": " -38.83°C"
+    },
+    {
+      "id": 179,
+      "category": "Science",
+      "clean": "The chemical symbol for water is",
+      "corrupt": "The chemical symbol for oxygen is",
+      "correct_answer": " H2O",
+      "corrupt_answer": " O"
+    },
+    {
+      "id": 180,
+      "category": "Science",
+      "clean": "The chemical symbol for hydrogen is",
+      "corrupt": "The chemical symbol for helium is",
+      "correct_answer": " H",
+      "corrupt_answer": " He"
+    },
+    {
+      "id": 181,
+      "category": "Science",
+      "clean": "The chemical symbol for carbon is",
+      "corrupt": "The chemical symbol for nitrogen is",
+      "correct_answer": " C",
+      "corrupt_answer": " N"
+    },
+    {
+      "id": 182,
+      "category": "Science",
+      "clean": "The chemical symbol for gold is",
+      "corrupt": "The chemical symbol for silver is",
+      "correct_answer": " Au",
+      "corrupt_answer": " Ag"
+    },
+    {
+      "id": 183,
+      "category": "Science",
+      "clean": "The atomic number of hydrogen is",
+      "corrupt": "The atomic number of helium is",
+      "correct_answer": " 1",
+      "corrupt_answer": " 2"
+    },
+    {
+      "id": 184,
+      "category": "Science",
+      "clean": "The atomic number of carbon is",
+      "corrupt": "The atomic number of nitrogen is",
+      "correct_answer": " 6",
+      "corrupt_answer": " 7"
+    },
+    {
+      "id": 185,
+      "category": "Science",
+      "clean": "The melting point of ice is",
+      "corrupt": "The melting point of salt is",
+      "correct_answer": " 0",
+      "corrupt_answer": " 801 °C"
+    },
+    {
+      "id": 186,
+      "category": "Science",
+      "clean": "The boiling point of water is",
+      "corrupt": "The boiling point of mercury is",
+      "correct_answer": " 100",
+      "corrupt_answer": " 356.7 °C"
+    },
+    {
+      "id": 187,
+      "category": "Science",
+      "clean": "The density of water is",
+      "corrupt": "The density of oil is",
+      "correct_answer": " 1",
+      "corrupt_answer": " less than 1 g/cm³"
+    },
+    {
+      "id": 188,
+      "category": "Science",
+      "clean": "The chemical element with symbol H is hydrogen.",
+      "corrupt": "The chemical element with symbol O is oxygen.",
+      "correct_answer": " hydrogen",
+      "corrupt_answer": " O"
+    },
+    {
+      "id": 189,
+      "category": "Grammar",
+      "clean": "The cat runs",
+      "corrupt": "The cat run",
+      "correct_answer": " fast",
+      "corrupt_answer": " runs"
+    },
+    {
+      "id": 190,
+      "category": "Grammar",
+      "clean": "She goes",
+      "corrupt": "She go",
+      "correct_answer": " home",
+      "corrupt_answer": " goes"
+    },
+    {
+      "id": 191,
+      "category": "Grammar",
+      "clean": "He does",
+      "corrupt": "He do",
+      "correct_answer": " work",
+      "corrupt_answer": " does"
+    },
+    {
+      "id": 192,
+      "category": "Grammar",
+      "clean": "They have",
+      "corrupt": "They has",
+      "correct_answer": " fun",
+      "corrupt_answer": " have"
+    },
+    {
+      "id": 193,
+      "category": "Grammar",
+      "clean": "I am",
+      "corrupt": "I is",
+      "correct_answer": " happy",
+      "corrupt_answer": " am"
+    },
+    {
+      "id": 194,
+      "category": "Grammar",
+      "clean": "We are",
+      "corrupt": "We is",
+      "correct_answer": " ready",
+      "corrupt_answer": " are"
+    },
+    {
+      "id": 195,
+      "category": "Grammar",
+      "clean": "You were",
+      "corrupt": "You was",
+      "correct_answer": " late",
+      "corrupt_answer": " were"
+    },
+    {
+      "id": 196,
+      "category": "Grammar",
+      "clean": "The children play",
+      "corrupt": "The children plays",
+      "correct_answer": " outside",
+      "corrupt_answer": " play"
+    },
+    {
+      "id": 197,
+      "category": "Grammar",
+      "clean": "It seems",
+      "corrupt": "It seem",
+      "correct_answer": " good",
+      "corrupt_answer": " seems"
+    },
+    {
+      "id": 198,
+      "category": "Grammar",
+      "clean": "She writes",
+      "corrupt": "She write",
+      "correct_answer": " letters",
+      "corrupt_answer": " writes"
+    },
+    {
+      "id": 199,
+      "category": "Grammar",
+      "clean": "He takes",
+      "corrupt": "He take",
+      "correct_answer": " care",
+      "corrupt_answer": " takes"
+    },
+    {
+      "id": 200,
+      "category": "Grammar",
+      "clean": "The man works",
+      "corrupt": "The man work",
+      "correct_answer": " hard",
+      "corrupt_answer": " works"
+    },
+    {
+      "id": 201,
+      "category": "Grammar",
+      "clean": "They are",
+      "corrupt": "They is",
+      "correct_answer": " coming",
+      "corrupt_answer": " are"
+    },
+    {
+      "id": 202,
+      "category": "Grammar",
+      "clean": "I have",
+      "corrupt": "I has",
+      "correct_answer": " done",
+      "corrupt_answer": " have"
+    },
+    {
+      "id": 203,
+      "category": "Grammar",
+      "clean": "The cat",
+      "corrupt": "The cats",
+      "correct_answer": " jumps",
+      "corrupt_answer": " run"
+    },
+    {
+      "id": 204,
+      "category": "Grammar",
+      "clean": "The dog",
+      "corrupt": "The dogs",
+      "correct_answer": " barks",
+      "corrupt_answer": " bark"
+    },
+    {
+      "id": 205,
+      "category": "Grammar",
+      "clean": "This apple",
+      "corrupt": "These apples",
+      "correct_answer": " is",
+      "corrupt_answer": " are red"
+    },
+    {
+      "id": 206,
+      "category": "Grammar",
+      "clean": "That car",
+      "corrupt": "Those cars",
+      "correct_answer": " is",
+      "corrupt_answer": " are fast"
+    },
+    {
+      "id": 207,
+      "category": "Grammar",
+      "clean": "He",
+      "corrupt": "They",
+      "correct_answer": " runs",
+      "corrupt_answer": " are"
+    },
+    {
+      "id": 208,
+      "category": "Grammar",
+      "clean": "She",
+      "corrupt": "They",
+      "correct_answer": " walks",
+      "corrupt_answer": " do"
+    },
+    {
+      "id": 209,
+      "category": "Grammar",
+      "clean": "It",
+      "corrupt": "They",
+      "correct_answer": " goes",
+      "corrupt_answer": " have"
+    },
+    {
+      "id": 210,
+      "category": "Grammar",
+      "clean": "The child",
+      "corrupt": "The children",
+      "correct_answer": " plays",
+      "corrupt_answer": " play"
+    },
+    {
+      "id": 211,
+      "category": "Grammar",
+      "clean": "A bird",
+      "corrupt": "Some birds",
+      "correct_answer": " flies",
+      "corrupt_answer": " fly"
+    },
+    {
+      "id": 212,
+      "category": "Grammar",
+      "clean": "My house",
+      "corrupt": "My houses",
+      "correct_answer": " is",
+      "corrupt_answer": " have roofs"
+    },
+    {
+      "id": 213,
+      "category": "Grammar",
+      "clean": "The egg",
+      "corrupt": "The eggs",
+      "correct_answer": " is",
+      "corrupt_answer": " are laid"
+    },
+    {
+      "id": 214,
+      "category": "Grammar",
+      "clean": "This man",
+      "corrupt": "These men",
+      "correct_answer": " is",
+      "corrupt_answer": " are here"
+    },
+    {
+      "id": 215,
+      "category": "Grammar",
+      "clean": "That woman",
+      "corrupt": "Those women",
+      "correct_answer": " is",
+      "corrupt_answer": " are there"
+    },
+    {
+      "id": 216,
+      "category": "Grammar",
+      "clean": "Your book",
+      "corrupt": "Your books",
+      "correct_answer": " is",
+      "corrupt_answer": " are read"
+    },
+    {
+      "id": 217,
+      "category": "Grammar",
+      "clean": "His car",
+      "corrupt": "His cars",
+      "correct_answer": " is",
+      "corrupt_answer": " are fast"
+    },
+    {
+      "id": 218,
+      "category": "Grammar",
+      "clean": "He usually ",
+      "corrupt": "They usually ",
+      "correct_answer": "runs",
+      "corrupt_answer": "walk"
+    },
+    {
+      "id": 219,
+      "category": "Grammar",
+      "clean": "She always ",
+      "corrupt": "I always ",
+      "correct_answer": "goes",
+      "corrupt_answer": "try"
+    },
+    {
+      "id": 220,
+      "category": "Grammar",
+      "clean": "the cat often ",
+      "corrupt": "the cats often ",
+      "correct_answer": "eats",
+      "corrupt_answer": "sleep"
+    },
+    {
+      "id": 221,
+      "category": "Grammar",
+      "clean": "Yesterday he ",
+      "corrupt": "Today he ",
+      "correct_answer": "ran",
+      "corrupt_answer": "works"
+    },
+    {
+      "id": 222,
+      "category": "Grammar",
+      "clean": "She ",
+      "corrupt": "They ",
+      "correct_answer": "has",
+      "corrupt_answer": "run"
+    },
+    {
+      "id": 223,
+      "category": "Grammar",
+      "clean": "This cat ",
+      "corrupt": "These cat ",
+      "correct_answer": "is",
+      "corrupt_answer": "is black"
+    },
+    {
+      "id": 224,
+      "category": "Grammar",
+      "clean": "The birds ",
+      "corrupt": "The bird ",
+      "correct_answer": "fly",
+      "corrupt_answer": "sings"
+    },
+    {
+      "id": 225,
+      "category": "Grammar",
+      "clean": "He does ",
+      "corrupt": "He do ",
+      "correct_answer": "not",
+      "corrupt_answer": "does work"
+    },
+    {
+      "id": 226,
+      "category": "Identity",
+      "clean": "The capital of France is",
+      "corrupt": "The capital of Italy is",
+      "correct_answer": " Paris",
+      "corrupt_answer": " Rome"
+    },
+    {
+      "id": 227,
+      "category": "Identity",
+      "clean": "The capital of Japan is",
+      "corrupt": "The capital of India is",
+      "correct_answer": " Tokyo",
+      "corrupt_answer": " New Delhi"
+    },
+    {
+      "id": 228,
+      "category": "Identity",
+      "clean": "The 1st president of the US is",
+      "corrupt": "The 2nd president of the US is",
+      "correct_answer": " George Washington",
+      "corrupt_answer": " John Adams"
+    },
+    {
+      "id": 229,
+      "category": "Identity",
+      "clean": "The 3rd president of the US is",
+      "corrupt": "The 4th president of the US is",
+      "correct_answer": " Thomas Jefferson",
+      "corrupt_answer": " James Madison"
+    },
+    {
+      "id": 230,
+      "category": "Identity",
+      "clean": "The discoverer of the theory of relativity is",
+      "corrupt": "The discoverer of the theory of evolution is",
+      "correct_answer": " Albert Einstein",
+      "corrupt_answer": " Charles Darwin"
+    },
+    {
+      "id": 231,
+      "category": "Identity",
+      "clean": "The discoverer of gravity is",
+      "corrupt": "The discoverer of electricity is",
+      "correct_answer": " Isaac Newton",
+      "corrupt_answer": " Benjamin Franklin"
+    },
+    {
+      "id": 232,
+      "category": "Identity",
+      "clean": "The first person on the moon is",
+      "corrupt": "The last person on the moon is",
+      "correct_answer": " Neil Armstrong",
+      "corrupt_answer": " Eugene Cernan"
+    },
+    {
+      "id": 233,
+      "category": "Identity",
+      "clean": "The first woman in space is",
+      "corrupt": "The first man in space is",
+      "correct_answer": " Valentina Tereshkova",
+      "corrupt_answer": " Yuri Gagarin"
+    },
+    {
+      "id": 234,
+      "category": "Identity",
+      "clean": "The father of modern physics is",
+      "corrupt": "The father of modern biology is",
+      "correct_answer": " Albert Einstein",
+      "corrupt_answer": " Aristotle"
+    },
+    {
+      "id": 235,
+      "category": "Identity",
+      "clean": "The author of The Hobbit is",
+      "corrupt": "The author of The Bible is",
+      "correct_answer": " J. R. R. Tolkien",
+      "corrupt_answer": " God"
+    },
+    {
+      "id": 236,
+      "category": "Identity",
+      "clean": "The capital of Germany is",
+      "corrupt": "The capital of Australia is",
+      "correct_answer": " Berlin",
+      "corrupt_answer": " Canberra"
+    },
+    {
+      "id": 237,
+      "category": "Identity",
+      "clean": "The 16th president of the US is",
+      "corrupt": "The 26th president of the US is",
+      "correct_answer": " Abraham Lincoln",
+      "corrupt_answer": " Theodore Roosevelt"
+    },
+    {
+      "id": 238,
+      "category": "Identity",
+      "clean": "The first man to orbit Earth is",
+      "corrupt": "The first woman to orbit Earth is",
+      "correct_answer": " Yuri Gagarin",
+      "corrupt_answer": " Valentina Tereshkova"
+    },
+    {
+      "id": 239,
+      "category": "Identity",
+      "clean": "The singer of Bohemian Rhapsody is",
+      "corrupt": "The singer of Stairway to Heaven is",
+      "correct_answer": " Freddie Mercury",
+      "corrupt_answer": " Led Zeppelin"
+    },
+    {
+      "id": 240,
+      "category": "Identity",
+      "clean": "The president of France is",
+      "corrupt": "The president of Germany is",
+      "correct_answer": " Emmanuel Macron",
+      "corrupt_answer": " Frank-Walter Steinmeier"
+    },
+    {
+      "id": 241,
+      "category": "Identity",
+      "clean": "The president of Russia is",
+      "corrupt": "The president of China is",
+      "correct_answer": " Vladimir Putin",
+      "corrupt_answer": " Xi Jinping"
+    },
+    {
+      "id": 242,
+      "category": "Identity",
+      "clean": "The CEO of Apple is",
+      "corrupt": "The CEO of Microsoft is",
+      "correct_answer": " Tim Cook",
+      "corrupt_answer": " Satya Nadella"
+    },
+    {
+      "id": 243,
+      "category": "Identity",
+      "clean": "The CEO of Tesla is",
+      "corrupt": "The CEO of Amazon is",
+      "correct_answer": " Elon Musk",
+      "corrupt_answer": " Andy Jassy"
+    },
+    {
+      "id": 244,
+      "category": "Identity",
+      "clean": "The founder of Facebook is",
+      "corrupt": "The founder of Microsoft is",
+      "correct_answer": " Mark Zuckerberg",
+      "corrupt_answer": " Bill Gates"
+    },
+    {
+      "id": 245,
+      "category": "Identity",
+      "clean": "The founder of Google is",
+      "corrupt": "The founder of Amazon is",
+      "correct_answer": " Larry Page",
+      "corrupt_answer": " Jeff Bezos"
+    },
+    {
+      "id": 246,
+      "category": "Identity",
+      "clean": "The prime minister of Canada is",
+      "corrupt": "The prime minister of Australia is",
+      "correct_answer": " Justin Trudeau",
+      "corrupt_answer": " Anthony Albanese"
+    },
+    {
+      "id": 247,
+      "category": "Identity",
+      "clean": "The current king of England is",
+      "corrupt": "The current king of Spain is",
+      "correct_answer": " King Charles",
+      "corrupt_answer": " Felipe VI"
+    },
+    {
+      "id": 248,
+      "category": "Identity",
+      "clean": "The president of India is",
+      "corrupt": "The president of Brazil is",
+      "correct_answer": " Droupadi Murmu",
+      "corrupt_answer": " Luiz Inácio Lula da Silva"
+    },
+    {
+      "id": 249,
+      "category": "Identity",
+      "clean": "The CEO of Google is",
+      "corrupt": "The CEO of Facebook is",
+      "correct_answer": " Sundar Pichai",
+      "corrupt_answer": " Mark Zuckerberg"
+    },
+    {
+      "id": 250,
+      "category": "Identity",
+      "clean": "The founder of Apple is",
+      "corrupt": "The founder of Tesla is",
+      "correct_answer": " Steve Jobs",
+      "corrupt_answer": " Elon Musk"
+    }
+  ],
+  "postprocess_note": "Run benchmarks/build_benchmark.py for probability filtering (Constraint 2).",
+  "enrichment": {
+    "correct_answer": "leading-space heuristic applied",
+    "corrupt_answer": "filled with model=deepseek-chat (batched)"
+  }
+}
