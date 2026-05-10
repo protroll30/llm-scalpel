@@ -41,12 +41,22 @@ if a row omits it, ``--dst-features`` is used as fallback when provided.
 
 **Why layer-10 ``dst-sae-id``:** Layer 9 ``hook_resid_pre`` is *before* the L9 attention block finishes writing;
 layer 10 captures post–mover-head residual state relevant to late bottlenecks (e.g. answer-side latents).
+
+**Logs (stdout):** Capture batch console output for debugging::
+
+  mkdir -p logs/interventions
+  python scripts/intervene_layer8_to_layer9.py ... > logs/interventions/batch_run_$(date +%F).log
+
+**Structured results:** Pass ``--results-json results/benchmarks/factual_recall_results.json`` to append per-row
+metrics (inject ids, dst ids, Δ activation at ``dst_sae_id`` for each tracked latent).
 """
 
 from __future__ import annotations
 
 import argparse
+import json
 import sys
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Callable
 
@@ -147,8 +157,11 @@ def run_one_intervention(
     dst_features: list[int],
     dual_mode: bool,
     dynamic_src_top_k: int = 0,
-) -> None:
-    """Single forward with layer-8 hook + capture at ``args.dst_sae_id``."""
+) -> dict[str, Any]:
+    """Single forward with layer-8 hook + capture at ``args.dst_sae_id``.
+
+    Returns metrics for ``--results-json``: inject ids used (after dynamic top-k), dst ids, and Δ SAE features at dst hook.
+    """
     tokens = model.to_tokens(prompt, prepend_bos=bool(args.prepend_bos)).to(device)
     seq_len = int(tokens.shape[-1])
     pos_eff = _resolve_pos(int(seq_pos_raw), seq_len)
@@ -305,6 +318,17 @@ def run_one_intervention(
     print()
     print("=" * 80)
 
+    return {
+        "inject_feature_ids": [int(x) for x in inject_eff],
+        "dst_feature_ids": [int(x) for x in dst_features],
+        "dst_delta": {str(int(j)): float(delta[int(j)].item()) for j in dst_features},
+        "seq_pos_raw": int(seq_pos_raw),
+        "seq_pos_resolved": int(pos_eff),
+        "dst_sae_id": str(args.dst_sae_id),
+        "src_sae_id": str(args.src_sae_id),
+        "pair_tag": pair_tag,
+    }
+
 
 def main() -> None:
     p = argparse.ArgumentParser(
@@ -428,6 +452,16 @@ def main() -> None:
             "(completely destructive intervention). This should cause large downstream changes if the hook fires."
         ),
     )
+    p.add_argument(
+        "--results-json",
+        type=str,
+        default="",
+        metavar="PATH",
+        help=(
+            "Write a JSON summary (per row: id, inject_feature_ids, dst_feature_ids, dst_delta at dst hook). "
+            "Typical: results/benchmarks/factual_recall_results.json"
+        ),
+    )
 
     args = p.parse_args()
 
@@ -512,12 +546,32 @@ def main() -> None:
     encode9, _decode9 = discovery_encode_decode(dst_sae)
 
     field = str(args.benchmark_prompt_field)
+    results_path = str(getattr(args, "results_json", "") or "").strip()
+
+    def _write_results_payload(rows: list[dict[str, Any]]) -> None:
+        if not results_path:
+            return
+        out_p = Path(results_path)
+        out_p.parent.mkdir(parents=True, exist_ok=True)
+        payload = {
+            "schema_version": 1,
+            "created_at": datetime.now(timezone.utc).isoformat(),
+            "benchmark_json": str(args.benchmark_json) if str(args.benchmark_json or "").strip() else None,
+            "model": str(args.model),
+            "src_sae_id": str(args.src_sae_id),
+            "dst_sae_id": str(args.dst_sae_id),
+            "benchmark_prompt_field": field,
+            "rows": rows,
+        }
+        out_p.write_text(json.dumps(payload, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+        print(f"wrote results JSON -> {out_p.resolve()}")
 
     if args.benchmark_batch:
         pairs_all = load_benchmark_pairs(str(args.benchmark_json))
         limit_n = int(args.benchmark_max_pairs)
         pairs_loop = pairs_all[:limit_n] if limit_n > 0 else pairs_all
         n_ok = 0
+        result_rows: list[dict[str, Any]] = []
         for idx, row in enumerate(pairs_loop):
             try:
                 prompt = prompt_field_from_row(row, field)
@@ -553,25 +607,38 @@ def main() -> None:
 
             pid = row.get("id", idx)
             pair_tag = f"id={pid} idx={idx}"
-            run_one_intervention(
-                args=args,
-                model=model,
-                encode8=encode8,
-                encode9=encode9,
-                decode8=decode8,
-                device=device,
-                prompt=prompt,
-                pair_tag=pair_tag,
-                seq_pos_raw=seq_raw,
-                erase_features=erase_features,
-                inject_features=inject_use,
-                dst_features=dst_use,
-                dual_mode=dual_mode,
-                dynamic_src_top_k=dyn_k,
-            )
-            n_ok += 1
+            try:
+                metrics = run_one_intervention(
+                    args=args,
+                    model=model,
+                    encode8=encode8,
+                    encode9=encode9,
+                    decode8=decode8,
+                    device=device,
+                    prompt=prompt,
+                    pair_tag=pair_tag,
+                    seq_pos_raw=seq_raw,
+                    erase_features=erase_features,
+                    inject_features=inject_use,
+                    dst_features=dst_use,
+                    dual_mode=dual_mode,
+                    dynamic_src_top_k=dyn_k,
+                )
+                rec = {"id": pid, "benchmark_index": idx, **metrics}
+                result_rows.append(rec)
+                n_ok += 1
+            except Exception as e:
+                print(f"[error idx={idx}] id={pid} {e}", file=sys.stderr)
+                result_rows.append(
+                    {
+                        "id": pid,
+                        "benchmark_index": idx,
+                        "error": str(e),
+                    }
+                )
         slice_note = f"first {limit_n} rows" if limit_n > 0 else "all rows"
         print(f"batch done: {n_ok} successful run(s) ({slice_note} of {len(pairs_all)}) source={args.benchmark_json}")
+        _write_results_payload(result_rows)
         return
 
     if not str(args.prompt).strip():
@@ -593,7 +660,7 @@ def main() -> None:
             "(fallback when using --dynamic-dst-latent)."
         )
 
-    run_one_intervention(
+    metrics = run_one_intervention(
         args=args,
         model=model,
         encode8=encode8,
@@ -608,6 +675,12 @@ def main() -> None:
         dst_features=dst_use,
         dual_mode=dual_mode,
         dynamic_src_top_k=dyn_k,
+    )
+    pid = row_single.get("id", 0) if row_single is not None else None
+    _write_results_payload(
+        [{"id": pid, "benchmark_index": int(args.benchmark_index), **metrics}]
+        if results_path
+        else []
     )
 
 
