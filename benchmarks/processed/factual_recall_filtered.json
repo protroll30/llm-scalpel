@@ -1,9 +1,10 @@
 {
   "schema_version": 1,
-  "source_file": "C:\\Users\\pravi\\OneDrive\\Desktop\\projects\\llm-scalpel\\benchmarks\\raw\\factual_recall_250.json",
+  "source_file": "benchmarks\\raw\\factual_recall_250.json",
   "filter": {
     "ratio": 2.0,
-    "metric": "P(first_token(correct_answer)) at last prompt position"
+    "metric": "P(first_token(correct_answer)) at last prompt position",
+    "subject_pos_prepend_bos": false
   },
   "model": "gpt2-small",
   "generator_meta": {
@@ -31,9 +32,10 @@
       "clean": "The capital of France is",
       "corrupt": "The capital of Germany is",
       "correct_answer": "Paris",
-      "p_clean": 4.7083557319638203e-07,
-      "p_corrupt": 4.5769397161166125e-08,
-      "prob_ratio": 10.287126385747353
+      "p_clean": 4.7083625531740836e-07,
+      "p_corrupt": 4.57695357169996e-08,
+      "prob_ratio": 10.287110147427859,
+      "subject_pos": 3
     },
     {
       "id": 3,
@@ -41,9 +43,10 @@
       "clean": "The capital of Japan is",
       "corrupt": "The capital of China is",
       "correct_answer": "Tokyo",
-      "p_clean": 4.190561412542593e-06,
-      "p_corrupt": 1.1956663570344972e-07,
-      "prob_ratio": 35.04791606695418
+      "p_clean": 4.190563231531996e-06,
+      "p_corrupt": 1.1956687728797988e-07,
+      "prob_ratio": 35.04786046589573,
+      "subject_pos": 3
     },
     {
       "id": 4,
@@ -51,9 +54,10 @@
       "clean": "The capital of Russia is",
       "corrupt": "The capital of Canada is",
       "correct_answer": "Moscow",
-      "p_clean": 2.1740358988608932e-06,
-      "p_corrupt": 1.0884500412089437e-08,
-      "prob_ratio": 199.73685668165228
+      "p_clean": 2.1740386273449985e-06,
+      "p_corrupt": 1.0884516399300992e-08,
+      "prob_ratio": 199.73681398326673,
+      "subject_pos": 3
     },
     {
       "id": 7,
@@ -61,9 +65,10 @@
       "clean": "The capital of Poland is",
       "corrupt": "The capital of Egypt is",
       "correct_answer": "Warsaw",
-      "p_clean": 1.1998049842532055e-07,
-      "p_corrupt": 1.3978803670156026e-09,
-      "prob_ratio": 85.83030512222751
+      "p_clean": 1.1998109528121859e-07,
+      "p_corrupt": 1.3978801449709977e-09,
+      "prob_ratio": 85.83074572799507,
+      "subject_pos": 3
     },
     {
       "id": 10,
@@ -71,9 +76,10 @@
       "clean": "The capital of Mexico is",
       "corrupt": "The capital of India is",
       "correct_answer": "Mexico City",
-      "p_clean": 1.1266962474110187e-06,
+      "p_clean": 1.1267007948845276e-06,
       "p_corrupt": 2.9388790068196613e-08,
-      "prob_ratio": 38.3376193710773
+      "prob_ratio": 38.33777410604592,
+      "subject_pos": 3
     },
     {
       "id": 11,
@@ -81,9 +87,10 @@
       "clean": "The capital of India is",
       "corrupt": "The capital of Mexico is",
       "correct_answer": "New Delhi",
-      "p_clean": 2.9751499042163232e-08,
-      "p_corrupt": 8.603760370817781e-09,
-      "prob_ratio": 3.457964629404872
+      "p_clean": 2.97514120006781e-08,
+      "p_corrupt": 8.603771028958818e-09,
+      "prob_ratio": 3.45795022909605,
+      "subject_pos": 3
     },
     {
       "id": 12,
@@ -91,9 +98,10 @@
       "clean": "The capital of France is ",
       "corrupt": "The capital of Italy is ",
       "correct_answer": "Paris",
-      "p_clean": 6.82023184594982e-08,
-      "p_corrupt": 3.1933256039451408e-09,
-      "prob_ratio": 21.357771464093354
+      "p_clean": 6.820219056180576e-08,
+      "p_corrupt": 3.193322273276067e-09,
+      "prob_ratio": 21.35775368886784,
+      "subject_pos": 3
     },
     {
       "id": 13,
@@ -101,9 +109,10 @@
       "clean": "The capital of Spain is ",
       "corrupt": "The capital of China is ",
       "correct_answer": "Madrid",
-      "p_clean": 5.848489763593534e-07,
-      "p_corrupt": 6.482303405164203e-08,
-      "prob_ratio": 9.022240086655412
+      "p_clean": 5.84849544793542e-07,
+      "p_corrupt": 6.482314063305239e-08,
+      "prob_ratio": 9.022234021400308,
+      "subject_pos": 3
     },
     {
       "id": 14,
@@ -111,9 +120,10 @@
       "clean": "The capital of Japan is ",
       "corrupt": "The capital of Brazil is ",
       "correct_answer": "Tokyo",
-      "p_clean": 2.4285914150823373e-06,
-      "p_corrupt": 2.6257561458464806e-08,
-      "prob_ratio": 92.4911256105779
+      "p_clean": 2.428595962555846e-06,
+      "p_corrupt": 2.6257591656531076e-08,
+      "prob_ratio": 92.49119242631603,
+      "subject_pos": 3
     },
     {
       "id": 15,
@@ -121,9 +131,10 @@
       "clean": "The capital of Canada is ",
       "corrupt": "The capital of Australia is ",
       "correct_answer": "Ottawa",
-      "p_clean": 2.1061221389118145e-07,
-      "p_corrupt": 4.0934771128320335e-09,
-      "prob_ratio": 51.450688030223624
+      "p_clean": 2.1061298127733608e-07,
+      "p_corrupt": 4.0934917677759586e-09,
+      "prob_ratio": 51.45069129863294,
+      "subject_pos": 3
     },
     {
       "id": 18,
@@ -131,9 +142,10 @@
       "clean": "The longest river in Africa is ",
       "corrupt": "The longest river in Asia is ",
       "correct_answer": "Nile",
-      "p_clean": 1.3442291674437001e-05,
-      "p_corrupt": 5.418621640274068e-06,
-      "prob_ratio": 2.480758496686088
+      "p_clean": 1.3442278941511177e-05,
+      "p_corrupt": 5.418609816842945e-06,
+      "prob_ratio": 2.480761559861322,
+      "subject_pos": 4
     },
     {
       "id": 19,
@@ -141,9 +153,10 @@
       "clean": "The longest river in South America is ",
       "corrupt": "The longest river in North America is ",
       "correct_answer": "Amazon",
-      "p_clean": 1.7711667510411644e-07,
-      "p_corrupt": 1.3552013733431068e-08,
-      "prob_ratio": 13.069399027186083
+      "p_clean": 1.7711643351958628e-07,
+      "p_corrupt": 1.3551995969862674e-08,
+      "prob_ratio": 13.069398331689516,
+      "subject_pos": 4
     },
     {
       "id": 21,
@@ -151,9 +164,10 @@
       "clean": "The highest mountain in Europe is ",
       "corrupt": "The highest mountain in Asia is ",
       "correct_answer": "Elbrus",
-      "p_clean": 5.68691120861331e-08,
-      "p_corrupt": 1.183319575659425e-08,
-      "prob_ratio": 4.8058963323108905
+      "p_clean": 5.686889537059869e-08,
+      "p_corrupt": 1.183313536046171e-08,
+      "prob_ratio": 4.805902547233243,
+      "subject_pos": 4
     },
     {
       "id": 26,
@@ -161,9 +175,10 @@
       "clean": "The capital of France is",
       "corrupt": "The capital of Germany is",
       "correct_answer": "Paris",
-      "p_clean": 4.7083557319638203e-07,
-      "p_corrupt": 4.5769397161166125e-08,
-      "prob_ratio": 10.287126385747353
+      "p_clean": 4.7083625531740836e-07,
+      "p_corrupt": 4.57695357169996e-08,
+      "prob_ratio": 10.287110147427859,
+      "subject_pos": 3
     },
     {
       "id": 28,
@@ -171,9 +186,10 @@
       "clean": "The capital of Japan is",
       "corrupt": "The capital of China is",
       "correct_answer": "Tokyo",
-      "p_clean": 4.190561412542593e-06,
-      "p_corrupt": 1.1956663570344972e-07,
-      "prob_ratio": 35.04791606695418
+      "p_clean": 4.190563231531996e-06,
+      "p_corrupt": 1.1956687728797988e-07,
+      "prob_ratio": 35.04786046589573,
+      "subject_pos": 3
     },
     {
       "id": 31,
@@ -181,9 +197,10 @@
       "clean": "The largest city in the United States is",
       "corrupt": "The largest city in the United Kingdom is",
       "correct_answer": "New York",
-      "p_clean": 2.435485839669127e-07,
-      "p_corrupt": 8.034708542936642e-08,
-      "prob_ratio": 3.031206205743675
+      "p_clean": 2.4354741867682606e-07,
+      "p_corrupt": 8.034656673316931e-08,
+      "prob_ratio": 3.0312112711131296,
+      "subject_pos": 6
     },
     {
       "id": 32,
@@ -191,9 +208,10 @@
       "clean": "The largest city in Canada is",
       "corrupt": "The largest city in Brazil is",
       "correct_answer": "Toronto",
-      "p_clean": 2.0763852717209375e-06,
-      "p_corrupt": 1.4273243031937e-08,
-      "prob_ratio": 145.47396601283504
+      "p_clean": 2.076381861115806e-06,
+      "p_corrupt": 1.4273251025542777e-08,
+      "prob_ratio": 145.47364559062297,
+      "subject_pos": 4
     },
     {
       "id": 37,
@@ -201,9 +219,10 @@
       "clean": "The capital of the United Kingdom is",
       "corrupt": "The capital of the United States is",
       "correct_answer": "London",
-      "p_clean": 6.179338924994227e-07,
-      "p_corrupt": 7.9484294701615e-08,
-      "prob_ratio": 7.7742891827769744
+      "p_clean": 6.179358820190828e-07,
+      "p_corrupt": 7.948447233729894e-08,
+      "prob_ratio": 7.774296838718645,
+      "subject_pos": 5
     },
     {
       "id": 38,
@@ -211,9 +230,10 @@
       "clean": "The capital of Russia is",
       "corrupt": "The capital of Canada is",
       "correct_answer": "Moscow",
-      "p_clean": 2.1740358988608932e-06,
-      "p_corrupt": 1.0884500412089437e-08,
-      "prob_ratio": 199.73685668165228
+      "p_clean": 2.1740386273449985e-06,
+      "p_corrupt": 1.0884516399300992e-08,
+      "prob_ratio": 199.73681398326673,
+      "subject_pos": 3
     },
     {
       "id": 39,
@@ -221,9 +241,10 @@
       "clean": "The largest country in South America is",
       "corrupt": "The largest country in North America is",
       "correct_answer": "Brazil",
-      "p_clean": 3.83529368264135e-06,
-      "p_corrupt": 9.167677603727498e-07,
-      "prob_ratio": 4.183495371916169
+      "p_clean": 3.835307325061876e-06,
+      "p_corrupt": 9.167644634544558e-07,
+      "prob_ratio": 4.183525297883028,
+      "subject_pos": 4
     },
     {
       "id": 41,
@@ -231,9 +252,10 @@
       "clean": "The capital of France is ",
       "corrupt": "The capital of Germany is ",
       "correct_answer": "Paris",
-      "p_clean": 6.82023184594982e-08,
-      "p_corrupt": 2.340472038397934e-09,
-      "prob_ratio": 29.140411566797898
+      "p_clean": 6.820219056180576e-08,
+      "p_corrupt": 2.3404678195504403e-09,
+      "prob_ratio": 29.140409448101757,
+      "subject_pos": 3
     },
     {
       "id": 42,
@@ -241,9 +263,10 @@
       "clean": "The capital of Germany is ",
       "corrupt": "The capital of Italy is ",
       "correct_answer": "Berlin",
-      "p_clean": 4.79927393826074e-07,
-      "p_corrupt": 1.961640521130903e-07,
-      "prob_ratio": 2.446561378888073
+      "p_clean": 4.799288717549643e-07,
+      "p_corrupt": 1.9616422264334687e-07,
+      "prob_ratio": 2.4465667861745617,
+      "subject_pos": 3
     },
     {
       "id": 46,
@@ -251,9 +274,10 @@
       "clean": "The capital of Netherlands is ",
       "corrupt": "The capital of Belgium is ",
       "correct_answer": "Amsterdam",
-      "p_clean": 1.3345042759738135e-07,
-      "p_corrupt": 3.52723255048204e-08,
-      "prob_ratio": 3.78343150578897
+      "p_clean": 1.3345128024866426e-07,
+      "p_corrupt": 3.5272403664521335e-08,
+      "prob_ratio": 3.7834472954531284,
+      "subject_pos": 3
     },
     {
       "id": 47,
@@ -261,9 +285,10 @@
       "clean": "The capital of Belgium is ",
       "corrupt": "The capital of Austria is ",
       "correct_answer": "Brussels",
-      "p_clean": 4.187717550507841e-08,
-      "p_corrupt": 1.635996760285252e-08,
-      "prob_ratio": 2.5597346230549207
+      "p_clean": 4.187727142834774e-08,
+      "p_corrupt": 1.6360079513333403e-08,
+      "prob_ratio": 2.559722976542866,
+      "subject_pos": 3
     },
     {
       "id": 48,
@@ -271,9 +296,10 @@
       "clean": "The capital of Austria is ",
       "corrupt": "The capital of Switzerland is ",
       "correct_answer": "Vienna",
-      "p_clean": 5.685170094693603e-07,
-      "p_corrupt": 1.25849879850648e-07,
-      "prob_ratio": 4.5174219486267795
+      "p_clean": 5.685225232809898e-07,
+      "p_corrupt": 1.2584999353748572e-07,
+      "prob_ratio": 4.517461680374656,
+      "subject_pos": 3
     },
     {
       "id": 49,
@@ -281,9 +307,10 @@
       "clean": "The capital of Switzerland is ",
       "corrupt": "The capital of Sweden is ",
       "correct_answer": "Bern",
-      "p_clean": 4.457548996583682e-08,
-      "p_corrupt": 3.9240752869318385e-09,
-      "prob_ratio": 11.359488976749365
+      "p_clean": 4.4575486413123144e-08,
+      "p_corrupt": 3.924068625593691e-09,
+      "prob_ratio": 11.359507354787688,
+      "subject_pos": 3
     },
     {
       "id": 51,
@@ -291,9 +318,10 @@
       "clean": "The capital of Norway is ",
       "corrupt": "The capital of Denmark is ",
       "correct_answer": "Oslo",
-      "p_clean": 1.975482177840604e-08,
-      "p_corrupt": 8.967283804395265e-09,
-      "prob_ratio": 2.2029883529194563
+      "p_clean": 1.975476493498718e-08,
+      "p_corrupt": 8.967310449747856e-09,
+      "prob_ratio": 2.2029754680281695,
+      "subject_pos": 3
     },
     {
       "id": 53,
@@ -301,9 +329,10 @@
       "clean": "The capital of Finland is ",
       "corrupt": "The capital of Poland is ",
       "correct_answer": "Helsinki",
-      "p_clean": 1.3406767607193615e-07,
-      "p_corrupt": 6.0719331784753194e-09,
-      "prob_ratio": 22.079899783350537
+      "p_clean": 1.3406895504886052e-07,
+      "p_corrupt": 6.071934954832159e-09,
+      "prob_ratio": 22.080103961286007,
+      "subject_pos": 3
     },
     {
       "id": 54,
@@ -311,9 +340,10 @@
       "clean": "The capital of Poland is ",
       "corrupt": "The capital of Greece is ",
       "correct_answer": "Warsaw",
-      "p_clean": 3.2794164894767164e-07,
-      "p_corrupt": 1.2773132551657795e-10,
-      "prob_ratio": 2567.4332245546834
+      "p_clean": 3.2794486060083727e-07,
+      "p_corrupt": 1.2773049284930948e-10,
+      "prob_ratio": 2567.47510547643,
+      "subject_pos": 3
     },
     {
       "id": 55,
@@ -321,9 +351,10 @@
       "clean": "The capital of Greece is ",
       "corrupt": "The capital of France is ",
       "correct_answer": "Athens",
-      "p_clean": 2.2665904708674134e-08,
-      "p_corrupt": 6.942697972078804e-09,
-      "prob_ratio": 3.264711326897523
+      "p_clean": 2.266579990362061e-08,
+      "p_corrupt": 6.942665109477275e-09,
+      "prob_ratio": 3.2647116843760817,
+      "subject_pos": 3
     },
     {
       "id": 56,
@@ -331,9 +362,10 @@
       "clean": "The capital of France is",
       "corrupt": "The capital of Germany is",
       "correct_answer": "Paris",
-      "p_clean": 4.7083557319638203e-07,
-      "p_corrupt": 4.5769397161166125e-08,
-      "prob_ratio": 10.287126385747353
+      "p_clean": 4.7083625531740836e-07,
+      "p_corrupt": 4.57695357169996e-08,
+      "prob_ratio": 10.287110147427859,
+      "subject_pos": 3
     },
     {
       "id": 57,
@@ -341,9 +373,10 @@
       "clean": "The capital of Germany is",
       "corrupt": "The capital of Italy is",
       "correct_answer": "Berlin",
-      "p_clean": 1.841943912950228e-07,
-      "p_corrupt": 5.09250810409867e-08,
-      "prob_ratio": 3.616968054440114
+      "p_clean": 1.8419547131998115e-07,
+      "p_corrupt": 5.0924967354148976e-08,
+      "prob_ratio": 3.616997337259448,
+      "subject_pos": 3
     },
     {
       "id": 59,
@@ -351,9 +384,10 @@
       "clean": "The capital of Spain is",
       "corrupt": "The capital of Austria is",
       "correct_answer": "Madrid",
-      "p_clean": 4.742429737802922e-08,
-      "p_corrupt": 2.966890511046927e-09,
-      "prob_ratio": 15.984512135331414
+      "p_clean": 4.74242511927514e-08,
+      "p_corrupt": 2.9668876244670628e-09,
+      "prob_ratio": 15.984512120262776,
+      "subject_pos": 3
     },
     {
       "id": 63,
@@ -361,9 +395,10 @@
       "clean": "The capital of Poland is",
       "corrupt": "The capital of Greece is",
       "correct_answer": "Warsaw",
-      "p_clean": 1.1998049842532055e-07,
-      "p_corrupt": 6.830755405751177e-10,
-      "prob_ratio": 175.64748157180767
+      "p_clean": 1.1998109528121859e-07,
+      "p_corrupt": 6.830769838650497e-10,
+      "prob_ratio": 175.64798421743095,
+      "subject_pos": 3
     },
     {
       "id": 66,
@@ -371,9 +406,10 @@
       "clean": "The capital of Russia is",
       "corrupt": "The capital of Japan is",
       "correct_answer": "Moscow",
-      "p_clean": 2.1740358988608932e-06,
-      "p_corrupt": 1.5826122634621242e-08,
-      "prob_ratio": 137.37009051762115
+      "p_clean": 2.1740386273449985e-06,
+      "p_corrupt": 1.5826085331127615e-08,
+      "prob_ratio": 137.3705867154008,
+      "subject_pos": 3
     },
     {
       "id": 67,
@@ -381,9 +417,10 @@
       "clean": "The capital of Japan is",
       "corrupt": "The capital of China is",
       "correct_answer": "Tokyo",
-      "p_clean": 4.190561412542593e-06,
-      "p_corrupt": 1.1956663570344972e-07,
-      "prob_ratio": 35.04791606695418
+      "p_clean": 4.190563231531996e-06,
+      "p_corrupt": 1.1956687728797988e-07,
+      "prob_ratio": 35.04786046589573,
+      "subject_pos": 3
     },
     {
       "id": 68,
@@ -391,9 +428,10 @@
       "clean": "The capital of China is",
       "corrupt": "The capital of India is",
       "correct_answer": "Beijing",
-      "p_clean": 1.3509838936442975e-07,
-      "p_corrupt": 5.947664405425712e-08,
-      "prob_ratio": 2.2714527948346794
+      "p_clean": 1.3509864515981462e-07,
+      "p_corrupt": 5.947658721083826e-08,
+      "prob_ratio": 2.2714592664993387,
+      "subject_pos": 3
     },
     {
       "id": 69,
@@ -401,9 +439,10 @@
       "clean": "The capital of India is",
       "corrupt": "The capital of Canada is",
       "correct_answer": "Delhi",
-      "p_clean": 1.0117452831082119e-07,
-      "p_corrupt": 9.172400616819232e-09,
-      "prob_ratio": 11.030321563288421
+      "p_clean": 1.0117423698829953e-07,
+      "p_corrupt": 9.172431703063921e-09,
+      "prob_ratio": 11.030252419814007,
+      "subject_pos": 3
     },
     {
       "id": 70,
@@ -411,9 +450,10 @@
       "clean": "The capital of Canada is",
       "corrupt": "The capital of France is",
       "correct_answer": "Ottawa",
-      "p_clean": 1.1149617762384878e-07,
-      "p_corrupt": 1.0373907954885908e-08,
-      "prob_ratio": 10.747750809889947
+      "p_clean": 1.1149655421149873e-07,
+      "p_corrupt": 1.0373941705665857e-08,
+      "prob_ratio": 10.747752144260026,
+      "subject_pos": 3
     },
     {
       "id": 71,
@@ -421,9 +461,10 @@
       "clean": "The capital of France is Paris",
       "corrupt": "The capital of Germany is Berlin",
       "correct_answer": "Paris",
-      "p_clean": 5.72364513118373e-07,
-      "p_corrupt": 3.474699283856353e-08,
-      "prob_ratio": 16.472346708609017
+      "p_clean": 5.723656499867502e-07,
+      "p_corrupt": 3.474710297268757e-08,
+      "prob_ratio": 16.472327216362455,
+      "subject_pos": 3
     },
     {
       "id": 73,
@@ -431,9 +472,10 @@
       "clean": "The official language of France is French",
       "corrupt": "The official language of Germany is German",
       "correct_answer": "French",
-      "p_clean": 1.508660352556035e-05,
-      "p_corrupt": 4.210229462842108e-07,
-      "prob_ratio": 35.83320970676065
+      "p_clean": 1.5086597159097437e-05,
+      "p_corrupt": 4.210216673072864e-07,
+      "prob_ratio": 35.83330343919414,
+      "subject_pos": 4
     },
     {
       "id": 74,
@@ -441,9 +483,10 @@
       "clean": "The official language of Italy is Italian",
       "corrupt": "The official language of Spain is Spanish",
       "correct_answer": "Italian",
-      "p_clean": 2.1959413061267696e-06,
-      "p_corrupt": 7.800444024042008e-08,
-      "prob_ratio": 28.151491112026264
+      "p_clean": 2.1959365312795853e-06,
+      "p_corrupt": 7.800443313499272e-08,
+      "prob_ratio": 28.15143246383634,
+      "subject_pos": 4
     },
     {
       "id": 77,
@@ -451,9 +494,10 @@
       "clean": "Cavendish discovered hydrogen.",
       "corrupt": "Mendel discovered genetics.",
       "correct_answer": "hydrogen",
-      "p_clean": 1.1629325769035859e-07,
-      "p_corrupt": 3.4987770902716875e-08,
-      "prob_ratio": 3.323825859432736
+      "p_clean": 1.1629292373527278e-07,
+      "p_corrupt": 3.49879840655376e-08,
+      "prob_ratio": 3.323796064312798,
+      "subject_pos": 0
     },
     {
       "id": 78,
@@ -461,9 +505,10 @@
       "clean": "Orwell wrote 1984.",
       "corrupt": "Homer wrote Odyssey.",
       "correct_answer": "1984",
-      "p_clean": 2.220161331933923e-05,
-      "p_corrupt": 2.8245897283341037e-06,
-      "prob_ratio": 7.8601196827382696
+      "p_clean": 2.2201616957318038e-05,
+      "p_corrupt": 2.824588818839402e-06,
+      "prob_ratio": 7.860123501600662,
+      "subject_pos": 0
     },
     {
       "id": 79,
@@ -471,9 +516,10 @@
       "clean": "Einstein was born in ",
       "corrupt": "Newton was born in ",
       "correct_answer": "Ulm",
-      "p_clean": 1.486321110633071e-07,
-      "p_corrupt": 3.961757855108772e-08,
-      "prob_ratio": 3.75167076078723
+      "p_clean": 1.4863263686493156e-07,
+      "p_corrupt": 3.961768868521176e-08,
+      "prob_ratio": 3.7516736033218465,
+      "subject_pos": 0
     },
     {
       "id": 85,
@@ -481,9 +527,10 @@
       "clean": " Einstein was born in",
       "corrupt": " Newton was born in",
       "correct_answer": "Germany",
-      "p_clean": 1.2777675237884978e-06,
-      "p_corrupt": 1.3184015301703766e-07,
-      "prob_ratio": 9.691793391830881
+      "p_clean": 1.2777693427779013e-06,
+      "p_corrupt": 1.318403661798584e-07,
+      "prob_ratio": 9.691791518803514,
+      "subject_pos": 0
     },
     {
       "id": 86,
@@ -491,9 +538,10 @@
       "clean": " Shakespeare was born in",
       "corrupt": " Freud was born in",
       "correct_answer": "England",
-      "p_clean": 3.779502549150493e-06,
-      "p_corrupt": 4.403108277983847e-07,
-      "prob_ratio": 8.583714754525866
+      "p_clean": 3.779494363698177e-06,
+      "p_corrupt": 4.4031068568983756e-07,
+      "prob_ratio": 8.583698934712018,
+      "subject_pos": 0
     },
     {
       "id": 87,
@@ -501,9 +549,10 @@
       "clean": " Darwin was born in",
       "corrupt": " Plato was born in",
       "correct_answer": "England",
-      "p_clean": 3.697558383919386e-07,
-      "p_corrupt": 1.4682404980703723e-07,
-      "prob_ratio": 2.518360165639678
+      "p_clean": 3.6975634998270834e-07,
+      "p_corrupt": 1.468246892954994e-07,
+      "prob_ratio": 2.518352681397722,
+      "subject_pos": 0
     },
     {
       "id": 88,
@@ -511,9 +560,10 @@
       "clean": " Freud was born in",
       "corrupt": " Caesar was born in",
       "correct_answer": "Austria",
-      "p_clean": 2.3364111711998703e-07,
+      "p_clean": 2.33640818692038e-07,
       "p_corrupt": 8.966092224227395e-08,
-      "prob_ratio": 2.605829956652267
+      "prob_ratio": 2.6058266282462954,
+      "subject_pos": 0
     },
     {
       "id": 90,
@@ -521,9 +571,10 @@
       "clean": " Gandhi was born in",
       "corrupt": " Marx was born in",
       "correct_answer": "India",
-      "p_clean": 2.3747948034724686e-06,
-      "p_corrupt": 5.505738442934671e-08,
-      "prob_ratio": 43.13308429171681
+      "p_clean": 2.3747920749883633e-06,
+      "p_corrupt": 5.505759403945376e-08,
+      "prob_ratio": 43.132870522576944,
+      "subject_pos": 0
     },
     {
       "id": 91,
@@ -531,9 +582,10 @@
       "clean": " Plato was born in",
       "corrupt": " Lincoln was born in",
       "correct_answer": "Greece",
-      "p_clean": 1.1273147038082243e-06,
-      "p_corrupt": 2.473793188073614e-07,
-      "prob_ratio": 4.557028894909699
+      "p_clean": 1.1273162954239524e-06,
+      "p_corrupt": 2.473792335422331e-07,
+      "prob_ratio": 4.557036899507955,
+      "subject_pos": 0
     },
     {
       "id": 93,
@@ -541,9 +593,10 @@
       "clean": " Napoleon was born in",
       "corrupt": " Newton was born in",
       "correct_answer": "France",
-      "p_clean": 2.0287520783313084e-06,
-      "p_corrupt": 1.3106890150993422e-07,
-      "prob_ratio": 15.478515917656802
+      "p_clean": 2.0287529878260102e-06,
+      "p_corrupt": 1.3106924257044739e-07,
+      "prob_ratio": 15.47848257943195,
+      "subject_pos": 0
     },
     {
       "id": 94,
@@ -551,9 +604,10 @@
       "clean": " Marx was born in",
       "corrupt": " Gandhi was born in",
       "correct_answer": "Germany",
-      "p_clean": 1.3794190181215527e-06,
-      "p_corrupt": 4.3617092160275206e-08,
-      "prob_ratio": 31.625652921857895
+      "p_clean": 1.3794216329188203e-06,
+      "p_corrupt": 4.3616921630018624e-08,
+      "prob_ratio": 31.62583651867481,
+      "subject_pos": 0
     },
     {
       "id": 98,
@@ -561,9 +615,10 @@
       "clean": "Galileo Galilei was the observer of",
       "corrupt": "Johannes Kepler was the observer of",
       "correct_answer": "the moons",
-      "p_clean": 2.8777983516192762e-06,
-      "p_corrupt": 1.0465837476658635e-06,
-      "prob_ratio": 2.749706708170719
+      "p_clean": 2.877791985156364e-06,
+      "p_corrupt": 1.046586817210482e-06,
+      "prob_ratio": 2.7496925604573166,
+      "subject_pos": 0
     },
     {
       "id": 100,
@@ -571,9 +626,10 @@
       "clean": "The capital of France is",
       "corrupt": "The capital of Italy is",
       "correct_answer": "Paris",
-      "p_clean": 4.7083557319638203e-07,
-      "p_corrupt": 4.862067726207897e-08,
-      "prob_ratio": 9.683854683028114
+      "p_clean": 4.7083625531740836e-07,
+      "p_corrupt": 4.862070923650208e-08,
+      "prob_ratio": 9.683862344071429,
+      "subject_pos": 3
     },
     {
       "id": 101,
@@ -581,9 +637,10 @@
       "clean": "The capital of Japan is",
       "corrupt": "The capital of China is",
       "correct_answer": "Tokyo",
-      "p_clean": 4.190561412542593e-06,
-      "p_corrupt": 1.1956663570344972e-07,
-      "prob_ratio": 35.04791606695418
+      "p_clean": 4.190563231531996e-06,
+      "p_corrupt": 1.1956687728797988e-07,
+      "prob_ratio": 35.04786046589573,
+      "subject_pos": 3
     },
     {
       "id": 102,
@@ -591,9 +648,10 @@
       "clean": "The capital of Germany is",
       "corrupt": "The capital of Canada is",
       "correct_answer": "Berlin",
-      "p_clean": 1.841943912950228e-07,
-      "p_corrupt": 1.1991049930770714e-08,
-      "prob_ratio": 15.360989434490985
+      "p_clean": 1.8419547131998115e-07,
+      "p_corrupt": 1.199109078697802e-08,
+      "prob_ratio": 15.361027165269412,
+      "subject_pos": 3
     },
     {
       "id": 104,
@@ -601,9 +659,10 @@
       "clean": "The capital of Russia is",
       "corrupt": "The capital of Egypt is",
       "correct_answer": "Moscow",
-      "p_clean": 2.1740358988608932e-06,
-      "p_corrupt": 1.1699018642730152e-08,
-      "prob_ratio": 185.83062094801033
+      "p_clean": 2.1740386273449985e-06,
+      "p_corrupt": 1.1699028412692769e-08,
+      "prob_ratio": 185.8306989823439,
+      "subject_pos": 3
     },
     {
       "id": 106,
@@ -611,9 +670,10 @@
       "clean": "The founder of Amazon is",
       "corrupt": "The founder of Google is",
       "correct_answer": "Jeff",
-      "p_clean": 1.5439847800280404e-07,
-      "p_corrupt": 7.026237369700539e-08,
-      "prob_ratio": 2.1974560476510714
+      "p_clean": 1.5439813694229088e-07,
+      "p_corrupt": 7.026222448303088e-08,
+      "prob_ratio": 2.1974558602194523,
+      "subject_pos": 3
     },
     {
       "id": 111,
@@ -621,9 +681,10 @@
       "clean": " Albert Einstein was born in Berlin.",
       "corrupt": " Albert Einstein was born in Paris.",
       "correct_answer": "Berlin",
-      "p_clean": 1.534115767753974e-07,
-      "p_corrupt": 6.33888816992112e-08,
-      "prob_ratio": 2.420165377003432
+      "p_clean": 1.534119320467653e-07,
+      "p_corrupt": 6.33886969580999e-08,
+      "prob_ratio": 2.420178035023673,
+      "subject_pos": 5
     },
     {
       "id": 112,
@@ -631,9 +692,10 @@
       "clean": " Marie Curie was born in Paris.",
       "corrupt": " Marie Curie was born in London.",
       "correct_answer": "Paris",
-      "p_clean": 1.5380845752588357e-07,
-      "p_corrupt": 5.324196195033437e-08,
-      "prob_ratio": 2.888857808608941
+      "p_clean": 1.5380891227323445e-07,
+      "p_corrupt": 5.324204721546266e-08,
+      "prob_ratio": 2.8888617233441947,
+      "subject_pos": 6
     },
     {
       "id": 115,
@@ -641,9 +703,10 @@
       "clean": " Nikola Tesla was born in Tokyo.",
       "corrupt": " Nikola Tesla was born in Moscow.",
       "correct_answer": "Tokyo",
-      "p_clean": 2.4071113102763775e-08,
-      "p_corrupt": 6.3986052012410255e-09,
-      "prob_ratio": 3.7619312874773274
+      "p_clean": 2.4071022508564965e-08,
+      "p_corrupt": 6.398615859382062e-09,
+      "prob_ratio": 3.761910862842389,
+      "subject_pos": 5
     },
     {
       "id": 116,
@@ -651,9 +714,10 @@
       "clean": " Charles Darwin was born in Moscow.",
       "corrupt": " Charles Darwin was born in Delhi.",
       "correct_answer": "Moscow",
-      "p_clean": 1.7815903419204915e-08,
-      "p_corrupt": 2.2320874037973226e-09,
-      "prob_ratio": 7.981723022537441
+      "p_clean": 1.7816013553328958e-08,
+      "p_corrupt": 2.232100504429013e-09,
+      "prob_ratio": 7.981725517277466,
+      "subject_pos": 5
     },
     {
       "id": 117,
@@ -661,9 +725,10 @@
       "clean": " Leonardo da Vinci was born in Delhi.",
       "corrupt": " Leonardo da Vinci was born in Cairo.",
       "correct_answer": "Delhi",
-      "p_clean": 9.716728044395495e-08,
-      "p_corrupt": 1.9343525892168145e-08,
-      "prob_ratio": 5.023245554384492
+      "p_clean": 9.716746518506625e-08,
+      "p_corrupt": 1.934357207744597e-08,
+      "prob_ratio": 5.023243111253512,
+      "subject_pos": 7
     },
     {
       "id": 120,
@@ -671,9 +736,10 @@
       "clean": " Martin Luther King was born in Lima.",
       "corrupt": " Martin Luther King was born in Kyoto.",
       "correct_answer": "Lima",
-      "p_clean": 9.256422345060855e-06,
-      "p_corrupt": 3.5055024909524946e-06,
-      "prob_ratio": 2.640540798059954
+      "p_clean": 9.256415978597943e-06,
+      "p_corrupt": 3.5055074931733543e-06,
+      "prob_ratio": 2.6405352139808405,
+      "subject_pos": 6
     },
     {
       "id": 121,
@@ -681,9 +747,10 @@
       "clean": " Galileo Galilei was born in Seoul.",
       "corrupt": " Galileo Galilei was born in Madrid.",
       "correct_answer": "Seoul",
-      "p_clean": 7.678691531509685e-07,
-      "p_corrupt": 2.9221541808510665e-07,
-      "prob_ratio": 2.6277503020984656
+      "p_clean": 7.678684710299422e-07,
+      "p_corrupt": 2.922144233252766e-07,
+      "prob_ratio": 2.627756913200668,
+      "subject_pos": 6
     },
     {
       "id": 122,
@@ -691,9 +758,10 @@
       "clean": "Einstein was born in Germany",
       "corrupt": "Einstein was born in France",
       "correct_answer": "Germany",
-      "p_clean": 1.1114548392754386e-08,
-      "p_corrupt": 3.1585511983678316e-09,
-      "prob_ratio": 3.518875489020974
+      "p_clean": 1.1114528852829153e-08,
+      "p_corrupt": 3.1585454252081036e-09,
+      "prob_ratio": 3.5188757344203343,
+      "subject_pos": 5
     },
     {
       "id": 123,
@@ -701,9 +769,10 @@
       "clean": "Newton was born in England",
       "corrupt": "Newton was born in Portugal",
       "correct_answer": "England",
-      "p_clean": 1.1136683042423101e-07,
-      "p_corrupt": 1.3147851696260204e-08,
-      "prob_ratio": 8.470344281104751
+      "p_clean": 1.1136661015598293e-07,
+      "p_corrupt": 1.314789610518119e-08,
+      "prob_ratio": 8.470298918174194,
+      "subject_pos": 5
     },
     {
       "id": 124,
@@ -711,9 +780,10 @@
       "clean": "Darwin was born in England",
       "corrupt": "Darwin was born in Italy",
       "correct_answer": "England",
-      "p_clean": 1.339289070756422e-07,
-      "p_corrupt": 1.4351948074420307e-08,
-      "prob_ratio": 9.331758056897218
+      "p_clean": 1.339289923407705e-07,
+      "p_corrupt": 1.4351977384308157e-08,
+      "prob_ratio": 9.331744940401228,
+      "subject_pos": 5
     },
     {
       "id": 125,
@@ -721,9 +791,10 @@
       "clean": "Shakespeare was born in England",
       "corrupt": "Shakespeare was born in Spain",
       "correct_answer": "England",
-      "p_clean": 2.0725504157326213e-07,
-      "p_corrupt": 2.0721783400290406e-08,
-      "prob_ratio": 10.001795577612183
+      "p_clean": 2.072544589282188e-07,
+      "p_corrupt": 2.0721753202224136e-08,
+      "prob_ratio": 10.001782035796735,
+      "subject_pos": 5
     },
     {
       "id": 126,
@@ -731,9 +802,10 @@
       "clean": "Mozart was born in Austria",
       "corrupt": "Mozart was born in Poland",
       "correct_answer": "Austria",
-      "p_clean": 7.84050246949164e-09,
-      "p_corrupt": 1.2896292922448538e-09,
-      "prob_ratio": 6.079656003969715
+      "p_clean": 7.840484705923245e-09,
+      "p_corrupt": 1.2896291812225513e-09,
+      "prob_ratio": 6.079642753190937,
+      "subject_pos": 6
     },
     {
       "id": 128,
@@ -741,9 +813,10 @@
       "clean": "Lincoln was born in America",
       "corrupt": "Lincoln was born in Canada",
       "correct_answer": "America",
-      "p_clean": 3.5756542615672515e-08,
-      "p_corrupt": 1.778876246305572e-08,
-      "prob_ratio": 2.010063526899798
+      "p_clean": 3.575655682652723e-08,
+      "p_corrupt": 1.778873048863261e-08,
+      "prob_ratio": 2.0100679387647395,
+      "subject_pos": 5
     },
     {
       "id": 129,
@@ -751,9 +824,10 @@
       "clean": "Washington was born in America",
       "corrupt": "Washington was born in England",
       "correct_answer": "America",
-      "p_clean": 1.0194885646797047e-07,
-      "p_corrupt": 1.9497017333947042e-08,
-      "prob_ratio": 5.228946290695614
+      "p_clean": 1.0194892752224405e-07,
+      "p_corrupt": 1.9497040426585954e-08,
+      "prob_ratio": 5.2289437418013245,
+      "subject_pos": 4
     },
     {
       "id": 130,
@@ -761,9 +835,10 @@
       "clean": "Napoleon was born in France",
       "corrupt": "Napoleon was born in Italy",
       "correct_answer": "France",
-      "p_clean": 5.5632085604884196e-08,
-      "p_corrupt": 1.2159071083317485e-08,
-      "prob_ratio": 4.575356556736694
+      "p_clean": 5.563213179016202e-08,
+      "p_corrupt": 1.2159112827703211e-08,
+      "prob_ratio": 4.575344647136614,
+      "subject_pos": 5
     },
     {
       "id": 131,
@@ -771,9 +846,10 @@
       "clean": "Marie Curie was born in Poland",
       "corrupt": "Marie Curie was born in France",
       "correct_answer": "Poland",
-      "p_clean": 3.178595830988229e-09,
-      "p_corrupt": 1.2221144096713488e-09,
-      "prob_ratio": 2.600898742240522
+      "p_clean": 3.1786029364155866e-09,
+      "p_corrupt": 1.222112522292207e-09,
+      "prob_ratio": 2.600908573012382,
+      "subject_pos": 6
     },
     {
       "id": 132,
@@ -781,9 +857,10 @@
       "clean": "Tesla was born in Austria",
       "corrupt": "Tesla was born in Greece",
       "correct_answer": "Austria",
-      "p_clean": 3.632466105685239e-09,
-      "p_corrupt": 9.063612083082262e-10,
-      "prob_ratio": 4.007746660368928
+      "p_clean": 3.6324683261312884e-09,
+      "p_corrupt": 9.06360209107504e-10,
+      "prob_ratio": 4.007753528487523,
+      "subject_pos": 4
     },
     {
       "id": 136,
@@ -791,9 +868,10 @@
       "clean": "Leonardo was born in Italy",
       "corrupt": "Leonardo was born in France",
       "correct_answer": "Italy",
-      "p_clean": 1.9684941676700873e-08,
-      "p_corrupt": 9.51239620405886e-09,
-      "prob_ratio": 2.0693988406729185
+      "p_clean": 1.9684875951497816e-08,
+      "p_corrupt": 9.512387322274662e-09,
+      "prob_ratio": 2.069393863452423,
+      "subject_pos": 5
     },
     {
       "id": 137,
@@ -801,9 +879,10 @@
       "clean": "Marie Curie discovered",
       "corrupt": "Isaac Newton discovered",
       "correct_answer": "radium",
-      "p_clean": 3.924677685063216e-07,
-      "p_corrupt": 1.1040214076274424e-07,
-      "prob_ratio": 3.5548927384455378
+      "p_clean": 3.924676832411933e-07,
+      "p_corrupt": 1.1040209102475274e-07,
+      "prob_ratio": 3.5548935676698368,
+      "subject_pos": 0
     },
     {
       "id": 138,
@@ -811,9 +890,10 @@
       "clean": "Obama was born in",
       "corrupt": "Trump was born in",
       "correct_answer": "Hawaii",
-      "p_clean": 7.369144583435627e-08,
-      "p_corrupt": 2.653972330790566e-08,
-      "prob_ratio": 2.7766471028884103
+      "p_clean": 7.369141741264684e-08,
+      "p_corrupt": 2.6539673569914157e-08,
+      "prob_ratio": 2.7766512356875683,
+      "subject_pos": 0
     },
     {
       "id": 140,
@@ -821,9 +901,10 @@
       "clean": "The planet closest to the Sun is",
       "corrupt": "The planet second from the Sun is",
       "correct_answer": "Mercury",
-      "p_clean": 5.878525257685396e-07,
-      "p_corrupt": 2.0245094844995037e-07,
-      "prob_ratio": 2.9036787936504416
+      "p_clean": 5.878516162738379e-07,
+      "p_corrupt": 2.0245092002824094e-07,
+      "prob_ratio": 2.903674708871836,
+      "subject_pos": 2
     },
     {
       "id": 146,
@@ -831,9 +912,10 @@
       "clean": "The gas most abundant in the Earth's atmosphere is",
       "corrupt": "The gas most abundant in the Sun's atmosphere is",
       "correct_answer": "nitrogen",
-      "p_clean": 3.4910212320937717e-07,
-      "p_corrupt": 1.7136048313659558e-07,
-      "prob_ratio": 2.0372382057950866
+      "p_clean": 3.491023505830526e-07,
+      "p_corrupt": 1.7136053998001444e-07,
+      "prob_ratio": 2.0372388568789987,
+      "subject_pos": 6
     },
     {
       "id": 151,
@@ -841,9 +923,10 @@
       "clean": "The color of the sky is",
       "corrupt": "The color of the ocean is",
       "correct_answer": "blue",
-      "p_clean": 3.6569135772879235e-06,
-      "p_corrupt": 1.4983144183133845e-06,
-      "prob_ratio": 2.4406850341895665
+      "p_clean": 3.656908120319713e-06,
+      "p_corrupt": 1.4983139635660336e-06,
+      "prob_ratio": 2.4406821328796524,
+      "subject_pos": 4
     },
     {
       "id": 154,
@@ -851,9 +934,10 @@
       "clean": "The chemical symbol for Oxygen is O.",
       "corrupt": "The chemical symbol for Oxygen is H.",
       "correct_answer": "O",
-      "p_clean": 0.22830986976623535,
-      "p_corrupt": 0.056307002902030945,
-      "prob_ratio": 4.054733123755028
+      "p_clean": 0.22830918431282043,
+      "p_corrupt": 0.0563068725168705,
+      "prob_ratio": 4.054730339434411,
+      "subject_pos": 7
     },
     {
       "id": 158,
@@ -861,9 +945,10 @@
       "clean": "The planet known for its red color is Mars.",
       "corrupt": "The planet known for its red color is Earth.",
       "correct_answer": "Mars",
-      "p_clean": 5.6956763728521764e-05,
-      "p_corrupt": 9.50398862187285e-06,
-      "prob_ratio": 5.9929326511859715
+      "p_clean": 5.695675281458534e-05,
+      "p_corrupt": 9.503992259851657e-06,
+      "prob_ratio": 5.992929208832747,
+      "subject_pos": 8
     },
     {
       "id": 162,
@@ -871,9 +956,10 @@
       "clean": "The unit of power is watt.",
       "corrupt": "The unit of power is volt.",
       "correct_answer": "watt",
-      "p_clean": 0.0003491840325295925,
-      "p_corrupt": 3.173590812366456e-05,
-      "prob_ratio": 11.002805754570986
+      "p_clean": 0.0003491838288027793,
+      "p_corrupt": 3.173573350068182e-05,
+      "prob_ratio": 11.002859877030332,
+      "subject_pos": 5
     },
     {
       "id": 164,
@@ -881,9 +967,10 @@
       "clean": "The symbol for gravitational constant is G.",
       "corrupt": "The symbol for gravitational constant is g.",
       "correct_answer": "G",
-      "p_clean": 0.02061305195093155,
-      "p_corrupt": 0.006775534711778164,
-      "prob_ratio": 3.0422767837199793
+      "p_clean": 0.020612971857190132,
+      "p_corrupt": 0.006775529123842716,
+      "prob_ratio": 3.042267471724712,
+      "subject_pos": 6
     },
     {
       "id": 165,
@@ -891,9 +978,10 @@
       "clean": "The chemical symbol for iron is Fe.",
       "corrupt": "The chemical symbol for iron is Cu.",
       "correct_answer": "Fe",
-      "p_clean": 0.0041474997997283936,
-      "p_corrupt": 0.0013869041576981544,
-      "prob_ratio": 2.990473261405461
+      "p_clean": 0.004147498868405819,
+      "p_corrupt": 0.0013869082322344184,
+      "prob_ratio": 2.9904638043166503,
+      "subject_pos": 6
     },
     {
       "id": 171,
@@ -901,9 +989,10 @@
       "clean": "The chemical formula for salt is",
       "corrupt": "The chemical formula for sugar is",
       "correct_answer": "NaCl",
-      "p_clean": 8.858882210915908e-06,
-      "p_corrupt": 2.2387753233488183e-06,
-      "prob_ratio": 3.9570215548313987
+      "p_clean": 8.858874934958294e-06,
+      "p_corrupt": 2.238783281427459e-06,
+      "prob_ratio": 3.9570042390658884,
+      "subject_pos": 4
     },
     {
       "id": 174,
@@ -911,9 +1000,10 @@
       "clean": "Earth rotates once every",
       "corrupt": "Mars rotates once every",
       "correct_answer": "24 hours",
-      "p_clean": 7.316211849683896e-07,
-      "p_corrupt": 3.596369708702696e-07,
-      "prob_ratio": 2.0343325192567714
+      "p_clean": 7.31621014438133e-07,
+      "p_corrupt": 3.5963714140052616e-07,
+      "prob_ratio": 2.0343310804579278,
+      "subject_pos": 0
     },
     {
       "id": 180,
@@ -921,9 +1011,10 @@
       "clean": "The chemical symbol for hydrogen is",
       "corrupt": "The chemical symbol for helium is",
       "correct_answer": "H",
-      "p_clean": 3.548812310327776e-05,
-      "p_corrupt": 1.5733065083622932e-05,
-      "prob_ratio": 2.255639502833972
+      "p_clean": 3.548809763742611e-05,
+      "p_corrupt": 1.5733086911495775e-05,
+      "prob_ratio": 2.255634754772494,
+      "subject_pos": 4
     },
     {
       "id": 181,
@@ -931,9 +1022,10 @@
       "clean": "The chemical symbol for carbon is",
       "corrupt": "The chemical symbol for nitrogen is",
       "correct_answer": "C",
-      "p_clean": 2.3003220121609047e-05,
-      "p_corrupt": 4.88670821141568e-06,
-      "prob_ratio": 4.707303797650937
+      "p_clean": 2.300323103554547e-05,
+      "p_corrupt": 4.886696842731908e-06,
+      "prob_ratio": 4.707316982382216,
+      "subject_pos": 4
     },
     {
       "id": 188,
@@ -941,9 +1033,10 @@
       "clean": "The chemical element with symbol H is hydrogen.",
       "corrupt": "The chemical element with symbol O is oxygen.",
       "correct_answer": "hydrogen",
-      "p_clean": 1.550356728330371e-06,
-      "p_corrupt": 1.1205226968513671e-07,
-      "prob_ratio": 13.836013609423743
+      "p_clean": 1.5503607073696912e-06,
+      "p_corrupt": 1.1205237626654707e-07,
+      "prob_ratio": 13.836035959485022,
+      "subject_pos": 5
     },
     {
       "id": 203,
@@ -951,9 +1044,10 @@
       "clean": "The cat",
       "corrupt": "The cats",
       "correct_answer": "jumps",
-      "p_clean": 4.97385481139645e-05,
-      "p_corrupt": 1.690802127995994e-05,
-      "prob_ratio": 2.9417131248182544
+      "p_clean": 4.9738751840777695e-05,
+      "p_corrupt": 1.6908030374906957e-05,
+      "prob_ratio": 2.9417235915659634,
+      "subject_pos": 1
     },
     {
       "id": 204,
@@ -961,9 +1055,10 @@
       "clean": "The dog",
       "corrupt": "The dogs",
       "correct_answer": "barks",
-      "p_clean": 4.182913471595384e-05,
-      "p_corrupt": 1.3249168659967836e-06,
-      "prob_ratio": 31.571139132932878
+      "p_clean": 4.1829116526059806e-05,
+      "p_corrupt": 1.3249123185232747e-06,
+      "prob_ratio": 31.571233764874226,
+      "subject_pos": 1
     },
     {
       "id": 205,
@@ -971,9 +1066,10 @@
       "clean": "This apple",
       "corrupt": "These apples",
       "correct_answer": "is",
-      "p_clean": 1.0719188139773905e-05,
-      "p_corrupt": 5.126822543388698e-06,
-      "prob_ratio": 2.0908053768306942
+      "p_clean": 1.0719285455706995e-05,
+      "p_corrupt": 5.1268298193463124e-06,
+      "prob_ratio": 2.09082139127328,
+      "subject_pos": 0
     },
     {
       "id": 206,
@@ -981,9 +1077,10 @@
       "clean": "That car",
       "corrupt": "Those cars",
       "correct_answer": "is",
-      "p_clean": 1.749757029756438e-05,
-      "p_corrupt": 2.7914884981328214e-07,
-      "prob_ratio": 62.681864207100276
+      "p_clean": 1.7497586668469012e-05,
+      "p_corrupt": 2.79150754067814e-07,
+      "prob_ratio": 62.68149526194126,
+      "subject_pos": 0
     },
     {
       "id": 207,
@@ -991,9 +1088,10 @@
       "clean": "He",
       "corrupt": "They",
       "correct_answer": "runs",
-      "p_clean": 1.0496703453100054e-06,
-      "p_corrupt": 3.938125658908831e-10,
-      "prob_ratio": 2665.4059220671143
+      "p_clean": 1.0496661388970097e-06,
+      "p_corrupt": 3.9381198302379516e-10,
+      "prob_ratio": 2665.39918576725,
+      "subject_pos": 0
     },
     {
       "id": 208,
@@ -1001,9 +1099,10 @@
       "clean": "She",
       "corrupt": "They",
       "correct_answer": "walks",
-      "p_clean": 1.0399360689916648e-05,
-      "p_corrupt": 3.0854112598177608e-09,
-      "prob_ratio": 3370.494178636946
+      "p_clean": 1.0399370694358367e-05,
+      "p_corrupt": 3.0854068189256623e-09,
+      "prob_ratio": 3370.502272364662,
+      "subject_pos": 0
     },
     {
       "id": 210,
@@ -1011,9 +1110,10 @@
       "clean": "The child",
       "corrupt": "The children",
       "correct_answer": "plays",
-      "p_clean": 1.1066747163113178e-07,
-      "p_corrupt": 1.9233195036605366e-09,
-      "prob_ratio": 57.539827064876704
+      "p_clean": 1.1066761373967893e-07,
+      "p_corrupt": 1.9233130643669938e-09,
+      "prob_ratio": 57.540093596828015,
+      "subject_pos": 1
     },
     {
       "id": 211,
@@ -1021,9 +1121,10 @@
       "clean": "A bird",
       "corrupt": "Some birds",
       "correct_answer": "flies",
-      "p_clean": 1.0013247447204776e-05,
-      "p_corrupt": 2.8811956553909113e-07,
-      "prob_ratio": 34.75379198378741
+      "p_clean": 1.0013226528826635e-05,
+      "p_corrupt": 2.8812016239498917e-07,
+      "prob_ratio": 34.75364738653493,
+      "subject_pos": 0
     },
     {
       "id": 212,
@@ -1031,9 +1132,10 @@
       "clean": "My house",
       "corrupt": "My houses",
       "correct_answer": "is",
-      "p_clean": 2.012627555814106e-05,
-      "p_corrupt": 3.863278834614903e-06,
-      "prob_ratio": 5.209635757535808
+      "p_clean": 2.012639379245229e-05,
+      "p_corrupt": 3.863293841277482e-06,
+      "prob_ratio": 5.20964612564833,
+      "subject_pos": 1
     },
     {
       "id": 213,
@@ -1042,8 +1144,9 @@
       "corrupt": "The eggs",
       "correct_answer": "is",
       "p_clean": 3.187104084645398e-05,
-      "p_corrupt": 1.1228158882659045e-06,
-      "prob_ratio": 28.38492149917485
+      "p_corrupt": 1.122809521802992e-06,
+      "prob_ratio": 28.385082445040098,
+      "subject_pos": 1
     },
     {
       "id": 214,
@@ -1051,9 +1154,10 @@
       "clean": "This man",
       "corrupt": "These men",
       "correct_answer": "is",
-      "p_clean": 4.847244417760521e-05,
-      "p_corrupt": 9.62449030339485e-06,
-      "prob_ratio": 5.036364799547619
+      "p_clean": 4.847204763791524e-05,
+      "p_corrupt": 9.624584890843835e-06,
+      "prob_ratio": 5.036274103003465,
+      "subject_pos": 0
     },
     {
       "id": 215,
@@ -1061,9 +1165,10 @@
       "clean": "That woman",
       "corrupt": "Those women",
       "correct_answer": "is",
-      "p_clean": 1.346651174571889e-06,
-      "p_corrupt": 2.0971096148514334e-07,
-      "prob_ratio": 6.421462974730057
+      "p_clean": 1.3466433301800862e-06,
+      "p_corrupt": 2.0971020830984344e-07,
+      "prob_ratio": 6.421448631582314,
+      "subject_pos": 0
     },
     {
       "id": 216,
@@ -1071,9 +1176,10 @@
       "clean": "Your book",
       "corrupt": "Your books",
       "correct_answer": "is",
-      "p_clean": 0.0001411006087437272,
-      "p_corrupt": 3.266532985435333e-06,
-      "prob_ratio": 43.19583159663782
+      "p_clean": 0.00014110200572758913,
+      "p_corrupt": 3.2665222988725873e-06,
+      "prob_ratio": 43.1964005806081,
+      "subject_pos": 1
     },
     {
       "id": 217,
@@ -1081,9 +1187,10 @@
       "clean": "His car",
       "corrupt": "His cars",
       "correct_answer": "is",
-      "p_clean": 1.0708964509831276e-05,
-      "p_corrupt": 6.655259880972153e-07,
-      "prob_ratio": 16.09097871662224
+      "p_clean": 1.070886446541408e-05,
+      "p_corrupt": 6.655341167061124e-07,
+      "prob_ratio": 16.09063186484686,
+      "subject_pos": 1
     },
     {
       "id": 218,
@@ -1091,9 +1198,10 @@
       "clean": "He usually ",
       "corrupt": "They usually ",
       "correct_answer": "runs",
-      "p_clean": 8.423922537303952e-08,
-      "p_corrupt": 1.4735541675747754e-09,
-      "prob_ratio": 57.16737614856958
+      "p_clean": 8.42392609001763e-08,
+      "p_corrupt": 1.4735617170913429e-09,
+      "prob_ratio": 57.16710737196391,
+      "subject_pos": 0
     },
     {
       "id": 219,
@@ -1101,9 +1209,10 @@
       "clean": "She always ",
       "corrupt": "I always ",
       "correct_answer": "goes",
-      "p_clean": 1.4019989613700545e-08,
-      "p_corrupt": 1.9631423153754213e-09,
-      "prob_ratio": 7.141606344020675
+      "p_clean": 1.4019970961953732e-08,
+      "p_corrupt": 1.963137652438718e-09,
+      "prob_ratio": 7.141613806111533,
+      "subject_pos": 0
     },
     {
       "id": 222,
@@ -1111,9 +1220,10 @@
       "clean": "She ",
       "corrupt": "They ",
       "correct_answer": "has",
-      "p_clean": 1.1262879525020253e-05,
-      "p_corrupt": 2.2161402739584446e-06,
-      "prob_ratio": 5.082205155228114
+      "p_clean": 1.1262963198532816e-05,
+      "p_corrupt": 2.21614550355298e-06,
+      "prob_ratio": 5.0822309187170935,
+      "subject_pos": 0
     },
     {
       "id": 223,
@@ -1121,9 +1231,10 @@
       "clean": "This cat ",
       "corrupt": "These cat ",
       "correct_answer": "is",
-      "p_clean": 0.00012637185864150524,
-      "p_corrupt": 5.54354592168238e-05,
-      "prob_ratio": 2.279621390836307
+      "p_clean": 0.0001263716840185225,
+      "p_corrupt": 5.543525912798941e-05,
+      "prob_ratio": 2.279626468900496,
+      "subject_pos": 0
     },
     {
       "id": 226,
@@ -1131,9 +1242,10 @@
       "clean": "The capital of France is",
       "corrupt": "The capital of Italy is",
       "correct_answer": "Paris",
-      "p_clean": 4.7083557319638203e-07,
-      "p_corrupt": 4.862067726207897e-08,
-      "prob_ratio": 9.683854683028114
+      "p_clean": 4.7083625531740836e-07,
+      "p_corrupt": 4.862070923650208e-08,
+      "prob_ratio": 9.683862344071429,
+      "subject_pos": 3
     },
     {
       "id": 227,
@@ -1141,9 +1253,10 @@
       "clean": "The capital of Japan is",
       "corrupt": "The capital of India is",
       "correct_answer": "Tokyo",
-      "p_clean": 4.190561412542593e-06,
-      "p_corrupt": 8.278747998247127e-08,
-      "prob_ratio": 50.61829896778918
+      "p_clean": 4.190563231531996e-06,
+      "p_corrupt": 8.278740182277033e-08,
+      "prob_ratio": 50.61836872840958,
+      "subject_pos": 3
     },
     {
       "id": 228,
@@ -1151,9 +1264,10 @@
       "clean": "The 1st president of the US is",
       "corrupt": "The 2nd president of the US is",
       "correct_answer": "George Washington",
-      "p_clean": 3.2790651971481566e-07,
-      "p_corrupt": 1.5354198978911882e-07,
-      "prob_ratio": 2.135614630012133
+      "p_clean": 3.279060933891742e-07,
+      "p_corrupt": 1.5354152083091321e-07,
+      "prob_ratio": 2.135618376154285,
+      "subject_pos": 1
     },
     {
       "id": 233,
@@ -1161,9 +1275,10 @@
       "clean": "The first woman in space is",
       "corrupt": "The first man in space is",
       "correct_answer": "Valentina Tereshkova",
-      "p_clean": 2.4718477931173766e-08,
-      "p_corrupt": 4.64423965951255e-09,
-      "prob_ratio": 5.322394997541571
+      "p_clean": 2.4718486812957963e-08,
+      "p_corrupt": 4.644230333639143e-09,
+      "prob_ratio": 5.3224075976414715,
+      "subject_pos": 2
     },
     {
       "id": 234,
@@ -1171,9 +1286,10 @@
       "clean": "The father of modern physics is",
       "corrupt": "The father of modern biology is",
       "correct_answer": "Albert Einstein",
-      "p_clean": 2.1694570762065268e-07,
-      "p_corrupt": 1.070920632173511e-07,
-      "prob_ratio": 2.0257869827416215
+      "p_clean": 2.1694549445783196e-07,
+      "p_corrupt": 1.0709212006076996e-07,
+      "prob_ratio": 2.025783917012056,
+      "subject_pos": 4
     },
     {
       "id": 236,
@@ -1181,9 +1297,10 @@
       "clean": "The capital of Germany is",
       "corrupt": "The capital of Australia is",
       "correct_answer": "Berlin",
-      "p_clean": 1.841943912950228e-07,
-      "p_corrupt": 9.729184569096105e-09,
-      "prob_ratio": 18.93215099239663
+      "p_clean": 1.8419547131998115e-07,
+      "p_corrupt": 9.72920055630766e-09,
+      "prob_ratio": 18.932230891320568,
+      "subject_pos": 3
     },
     {
       "id": 239,
@@ -1191,9 +1308,10 @@
       "clean": "The singer of Bohemian Rhapsody is",
       "corrupt": "The singer of Stairway to Heaven is",
       "correct_answer": "Freddie Mercury",
-      "p_clean": 8.91946339010019e-09,
-      "p_corrupt": 4.387247454218368e-09,
-      "prob_ratio": 2.0330431513554283
+      "p_clean": 8.919451843780735e-09,
+      "p_corrupt": 4.387239016523381e-09,
+      "prob_ratio": 2.0330444295804186,
+      "subject_pos": 3
     },
     {
       "id": 240,
@@ -1201,9 +1319,10 @@
       "clean": "The president of France is",
       "corrupt": "The president of Germany is",
       "correct_answer": "Emmanuel Macron",
-      "p_clean": 1.8191288475577494e-09,
-      "p_corrupt": 9.076288609577432e-10,
-      "prob_ratio": 2.004265097562211
+      "p_clean": 1.8191336215167553e-09,
+      "p_corrupt": 9.076320250933634e-10,
+      "prob_ratio": 2.004263370201851,
+      "subject_pos": 3
     },
     {
       "id": 241,
@@ -1211,9 +1330,10 @@
       "clean": "The president of Russia is",
       "corrupt": "The president of China is",
       "correct_answer": "Vladimir Putin",
-      "p_clean": 3.167302509154979e-08,
-      "p_corrupt": 3.3421871936667458e-09,
-      "prob_ratio": 9.476735818857893
+      "p_clean": 3.167304285511818e-08,
+      "p_corrupt": 3.342180088239388e-09,
+      "prob_ratio": 9.47676128122799,
+      "subject_pos": 3
     },
     {
       "id": 246,
@@ -1221,9 +1341,10 @@
       "clean": "The prime minister of Canada is",
       "corrupt": "The prime minister of Australia is",
       "correct_answer": "Justin Trudeau",
-      "p_clean": 1.0932583727196743e-08,
-      "p_corrupt": 4.43842118613702e-09,
-      "prob_ratio": 2.463169507513981
+      "p_clean": 1.0932565963628349e-08,
+      "p_corrupt": 4.438416745244922e-09,
+      "prob_ratio": 2.4631679698263813,
+      "subject_pos": 4
     },
     {
       "id": 247,
@@ -1231,9 +1352,10 @@
       "clean": "The current king of England is",
       "corrupt": "The current king of Spain is",
       "correct_answer": "King Charles",
-      "p_clean": 3.7608299408020684e-07,
-      "p_corrupt": 1.2052447573296377e-07,
-      "prob_ratio": 3.1203868906550003
+      "p_clean": 3.7608316461046343e-07,
+      "p_corrupt": 1.205246888957845e-07,
+      "prob_ratio": 3.120382786763762,
+      "subject_pos": 4
     },
     {
       "id": 248,
@@ -1241,9 +1363,10 @@
       "clean": "The president of India is",
       "corrupt": "The president of Brazil is",
       "correct_answer": "Droupadi Murmu",
-      "p_clean": 5.671838465559631e-08,
-      "p_corrupt": 1.874540167534633e-08,
-      "prob_ratio": 3.025722555211579
+      "p_clean": 5.671829228504066e-08,
+      "p_corrupt": 1.8745353713711665e-08,
+      "prob_ratio": 3.0257253691378962,
+      "subject_pos": 3
     },
     {
       "id": 249,
@@ -1251,9 +1374,10 @@
       "clean": "The CEO of Google is",
       "corrupt": "The CEO of Facebook is",
       "correct_answer": "Sundar Pichai",
-      "p_clean": 1.0909112502233143e-09,
-      "p_corrupt": 5.001370984025755e-10,
-      "prob_ratio": 2.1812244156805316
+      "p_clean": 1.090910473067197e-09,
+      "p_corrupt": 5.001369318691218e-10,
+      "prob_ratio": 2.181223588088615,
+      "subject_pos": 3
     }
   ],
   "dropped_pairs": [
@@ -1263,9 +1387,10 @@
       "clean": "The capital of Italy is",
       "corrupt": "The capital of Spain is",
       "correct_answer": "Rome",
-      "p_clean": 1.277632236451609e-06,
+      "p_clean": 1.277631895391096e-06,
       "p_corrupt": 8.699133218215138e-07,
-      "prob_ratio": 1.4686891261492254,
+      "prob_ratio": 1.468688734086586,
+      "subject_pos": 3,
       "drop_reason": "prob_ratio"
     },
     {
@@ -1274,9 +1399,10 @@
       "clean": "The capital of Brazil is",
       "corrupt": "The capital of Australia is",
       "correct_answer": "Brasilia",
-      "p_clean": 1.5405205999741156e-07,
-      "p_corrupt": 9.491893138147134e-08,
-      "prob_ratio": 1.6229856126201956,
+      "p_clean": 1.5405271369672846e-07,
+      "p_corrupt": 9.491882480006097e-08,
+      "prob_ratio": 1.6229943219506602,
+      "subject_pos": 3,
       "drop_reason": "prob_ratio"
     },
     {
@@ -1285,9 +1411,10 @@
       "clean": "The capital of Sweden is",
       "corrupt": "The capital of Norway is",
       "correct_answer": "Stockholm",
-      "p_clean": 8.669436368791139e-08,
-      "p_corrupt": 9.776460530019904e-08,
-      "prob_ratio": 0.8867663652065589,
+      "p_clean": 8.669488948953585e-08,
+      "p_corrupt": 9.77646621436179e-08,
+      "prob_ratio": 0.8867712278510167,
+      "subject_pos": 3,
       "drop_reason": "prob_ratio"
     },
     {
@@ -1296,9 +1423,10 @@
       "clean": "The capital of Turkey is",
       "corrupt": "The capital of Chile is",
       "correct_answer": "Ankara",
-      "p_clean": 4.6744052184521934e-08,
-      "p_corrupt": 2.5743661424826314e-08,
-      "prob_ratio": 1.8157499593062374,
+      "p_clean": 4.674415166050494e-08,
+      "p_corrupt": 2.574369872831994e-08,
+      "prob_ratio": 1.8157511923134406,
+      "subject_pos": 3,
       "drop_reason": "prob_ratio"
     },
     {
@@ -1307,9 +1435,10 @@
       "clean": "The capital of Greece is",
       "corrupt": "The capital of Portugal is",
       "correct_answer": "Athens",
-      "p_clean": 3.150736915813468e-08,
-      "p_corrupt": 6.57530492276237e-08,
-      "prob_ratio": 0.4791773085543541,
+      "p_clean": 3.150740468527147e-08,
+      "p_corrupt": 6.575287159193977e-08,
+      "prob_ratio": 0.4791791433962827,
+      "subject_pos": 3,
       "drop_reason": "prob_ratio"
     },
     {
@@ -1318,9 +1447,10 @@
       "clean": "The capital of Chile is ",
       "corrupt": "The capital of Peru is ",
       "correct_answer": "Santiago",
-      "p_clean": 2.385082709110975e-08,
-      "p_corrupt": 3.488738187229501e-08,
-      "prob_ratio": 0.6836519627186562,
+      "p_clean": 2.3850864394603377e-08,
+      "p_corrupt": 3.488748845370537e-08,
+      "prob_ratio": 0.6836509434106368,
+      "subject_pos": 3,
       "drop_reason": "prob_ratio"
     },
     {
@@ -1329,9 +1459,10 @@
       "clean": "The capital of Egypt is ",
       "corrupt": "The capital of Kenya is ",
       "correct_answer": "Cairo",
-      "p_clean": 1.4192075070695864e-08,
-      "p_corrupt": 3.934522752047087e-08,
-      "prob_ratio": 0.36070639223809015,
+      "p_clean": 1.4192014674563325e-08,
+      "p_corrupt": 3.934519554604776e-08,
+      "prob_ratio": 0.360705150339224,
+      "subject_pos": 3,
       "drop_reason": "prob_ratio"
     },
     {
@@ -1340,9 +1471,10 @@
       "clean": "The tallest mountain in the world is ",
       "corrupt": "The highest mountain in the world is ",
       "correct_answer": "Everest",
-      "p_clean": 8.758702279010322e-07,
-      "p_corrupt": 5.720757485505601e-07,
-      "prob_ratio": 1.5310389054599518,
+      "p_clean": 8.758741500969336e-07,
+      "p_corrupt": 5.72074554838764e-07,
+      "prob_ratio": 1.5310489562742287,
+      "subject_pos": 1,
       "drop_reason": "prob_ratio"
     },
     {
@@ -1351,9 +1483,10 @@
       "clean": "The largest ocean is ",
       "corrupt": "The smallest ocean is ",
       "correct_answer": "Pacific",
-      "p_clean": 1.0214064616320684e-07,
-      "p_corrupt": 1.4086786848110933e-07,
-      "prob_ratio": 0.7250812216052244,
+      "p_clean": 1.0214063905777948e-07,
+      "p_corrupt": 1.4086789690281876e-07,
+      "prob_ratio": 0.7250810248714351,
+      "subject_pos": 1,
       "drop_reason": "prob_ratio"
     },
     {
@@ -1362,9 +1495,10 @@
       "clean": "The largest continent is ",
       "corrupt": "The smallest continent is ",
       "correct_answer": "Asia",
-      "p_clean": 1.453563413633674e-06,
-      "p_corrupt": 2.0678987766586943e-06,
-      "prob_ratio": 0.7029180683506849,
+      "p_clean": 1.45356011671538e-06,
+      "p_corrupt": 2.0679028693848522e-06,
+      "prob_ratio": 0.7029150828287097,
+      "subject_pos": 1,
       "drop_reason": "prob_ratio"
     },
     {
@@ -1373,9 +1507,10 @@
       "clean": "The largest desert in Africa is ",
       "corrupt": "The largest desert in Asia is ",
       "correct_answer": "Sahara",
-      "p_clean": 8.160332640727574e-07,
-      "p_corrupt": 4.891227831649303e-07,
-      "prob_ratio": 1.66836077189558,
+      "p_clean": 8.160333777595952e-07,
+      "p_corrupt": 4.891212483926211e-07,
+      "prob_ratio": 1.6683662393349132,
+      "subject_pos": 4,
       "drop_reason": "prob_ratio"
     },
     {
@@ -1384,9 +1519,10 @@
       "clean": "The largest country by area is ",
       "corrupt": "The smallest country by area is ",
       "correct_answer": "Russia",
-      "p_clean": 7.176815302045725e-07,
-      "p_corrupt": 4.810581231140532e-07,
-      "prob_ratio": 1.4918811173144222,
+      "p_clean": 7.176779490691843e-07,
+      "p_corrupt": 4.810579525837966e-07,
+      "prob_ratio": 1.4918742018804279,
+      "subject_pos": 1,
       "drop_reason": "prob_ratio"
     },
     {
@@ -1395,9 +1531,10 @@
       "clean": "The capital of Italy is",
       "corrupt": "The capital of Spain is",
       "correct_answer": "Rome",
-      "p_clean": 1.277632236451609e-06,
+      "p_clean": 1.277631895391096e-06,
       "p_corrupt": 8.699133218215138e-07,
-      "prob_ratio": 1.4686891261492254,
+      "prob_ratio": 1.468688734086586,
+      "subject_pos": 3,
       "drop_reason": "prob_ratio"
     },
     {
@@ -1406,9 +1543,10 @@
       "clean": "The capital of Egypt is",
       "corrupt": "The capital of Turkey is",
       "correct_answer": "Cairo",
-      "p_clean": 1.3359240824684093e-07,
-      "p_corrupt": 2.702008146115986e-07,
-      "prob_ratio": 0.4944189692354331,
+      "p_clean": 1.3359252193367865e-07,
+      "p_corrupt": 2.702008998767269e-07,
+      "prob_ratio": 0.49441923396490256,
+      "subject_pos": 3,
       "drop_reason": "prob_ratio"
     },
     {
@@ -1417,9 +1555,10 @@
       "clean": "The capital of Australia is",
       "corrupt": "The capital of Indonesia is",
       "correct_answer": "Canberra",
-      "p_clean": 1.0838774322508016e-08,
-      "p_corrupt": 8.292043496282986e-09,
-      "prob_ratio": 1.3071294581808013,
+      "p_clean": 1.083879208607641e-08,
+      "p_corrupt": 8.292072806170836e-09,
+      "prob_ratio": 1.3071269801213448,
+      "subject_pos": 3,
       "drop_reason": "prob_ratio"
     },
     {
@@ -1428,9 +1567,10 @@
       "clean": "The longest river in Africa is",
       "corrupt": "The longest river in Asia is",
       "correct_answer": "the Nile",
-      "p_clean": 2.613189735711785e-06,
-      "p_corrupt": 3.3559115308889886e-06,
-      "prob_ratio": 0.7786825462051274,
+      "p_clean": 2.6131920094485395e-06,
+      "p_corrupt": 3.355913349878392e-06,
+      "prob_ratio": 0.7786828016710364,
+      "subject_pos": 4,
       "drop_reason": "prob_ratio"
     },
     {
@@ -1439,9 +1579,10 @@
       "clean": "The highest mountain in Nepal is",
       "corrupt": "The highest mountain in India is",
       "correct_answer": "Mount Everest",
-      "p_clean": 1.6644484048811137e-06,
-      "p_corrupt": 1.0442626035001012e-06,
-      "prob_ratio": 1.5938983157132203,
+      "p_clean": 1.6644438574076048e-06,
+      "p_corrupt": 1.0442599887028337e-06,
+      "prob_ratio": 1.5938979520561307,
+      "subject_pos": 4,
       "drop_reason": "prob_ratio"
     },
     {
@@ -1450,9 +1591,10 @@
       "clean": "The largest desert in Africa is",
       "corrupt": "The largest desert in Antarctica is",
       "correct_answer": "the Sahara",
-      "p_clean": 9.668149232311407e-07,
-      "p_corrupt": 1.297598032579117e-06,
-      "prob_ratio": 0.7450804478406083,
+      "p_clean": 9.668151506048162e-07,
+      "p_corrupt": 1.2975946219739853e-06,
+      "prob_ratio": 0.7450825814413704,
+      "subject_pos": 4,
       "drop_reason": "prob_ratio"
     },
     {
@@ -1461,9 +1603,10 @@
       "clean": "The most populous country in Africa is",
       "corrupt": "The most populous country in Asia is",
       "correct_answer": "Nigeria",
-      "p_clean": 4.27083648446569e-07,
-      "p_corrupt": 3.0148976293276064e-07,
-      "prob_ratio": 1.4165776120956344,
+      "p_clean": 4.2708276737357664e-07,
+      "p_corrupt": 3.014893650288286e-07,
+      "prob_ratio": 1.4165765592850637,
+      "subject_pos": 5,
       "drop_reason": "prob_ratio"
     },
     {
@@ -1472,9 +1615,10 @@
       "clean": "The largest lake in Africa is",
       "corrupt": "The largest lake in Asia is",
       "correct_answer": "Lake Victoria",
-      "p_clean": 1.1650415672193049e-06,
-      "p_corrupt": 1.4480530126093072e-06,
-      "prob_ratio": 0.8045572621129166,
+      "p_clean": 1.1650428177745198e-06,
+      "p_corrupt": 1.448050625185715e-06,
+      "prob_ratio": 0.8045594522119011,
+      "subject_pos": 4,
       "drop_reason": "prob_ratio"
     },
     {
@@ -1483,9 +1627,10 @@
       "clean": "The capital of Italy is ",
       "corrupt": "The capital of Spain is ",
       "correct_answer": "Rome",
-      "p_clean": 6.196267321456617e-08,
-      "p_corrupt": 4.662567221203062e-08,
-      "prob_ratio": 1.3289389787838426,
+      "p_clean": 6.196290769366897e-08,
+      "p_corrupt": 4.662576102987259e-08,
+      "prob_ratio": 1.328941476236067,
+      "subject_pos": 3,
       "drop_reason": "prob_ratio"
     },
     {
@@ -1494,9 +1639,10 @@
       "clean": "The capital of Spain is ",
       "corrupt": "The capital of Portugal is ",
       "correct_answer": "Madrid",
-      "p_clean": 5.848489763593534e-07,
-      "p_corrupt": 4.254256964486558e-07,
-      "prob_ratio": 1.3747382474578336,
+      "p_clean": 5.84849544793542e-07,
+      "p_corrupt": 4.2542603750916896e-07,
+      "prob_ratio": 1.3747384814944175,
+      "subject_pos": 3,
       "drop_reason": "prob_ratio"
     },
     {
@@ -1505,9 +1651,10 @@
       "clean": "The capital of Portugal is ",
       "corrupt": "The capital of Netherlands is ",
       "correct_answer": "Lisbon",
-      "p_clean": 1.6629401500267704e-07,
-      "p_corrupt": 4.616057083239866e-07,
-      "prob_ratio": 0.3602512100781052,
+      "p_clean": 1.662939865809676e-07,
+      "p_corrupt": 4.6160778310877504e-07,
+      "prob_ratio": 0.36024952928876736,
+      "subject_pos": 3,
       "drop_reason": "prob_ratio"
     },
     {
@@ -1516,9 +1663,10 @@
       "clean": "The capital of Sweden is ",
       "corrupt": "The capital of Norway is ",
       "correct_answer": "Stockholm",
-      "p_clean": 1.5238882156154432e-07,
-      "p_corrupt": 1.8667022061436e-07,
-      "prob_ratio": 0.8163531443848386,
+      "p_clean": 1.5238930473060464e-07,
+      "p_corrupt": 1.86670021662394e-07,
+      "prob_ratio": 0.8163566028090549,
+      "subject_pos": 3,
       "drop_reason": "prob_ratio"
     },
     {
@@ -1527,9 +1675,10 @@
       "clean": "The capital of Denmark is ",
       "corrupt": "The capital of Finland is ",
       "correct_answer": "Copenhagen",
-      "p_clean": 7.703570759076683e-08,
-      "p_corrupt": 1.2011368255571142e-07,
-      "prob_ratio": 0.6413566377422151,
+      "p_clean": 7.703601312414321e-08,
+      "p_corrupt": 1.2011481942408864e-07,
+      "prob_ratio": 0.641353111077432,
+      "subject_pos": 3,
       "drop_reason": "prob_ratio"
     },
     {
@@ -1538,9 +1687,10 @@
       "clean": "The capital of Italy is",
       "corrupt": "The capital of Spain is",
       "correct_answer": "Rome",
-      "p_clean": 1.277632236451609e-06,
+      "p_clean": 1.277631895391096e-06,
       "p_corrupt": 8.699133218215138e-07,
-      "prob_ratio": 1.4686891261492254,
+      "prob_ratio": 1.468688734086586,
+      "subject_pos": 3,
       "drop_reason": "prob_ratio"
     },
     {
@@ -1549,9 +1699,10 @@
       "clean": "The capital of Austria is",
       "corrupt": "The capital of Sweden is",
       "correct_answer": "Vienna",
-      "p_clean": 4.609837489510937e-08,
-      "p_corrupt": 2.8235035642865114e-08,
-      "prob_ratio": 1.6326657234717625,
+      "p_clean": 4.6098456607523985e-08,
+      "p_corrupt": 2.8235128013420763e-08,
+      "prob_ratio": 1.6326632762427145,
+      "subject_pos": 3,
       "drop_reason": "prob_ratio"
     },
     {
@@ -1560,9 +1711,10 @@
       "clean": "The capital of Sweden is",
       "corrupt": "The capital of Norway is",
       "correct_answer": "Stockholm",
-      "p_clean": 8.669436368791139e-08,
-      "p_corrupt": 9.776460530019904e-08,
-      "prob_ratio": 0.8867663652065589,
+      "p_clean": 8.669488948953585e-08,
+      "p_corrupt": 9.77646621436179e-08,
+      "prob_ratio": 0.8867712278510167,
+      "subject_pos": 3,
       "drop_reason": "prob_ratio"
     },
     {
@@ -1571,9 +1723,10 @@
       "clean": "The capital of Norway is",
       "corrupt": "The capital of Poland is",
       "correct_answer": "Oslo",
-      "p_clean": 1.7133473306785163e-08,
-      "p_corrupt": 9.264493172622679e-09,
-      "prob_ratio": 1.8493697375066294,
+      "p_clean": 1.7133404028868426e-08,
+      "p_corrupt": 9.264486067195321e-09,
+      "prob_ratio": 1.8493636780928635,
+      "subject_pos": 3,
       "drop_reason": "prob_ratio"
     },
     {
@@ -1582,9 +1735,10 @@
       "clean": "The capital of Greece is",
       "corrupt": "The capital of Turkey is",
       "correct_answer": "Athens",
-      "p_clean": 3.150736915813468e-08,
-      "p_corrupt": 5.2302549846672264e-08,
-      "prob_ratio": 0.6024059869069525,
+      "p_clean": 3.150740468527147e-08,
+      "p_corrupt": 5.230261379551848e-08,
+      "prob_ratio": 0.6024059296243272,
+      "subject_pos": 3,
       "drop_reason": "prob_ratio"
     },
     {
@@ -1593,9 +1747,10 @@
       "clean": "The capital of Turkey is",
       "corrupt": "The capital of Russia is",
       "correct_answer": "Ankara",
-      "p_clean": 4.6744052184521934e-08,
-      "p_corrupt": 4.2568398583853195e-08,
-      "prob_ratio": 1.0980928045118574,
+      "p_clean": 4.674415166050494e-08,
+      "p_corrupt": 4.256840924199423e-08,
+      "prob_ratio": 1.098094866424825,
+      "subject_pos": 3,
       "drop_reason": "prob_ratio"
     },
     {
@@ -1604,9 +1759,10 @@
       "clean": "The capital of Italy is Rome",
       "corrupt": "The capital of Spain is Madrid",
       "correct_answer": "Rome",
-      "p_clean": 6.475057716670563e-07,
-      "p_corrupt": 3.279707811998378e-07,
-      "prob_ratio": 1.9742788345298379,
+      "p_clean": 6.475073064393655e-07,
+      "p_corrupt": 3.279718896465056e-07,
+      "prob_ratio": 1.974276841644146,
+      "subject_pos": 3,
       "drop_reason": "prob_ratio"
     },
     {
@@ -1615,9 +1771,10 @@
       "clean": "The longest river is the Nile",
       "corrupt": "The longest river is the Amazon",
       "correct_answer": "the Nile",
-      "p_clean": 1.0690429519399913e-07,
-      "p_corrupt": 6.667419256700668e-07,
-      "prob_ratio": 0.16033834243521095,
+      "p_clean": 1.0690443730254628e-07,
+      "p_corrupt": 6.667401066806633e-07,
+      "prob_ratio": 0.16033899300698345,
+      "subject_pos": 5,
       "drop_reason": "prob_ratio"
     },
     {
@@ -1626,9 +1783,10 @@
       "clean": "Darwin was born in London.",
       "corrupt": "Curie was born in Paris.",
       "correct_answer": "London",
-      "p_clean": 2.064043691518691e-08,
-      "p_corrupt": 1.4012106142047287e-08,
-      "prob_ratio": 1.4730431461155895,
+      "p_clean": 2.0640413822547998e-08,
+      "p_corrupt": 1.4012140781005655e-08,
+      "prob_ratio": 1.4730378566084197,
+      "subject_pos": 0,
       "drop_reason": "prob_ratio"
     },
     {
@@ -1637,9 +1795,10 @@
       "clean": "Curie discovered ",
       "corrupt": "Darwin discovered ",
       "correct_answer": "radium",
-      "p_clean": 1.4284543681242212e-07,
-      "p_corrupt": 3.309862393052754e-07,
-      "prob_ratio": 0.4315751528288548,
+      "p_clean": 1.428449394325071e-07,
+      "p_corrupt": 3.3098638141382253e-07,
+      "prob_ratio": 0.431573464812476,
+      "subject_pos": 0,
       "drop_reason": "prob_ratio"
     },
     {
@@ -1648,9 +1807,10 @@
       "clean": "Freud studied ",
       "corrupt": "Jung studied ",
       "correct_answer": "the unconscious",
-      "p_clean": 6.134227533038938e-06,
-      "p_corrupt": 7.027798346825875e-06,
-      "prob_ratio": 0.8728519559485481,
+      "p_clean": 6.134242539701518e-06,
+      "p_corrupt": 7.0278215389407706e-06,
+      "prob_ratio": 0.87285121082145,
+      "subject_pos": 0,
       "drop_reason": "prob_ratio"
     },
     {
@@ -1659,9 +1819,10 @@
       "clean": "Dante wrote ",
       "corrupt": "Homer wrote ",
       "correct_answer": "The Divine Comedy",
-      "p_clean": 3.7366557990026195e-06,
-      "p_corrupt": 2.789615791698452e-06,
-      "prob_ratio": 1.3394876133560902,
+      "p_clean": 3.7366676224337425e-06,
+      "p_corrupt": 2.789618747556233e-06,
+      "prob_ratio": 1.3394904324138004,
+      "subject_pos": 0,
       "drop_reason": "prob_ratio"
     },
     {
@@ -1670,9 +1831,10 @@
       "clean": "Einstein died in ",
       "corrupt": "Newton died in ",
       "correct_answer": "Princeton",
-      "p_clean": 6.819698228355264e-08,
-      "p_corrupt": 5.485557608153613e-08,
-      "prob_ratio": 1.243209663538783,
+      "p_clean": 6.819704623239886e-08,
+      "p_corrupt": 5.4855647135809704e-08,
+      "prob_ratio": 1.243209218980846,
+      "subject_pos": 0,
       "drop_reason": "prob_ratio"
     },
     {
@@ -1681,9 +1843,10 @@
       "clean": "Darwin wrote ",
       "corrupt": "Curie wrote ",
       "correct_answer": "On the Origin of Species",
-      "p_clean": 4.4012969624418474e-07,
-      "p_corrupt": 4.982191512681311e-07,
-      "prob_ratio": 0.8834058167453225,
+      "p_clean": 4.401298667744413e-07,
+      "p_corrupt": 4.98221254474629e-07,
+      "prob_ratio": 0.883402429787054,
+      "subject_pos": 0,
       "drop_reason": "prob_ratio"
     },
     {
@@ -1692,9 +1855,10 @@
       "clean": " Turing was born in",
       "corrupt": " Napoleon was born in",
       "correct_answer": "England",
-      "p_clean": 2.194532413568595e-07,
-      "p_corrupt": 1.4896616562509735e-07,
-      "prob_ratio": 1.4731750692244892,
+      "p_clean": 2.1945355399566324e-07,
+      "p_corrupt": 1.4896595246227662e-07,
+      "prob_ratio": 1.4731792759908446,
+      "subject_pos": 0,
       "drop_reason": "prob_ratio"
     },
     {
@@ -1703,9 +1867,10 @@
       "clean": " Homer was born in",
       "corrupt": " Einstein was born in",
       "correct_answer": "Greece",
-      "p_clean": 6.811308708165598e-07,
-      "p_corrupt": 3.5818399624076847e-07,
-      "prob_ratio": 1.901622847377885,
+      "p_clean": 6.811298476350203e-07,
+      "p_corrupt": 3.581841383493156e-07,
+      "prob_ratio": 1.9016192363346782,
+      "subject_pos": 0,
       "drop_reason": "prob_ratio"
     },
     {
@@ -1714,9 +1879,10 @@
       "clean": " Lincoln was born in",
       "corrupt": " Darwin was born in",
       "correct_answer": "America",
-      "p_clean": 1.7518148354156438e-07,
-      "p_corrupt": 1.488494660861761e-07,
-      "prob_ratio": 1.1769036742136743,
+      "p_clean": 1.751815972284021e-07,
+      "p_corrupt": 1.48849821357544e-07,
+      "prob_ratio": 1.176901628975476,
+      "subject_pos": 0,
       "drop_reason": "prob_ratio"
     },
     {
@@ -1725,9 +1891,10 @@
       "clean": "Thomas Edison was the inventor of",
       "corrupt": "Alexander Bell was the inventor of",
       "correct_answer": "the lightbulb",
-      "p_clean": 4.969965630152728e-06,
-      "p_corrupt": 1.655628511798568e-05,
-      "prob_ratio": 0.3001860377938091,
+      "p_clean": 4.969956535205711e-06,
+      "p_corrupt": 1.655629966990091e-05,
+      "prob_ratio": 0.30018522461519664,
+      "subject_pos": 0,
       "drop_reason": "prob_ratio"
     },
     {
@@ -1736,9 +1903,10 @@
       "clean": "Marie Curie was the discoverer of",
       "corrupt": "Pierre Curie was the discoverer of",
       "correct_answer": "the radium",
-      "p_clean": 7.583479145978345e-06,
-      "p_corrupt": 1.8503647879697382e-05,
-      "prob_ratio": 0.40983697891803855,
+      "p_clean": 7.583482329209801e-06,
+      "p_corrupt": 1.850368244049605e-05,
+      "prob_ratio": 0.4098363854652545,
+      "subject_pos": 0,
       "drop_reason": "prob_ratio"
     },
     {
@@ -1747,9 +1915,10 @@
       "clean": "Niels Bohr was the proposer of",
       "corrupt": "Ernest Rutherford was the proposer of",
       "correct_answer": "the model",
-      "p_clean": 1.2072388017259073e-05,
-      "p_corrupt": 1.1394625289540272e-05,
-      "prob_ratio": 1.0594809140710362,
+      "p_clean": 1.2072408935637213e-05,
+      "p_corrupt": 1.139460346166743e-05,
+      "prob_ratio": 1.0594847794616098,
+      "subject_pos": 0,
       "drop_reason": "prob_ratio"
     },
     {
@@ -1758,9 +1927,10 @@
       "clean": "The capital of Spain is",
       "corrupt": "The capital of Portugal is",
       "correct_answer": "Madrid",
-      "p_clean": 4.742429737802922e-08,
-      "p_corrupt": 3.596371556113809e-08,
-      "prob_ratio": 1.3186706834394855,
+      "p_clean": 4.74242511927514e-08,
+      "p_corrupt": 3.596365516500555e-08,
+      "prob_ratio": 1.318671613749027,
+      "subject_pos": 3,
       "drop_reason": "prob_ratio"
     },
     {
@@ -1769,9 +1939,10 @@
       "clean": "The founder of Facebook is",
       "corrupt": "The founder of Snapchat is",
       "correct_answer": "Mark",
-      "p_clean": 1.827180184932331e-08,
-      "p_corrupt": 1.56125850026001e-08,
-      "prob_ratio": 1.1703252117622,
+      "p_clean": 1.827180362568015e-08,
+      "p_corrupt": 1.561260809523901e-08,
+      "prob_ratio": 1.170323594508982,
+      "subject_pos": 3,
       "drop_reason": "prob_ratio"
     },
     {
@@ -1780,9 +1951,10 @@
       "clean": "The CEO of Apple is",
       "corrupt": "The CEO of Microsoft is",
       "correct_answer": "Tim",
-      "p_clean": 2.1585787379763133e-08,
-      "p_corrupt": 1.270785698892496e-08,
-      "prob_ratio": 1.6986174300336705,
+      "p_clean": 2.158570389099168e-08,
+      "p_corrupt": 1.2707850771676021e-08,
+      "prob_ratio": 1.698611691215569,
+      "subject_pos": 3,
       "drop_reason": "prob_ratio"
     },
     {
@@ -1791,9 +1963,10 @@
       "clean": "The largest continent is",
       "corrupt": "The smallest continent is",
       "correct_answer": "Asia",
-      "p_clean": 6.671443770756014e-07,
-      "p_corrupt": 1.4380431139215943e-06,
-      "prob_ratio": 0.4639251567752201,
+      "p_clean": 6.671435244243185e-07,
+      "p_corrupt": 1.4380420907400548e-06,
+      "prob_ratio": 0.4639248939375541,
+      "subject_pos": 1,
       "drop_reason": "prob_ratio"
     },
     {
@@ -1802,9 +1975,10 @@
       "clean": "The first planet from the sun is",
       "corrupt": "The last planet from the sun is",
       "correct_answer": "Mercury",
-      "p_clean": 3.435562803133507e-07,
-      "p_corrupt": 3.4773506740748417e-07,
-      "prob_ratio": 0.9879828424401137,
+      "p_clean": 3.4355610978309414e-07,
+      "p_corrupt": 3.477357495285105e-07,
+      "prob_ratio": 0.9879804140037846,
+      "subject_pos": 1,
       "drop_reason": "prob_ratio"
     },
     {
@@ -1813,9 +1987,10 @@
       "clean": "The creator of Superman is",
       "corrupt": "The creator of Batman is",
       "correct_answer": "Jerry",
-      "p_clean": 1.3183678149175648e-08,
-      "p_corrupt": 7.645331479011475e-09,
-      "prob_ratio": 1.7244089658333912,
+      "p_clean": 1.318364173386044e-08,
+      "p_corrupt": 7.6453146036215e-09,
+      "prob_ratio": 1.7244080090066531,
+      "subject_pos": 3,
       "drop_reason": "prob_ratio"
     },
     {
@@ -1824,9 +1999,10 @@
       "clean": " Isaac Newton was born in London.",
       "corrupt": " Isaac Newton was born in Rome.",
       "correct_answer": "London",
-      "p_clean": 6.050881751207271e-08,
-      "p_corrupt": 3.665675407660274e-08,
-      "prob_ratio": 1.650686729807707,
+      "p_clean": 6.050875356322649e-08,
+      "p_corrupt": 3.665666525876077e-08,
+      "prob_ratio": 1.650688984829715,
+      "subject_pos": 5,
       "drop_reason": "prob_ratio"
     },
     {
@@ -1835,9 +2011,10 @@
       "clean": " Ada Lovelace was born in Rome.",
       "corrupt": " Ada Lovelace was born in Tokyo.",
       "correct_answer": "Rome",
-      "p_clean": 1.818643681872345e-06,
-      "p_corrupt": 1.2708228496194351e-06,
-      "prob_ratio": 1.4310756864475345,
+      "p_clean": 1.8186423176302924e-06,
+      "p_corrupt": 1.270823759114137e-06,
+      "prob_ratio": 1.4310735887547676,
+      "subject_pos": 7,
       "drop_reason": "prob_ratio"
     },
     {
@@ -1846,9 +2023,10 @@
       "clean": " William Shakespeare was born in Cairo.",
       "corrupt": " William Shakespeare was born in Oslo.",
       "correct_answer": "Cairo",
-      "p_clean": 2.6879633878706954e-06,
-      "p_corrupt": 1.8619438151290524e-06,
-      "prob_ratio": 1.4436329206230056,
+      "p_clean": 2.6879640699917218e-06,
+      "p_corrupt": 1.86193744866614e-06,
+      "prob_ratio": 1.4436382231408114,
+      "subject_pos": 5,
       "drop_reason": "prob_ratio"
     },
     {
@@ -1857,9 +2035,10 @@
       "clean": " Jane Austen was born in Oslo.",
       "corrupt": " Jane Austen was born in Lima.",
       "correct_answer": "Oslo",
-      "p_clean": 7.168175386595976e-09,
-      "p_corrupt": 1.3684175570460866e-08,
-      "prob_ratio": 0.5238295394330841,
+      "p_clean": 7.1682104696435545e-09,
+      "p_corrupt": 1.3684215538489752e-08,
+      "prob_ratio": 0.5238305732236858,
+      "subject_pos": 6,
       "drop_reason": "prob_ratio"
     },
     {
@@ -1868,9 +2047,10 @@
       "clean": "Beethoven was born in Germany",
       "corrupt": "Beethoven was born in Austria",
       "correct_answer": "Germany",
-      "p_clean": 1.1245846920360236e-08,
-      "p_corrupt": 7.030583670797341e-09,
-      "prob_ratio": 1.5995609250867275,
+      "p_clean": 1.1245832709505521e-08,
+      "p_corrupt": 7.030595217116797e-09,
+      "prob_ratio": 1.5995562768464098,
+      "subject_pos": 6,
       "drop_reason": "prob_ratio"
     },
     {
@@ -1879,9 +2059,10 @@
       "clean": "Freud was born in Austria",
       "corrupt": "Freud was born in Germany",
       "correct_answer": "Austria",
-      "p_clean": 1.2363536860959812e-08,
-      "p_corrupt": 9.238716458526142e-09,
-      "prob_ratio": 1.3382310103856325,
+      "p_clean": 1.2363568835382921e-08,
+      "p_corrupt": 9.238724452131919e-09,
+      "prob_ratio": 1.338233313423469,
+      "subject_pos": 5,
       "drop_reason": "prob_ratio"
     },
     {
@@ -1890,9 +2071,10 @@
       "clean": "Aristotle was born in Greece",
       "corrupt": "Aristotle was born in Egypt",
       "correct_answer": "Greece",
-      "p_clean": 5.7289859967113443e-08,
-      "p_corrupt": 8.240738225140376e-08,
-      "prob_ratio": 0.6952030073269018,
+      "p_clean": 5.728986351982712e-08,
+      "p_corrupt": 8.240743909482262e-08,
+      "prob_ratio": 0.6952025708978311,
+      "subject_pos": 6,
       "drop_reason": "prob_ratio"
     },
     {
@@ -1901,9 +2083,10 @@
       "clean": "Plato was born in Greece",
       "corrupt": "Plato was born in Italy",
       "correct_answer": "Greece",
-      "p_clean": 6.877492353396519e-08,
-      "p_corrupt": 4.565766431596785e-08,
-      "prob_ratio": 1.5063171663363548,
+      "p_clean": 6.87749732719567e-08,
+      "p_corrupt": 4.565757549812588e-08,
+      "prob_ratio": 1.5063211859503955,
+      "subject_pos": 5,
       "drop_reason": "prob_ratio"
     },
     {
@@ -1912,9 +2095,10 @@
       "clean": "The chemical symbol for gold is",
       "corrupt": "The chemical symbol for silver is",
       "correct_answer": "Au",
-      "p_clean": 1.1248615010117646e-05,
+      "p_clean": 1.1248605915170629e-05,
       "p_corrupt": 1.0197230949415825e-05,
-      "prob_ratio": 1.1031048591443398,
+      "prob_ratio": 1.1031039672407374,
+      "subject_pos": 4,
       "drop_reason": "prob_ratio"
     },
     {
@@ -1923,9 +2107,10 @@
       "clean": "The atomic number of carbon is",
       "corrupt": "The atomic number of nitrogen is",
       "correct_answer": "6",
-      "p_clean": 3.0139383397909114e-06,
-      "p_corrupt": 4.7440453272429295e-06,
-      "prob_ratio": 0.635309768750145,
+      "p_clean": 3.013940158780315e-06,
+      "p_corrupt": 4.744038506032666e-06,
+      "prob_ratio": 0.6353110656559164,
+      "subject_pos": 4,
       "drop_reason": "prob_ratio"
     },
     {
@@ -1934,9 +2119,10 @@
       "clean": "The pH of pure water is",
       "corrupt": "The pH of acidic water is",
       "correct_answer": "7",
-      "p_clean": 1.3754872270510532e-05,
-      "p_corrupt": 6.9853413151577115e-06,
-      "prob_ratio": 1.96910525197436,
+      "p_clean": 1.3754887731920462e-05,
+      "p_corrupt": 6.985352229094133e-06,
+      "prob_ratio": 1.9691043888425666,
+      "subject_pos": 3,
       "drop_reason": "prob_ratio"
     },
     {
@@ -1945,9 +2131,10 @@
       "clean": "The SI unit of force is",
       "corrupt": "The SI unit of energy is",
       "correct_answer": "newton",
-      "p_clean": 1.3792766928588662e-08,
-      "p_corrupt": 1.98619822810997e-08,
-      "prob_ratio": 0.694430532329777,
+      "p_clean": 1.3792769593123921e-08,
+      "p_corrupt": 1.986195208303343e-08,
+      "prob_ratio": 0.6944317222930996,
+      "subject_pos": 4,
       "drop_reason": "prob_ratio"
     },
     {
@@ -1956,9 +2143,10 @@
       "clean": "The chemical element with symbol Fe is",
       "corrupt": "The chemical element with symbol Au is",
       "correct_answer": "iron",
-      "p_clean": 7.310022738238331e-07,
-      "p_corrupt": 8.537380153939012e-07,
-      "prob_ratio": 0.8562372304418941,
+      "p_clean": 7.310021032935765e-07,
+      "p_corrupt": 8.537396638530481e-07,
+      "prob_ratio": 0.856235377415242,
+      "subject_pos": 5,
       "drop_reason": "prob_ratio"
     },
     {
@@ -1967,9 +2155,10 @@
       "clean": "The largest moon of Jupiter is",
       "corrupt": "The largest moon of Saturn is",
       "correct_answer": "Ganymede",
-      "p_clean": 1.288114361841508e-07,
-      "p_corrupt": 1.7139467445304035e-07,
-      "prob_ratio": 0.7515486498936889,
+      "p_clean": 1.288109672259452e-07,
+      "p_corrupt": 1.7139464603133092e-07,
+      "prob_ratio": 0.7515460383890789,
+      "subject_pos": 4,
       "drop_reason": "prob_ratio"
     },
     {
@@ -1978,9 +2167,10 @@
       "clean": "The chemical formula for water is",
       "corrupt": "The chemical formula for hydrogen is",
       "correct_answer": "H2O",
-      "p_clean": 4.254137820680626e-06,
-      "p_corrupt": 2.0079402020201087e-05,
-      "prob_ratio": 0.21186576255611134,
+      "p_clean": 4.254124178260099e-06,
+      "p_corrupt": 2.0079425667063333e-05,
+      "prob_ratio": 0.2118648336261042,
+      "subject_pos": 4,
       "drop_reason": "prob_ratio"
     },
     {
@@ -1989,9 +2179,10 @@
       "clean": "The planet with the shortest day is",
       "corrupt": "The planet with the longest day is",
       "correct_answer": "Jupiter",
-      "p_clean": 4.263830248874001e-07,
-      "p_corrupt": 4.2037538605654845e-07,
-      "prob_ratio": 1.0142911289055432,
+      "p_clean": 4.2638242803150206e-07,
+      "p_corrupt": 4.203756418519333e-07,
+      "prob_ratio": 1.0142890919014866,
+      "subject_pos": 4,
       "drop_reason": "prob_ratio"
     },
     {
@@ -2000,9 +2191,10 @@
       "clean": "The element with the highest density is",
       "corrupt": "The element with the lowest density is",
       "correct_answer": "osmium",
-      "p_clean": 1.1537300679265172e-06,
-      "p_corrupt": 7.384905984508805e-07,
-      "prob_ratio": 1.5622813213149602,
+      "p_clean": 1.1537292721186532e-06,
+      "p_corrupt": 7.384903710772051e-07,
+      "prob_ratio": 1.562280724711084,
+      "subject_pos": 4,
       "drop_reason": "prob_ratio"
     },
     {
@@ -2011,9 +2203,10 @@
       "clean": "The unit of electric current is",
       "corrupt": "The unit of electric resistance is",
       "correct_answer": "ampere",
-      "p_clean": 7.14330951723241e-07,
-      "p_corrupt": 8.295864972751588e-07,
-      "prob_ratio": 0.8610686818909378,
+      "p_clean": 7.143318043745239e-07,
+      "p_corrupt": 8.295869520225096e-07,
+      "prob_ratio": 0.8610692376887114,
+      "subject_pos": 4,
       "drop_reason": "prob_ratio"
     },
     {
@@ -2022,9 +2215,10 @@
       "clean": "The first element on the periodic table is",
       "corrupt": "The second element on the periodic table is",
       "correct_answer": "hydrogen",
-      "p_clean": 1.6447831967525417e-06,
-      "p_corrupt": 1.8698543726713979e-06,
-      "prob_ratio": 0.8796317086462169,
+      "p_clean": 1.6447833104393794e-06,
+      "p_corrupt": 1.869853917924047e-06,
+      "prob_ratio": 0.8796319833719706,
+      "subject_pos": 1,
       "drop_reason": "prob_ratio"
     },
     {
@@ -2033,9 +2227,10 @@
       "clean": "The chemical symbol for Hydrogen is H.",
       "corrupt": "The chemical symbol for Hydrogen is O.",
       "correct_answer": "H",
-      "p_clean": 0.017794720828533173,
-      "p_corrupt": 0.051439132541418076,
-      "prob_ratio": 0.3459374205854873,
+      "p_clean": 0.01779470592737198,
+      "p_corrupt": 0.05143916979432106,
+      "prob_ratio": 0.3459368803680913,
+      "subject_pos": 7,
       "drop_reason": "prob_ratio"
     },
     {
@@ -2044,9 +2239,10 @@
       "clean": "The chemical symbol for Carbon is C.",
       "corrupt": "The chemical symbol for Carbon is N.",
       "correct_answer": "C",
-      "p_clean": 0.010070201009511948,
-      "p_corrupt": 0.03926867991685867,
-      "prob_ratio": 0.2564435838136909,
+      "p_clean": 0.010070186108350754,
+      "p_corrupt": 0.03926866129040718,
+      "prob_ratio": 0.25644332598653596,
+      "subject_pos": 6,
       "drop_reason": "prob_ratio"
     },
     {
@@ -2055,9 +2251,10 @@
       "clean": "The color of the sky is blue.",
       "corrupt": "The color of the sky is pink.",
       "correct_answer": "blue",
-      "p_clean": 8.745690138312057e-06,
-      "p_corrupt": 4.6142949940986e-06,
-      "prob_ratio": 1.8953469922268207,
+      "p_clean": 8.745678314880934e-06,
+      "p_corrupt": 4.614287263393635e-06,
+      "prob_ratio": 1.8953476053089975,
+      "subject_pos": 6,
       "drop_reason": "prob_ratio"
     },
     {
@@ -2066,9 +2263,10 @@
       "clean": "The color of grass is green.",
       "corrupt": "The color of grass is brown.",
       "correct_answer": "green",
-      "p_clean": 1.59032078954624e-05,
-      "p_corrupt": 1.0117089914274402e-05,
-      "prob_ratio": 1.5719152473898894,
+      "p_clean": 1.5903220628388226e-05,
+      "p_corrupt": 1.011711447063135e-05,
+      "prob_ratio": 1.57191269057528,
+      "subject_pos": 5,
       "drop_reason": "prob_ratio"
     },
     {
@@ -2077,9 +2275,10 @@
       "clean": "The freezing point of water is zero.",
       "corrupt": "The freezing point of water is four.",
       "correct_answer": "zero",
-      "p_clean": 6.083232761966428e-08,
-      "p_corrupt": 6.14588415714934e-08,
-      "prob_ratio": 0.9898059589831302,
+      "p_clean": 6.083261183675859e-08,
+      "p_corrupt": 6.145846498384344e-08,
+      "prob_ratio": 0.9898166485731562,
+      "subject_pos": 6,
       "drop_reason": "prob_ratio"
     },
     {
@@ -2089,8 +2288,9 @@
       "corrupt": "The atomic number of Helium is 3.",
       "correct_answer": "2",
       "p_clean": 0.028358865529298782,
-      "p_corrupt": 0.026506511494517326,
-      "prob_ratio": 1.069882980835279,
+      "p_corrupt": 0.026506483554840088,
+      "prob_ratio": 1.069884108566353,
+      "subject_pos": 7,
       "drop_reason": "prob_ratio"
     },
     {
@@ -2100,8 +2300,9 @@
       "corrupt": "The chemical symbol for Potassium is P.",
       "correct_answer": "K",
       "p_clean": 0.17310646176338196,
-      "p_corrupt": 0.20942631363868713,
-      "prob_ratio": 0.8265745538644871,
+      "p_corrupt": 0.20942656695842743,
+      "prob_ratio": 0.8265735540503071,
+      "subject_pos": 7,
       "drop_reason": "prob_ratio"
     },
     {
@@ -2110,9 +2311,10 @@
       "clean": "The speed of light is represented by c.",
       "corrupt": "The speed of light is represented by v.",
       "correct_answer": "c",
-      "p_clean": 0.0045363204553723335,
-      "p_corrupt": 0.004879629239439964,
-      "prob_ratio": 0.9296444940339295,
+      "p_clean": 0.004536323249340057,
+      "p_corrupt": 0.004879647400230169,
+      "prob_ratio": 0.9296416067124199,
+      "subject_pos": 7,
       "drop_reason": "prob_ratio"
     },
     {
@@ -2121,9 +2323,10 @@
       "clean": "Water boils at",
       "corrupt": "Water freezes at",
       "correct_answer": "100",
-      "p_clean": 6.75867966037913e-07,
-      "p_corrupt": 5.201405315347074e-07,
-      "prob_ratio": 1.2993949232214648,
+      "p_clean": 6.758690460628713e-07,
+      "p_corrupt": 5.201417820899223e-07,
+      "prob_ratio": 1.2993938755453158,
+      "subject_pos": 1,
       "drop_reason": "prob_ratio"
     },
     {
@@ -2132,9 +2335,10 @@
       "clean": "The chemical symbol for water is",
       "corrupt": "The chemical symbol for hydrogen is",
       "correct_answer": "H2O",
-      "p_clean": 4.681990048993612e-06,
-      "p_corrupt": 3.548812310327776e-05,
-      "prob_ratio": 0.13193118259221698,
+      "p_clean": 4.681986411014805e-06,
+      "p_corrupt": 3.548809763742611e-05,
+      "prob_ratio": 0.13193117475187327,
+      "subject_pos": 4,
       "drop_reason": "prob_ratio"
     },
     {
@@ -2143,9 +2347,10 @@
       "clean": "Light travels at",
       "corrupt": "Sound travels at",
       "correct_answer": "300,000",
-      "p_clean": 2.156298961608627e-07,
-      "p_corrupt": 3.0672697448608233e-07,
-      "prob_ratio": 0.7030027160869963,
+      "p_clean": 2.1562941299180238e-07,
+      "p_corrupt": 3.067270313295012e-07,
+      "prob_ratio": 0.7030010105635676,
+      "subject_pos": 0,
       "drop_reason": "prob_ratio"
     },
     {
@@ -2154,9 +2359,10 @@
       "clean": "Gravity on Earth is",
       "corrupt": "Gravity on Mars is",
       "correct_answer": "9.8",
-      "p_clean": 8.023811233215383e-07,
-      "p_corrupt": 5.009438268643862e-07,
-      "prob_ratio": 1.6017387185784329,
+      "p_clean": 8.023837381188059e-07,
+      "p_corrupt": 5.009442816117371e-07,
+      "prob_ratio": 1.6017424842883088,
+      "subject_pos": 3,
       "drop_reason": "prob_ratio"
     },
     {
@@ -2165,9 +2371,10 @@
       "clean": "The atomic number of hydrogen is",
       "corrupt": "The atomic number of helium is",
       "correct_answer": "1",
-      "p_clean": 1.0676880265236832e-05,
-      "p_corrupt": 9.877828233584296e-06,
-      "prob_ratio": 1.0808934932615841,
+      "p_clean": 1.0676878446247429e-05,
+      "p_corrupt": 9.87786097539356e-06,
+      "prob_ratio": 1.0808897263126376,
+      "subject_pos": 4,
       "drop_reason": "prob_ratio"
     },
     {
@@ -2176,9 +2383,10 @@
       "clean": "The pH of pure water is",
       "corrupt": "The pH of acidic water is",
       "correct_answer": "7",
-      "p_clean": 1.3754872270510532e-05,
-      "p_corrupt": 6.9853413151577115e-06,
-      "prob_ratio": 1.96910525197436,
+      "p_clean": 1.3754887731920462e-05,
+      "p_corrupt": 6.985352229094133e-06,
+      "prob_ratio": 1.9691043888425666,
+      "subject_pos": 3,
       "drop_reason": "prob_ratio"
     },
     {
@@ -2187,9 +2395,10 @@
       "clean": "Sound travels at",
       "corrupt": "Light travels at",
       "correct_answer": "343",
-      "p_clean": 7.390114298289063e-09,
-      "p_corrupt": 6.811947006468699e-09,
-      "prob_ratio": 1.0848754829230658,
+      "p_clean": 7.390100975612768e-09,
+      "p_corrupt": 6.81194478602265e-09,
+      "prob_ratio": 1.0848738807713811,
+      "subject_pos": 0,
       "drop_reason": "prob_ratio"
     },
     {
@@ -2198,9 +2407,10 @@
       "clean": "The second planet from the sun is",
       "corrupt": "The third planet from the sun is",
       "correct_answer": "Venus",
-      "p_clean": 2.0566083946960134e-07,
-      "p_corrupt": 1.253034014325749e-07,
-      "prob_ratio": 1.6413029264833354,
+      "p_clean": 2.0566021419199387e-07,
+      "p_corrupt": 1.2530365722795977e-07,
+      "prob_ratio": 1.6412945858223813,
+      "subject_pos": 1,
       "drop_reason": "prob_ratio"
     },
     {
@@ -2209,9 +2419,10 @@
       "clean": "The atomic number of oxygen is",
       "corrupt": "The atomic number of nitrogen is",
       "correct_answer": "8",
-      "p_clean": 3.7639745187334483e-06,
-      "p_corrupt": 3.1520194170298055e-06,
-      "prob_ratio": 1.1941469961756446,
+      "p_clean": 3.7639708807546413e-06,
+      "p_corrupt": 3.152018052787753e-06,
+      "prob_ratio": 1.1941463588464083,
+      "subject_pos": 4,
       "drop_reason": "prob_ratio"
     },
     {
@@ -2220,9 +2431,10 @@
       "clean": "The chemical symbol for gold is",
       "corrupt": "The chemical symbol for silver is",
       "correct_answer": "Au",
-      "p_clean": 1.1248615010117646e-05,
+      "p_clean": 1.1248605915170629e-05,
       "p_corrupt": 1.0197230949415825e-05,
-      "prob_ratio": 1.1031048591443398,
+      "prob_ratio": 1.1031039672407374,
+      "subject_pos": 4,
       "drop_reason": "prob_ratio"
     },
     {
@@ -2231,9 +2443,10 @@
       "clean": "Mercury boils at",
       "corrupt": "Mercury freezes at",
       "correct_answer": "357",
-      "p_clean": 1.3904693396682433e-08,
-      "p_corrupt": 8.48241565876151e-09,
-      "prob_ratio": 1.639237447922071,
+      "p_clean": 1.390467119222194e-08,
+      "p_corrupt": 8.48242009965361e-09,
+      "prob_ratio": 1.6392339720110958,
+      "subject_pos": 2,
       "drop_reason": "prob_ratio"
     },
     {
@@ -2242,9 +2455,10 @@
       "clean": "The chemical symbol for water is",
       "corrupt": "The chemical symbol for oxygen is",
       "correct_answer": "H2O",
-      "p_clean": 4.681990048993612e-06,
-      "p_corrupt": 5.363641321309842e-06,
-      "prob_ratio": 0.8729125921213229,
+      "p_clean": 4.681986411014805e-06,
+      "p_corrupt": 5.363635409594281e-06,
+      "prob_ratio": 0.8729128759646552,
+      "subject_pos": 4,
       "drop_reason": "prob_ratio"
     },
     {
@@ -2253,9 +2467,10 @@
       "clean": "The chemical symbol for gold is",
       "corrupt": "The chemical symbol for silver is",
       "correct_answer": "Au",
-      "p_clean": 1.1248615010117646e-05,
+      "p_clean": 1.1248605915170629e-05,
       "p_corrupt": 1.0197230949415825e-05,
-      "prob_ratio": 1.1031048591443398,
+      "prob_ratio": 1.1031039672407374,
+      "subject_pos": 4,
       "drop_reason": "prob_ratio"
     },
     {
@@ -2264,9 +2479,10 @@
       "clean": "The atomic number of hydrogen is",
       "corrupt": "The atomic number of helium is",
       "correct_answer": "1",
-      "p_clean": 1.0676880265236832e-05,
-      "p_corrupt": 9.877828233584296e-06,
-      "prob_ratio": 1.0808934932615841,
+      "p_clean": 1.0676878446247429e-05,
+      "p_corrupt": 9.87786097539356e-06,
+      "prob_ratio": 1.0808897263126376,
+      "subject_pos": 4,
       "drop_reason": "prob_ratio"
     },
     {
@@ -2275,9 +2491,10 @@
       "clean": "The atomic number of carbon is",
       "corrupt": "The atomic number of nitrogen is",
       "correct_answer": "6",
-      "p_clean": 3.0139383397909114e-06,
-      "p_corrupt": 4.7440453272429295e-06,
-      "prob_ratio": 0.635309768750145,
+      "p_clean": 3.013940158780315e-06,
+      "p_corrupt": 4.744038506032666e-06,
+      "prob_ratio": 0.6353110656559164,
+      "subject_pos": 4,
       "drop_reason": "prob_ratio"
     },
     {
@@ -2286,9 +2503,10 @@
       "clean": "The melting point of ice is",
       "corrupt": "The melting point of salt is",
       "correct_answer": "0",
-      "p_clean": 9.952643722499488e-07,
-      "p_corrupt": 1.4292855894382228e-06,
-      "prob_ratio": 0.6963369529536326,
+      "p_clean": 9.952625532605452e-07,
+      "p_corrupt": 1.429287976861815e-06,
+      "prob_ratio": 0.6963345171669125,
+      "subject_pos": 4,
       "drop_reason": "prob_ratio"
     },
     {
@@ -2297,9 +2515,10 @@
       "clean": "The boiling point of water is",
       "corrupt": "The boiling point of mercury is",
       "correct_answer": "100",
-      "p_clean": 6.042535005690297e-07,
-      "p_corrupt": 6.251428317227692e-07,
-      "prob_ratio": 0.9665847065762994,
+      "p_clean": 6.042534437256109e-07,
+      "p_corrupt": 6.251439117477275e-07,
+      "prob_ratio": 0.9665829457353063,
+      "subject_pos": 4,
       "drop_reason": "prob_ratio"
     },
     {
@@ -2308,9 +2527,10 @@
       "clean": "The density of water is",
       "corrupt": "The density of oil is",
       "correct_answer": "1",
-      "p_clean": 7.101508344931062e-06,
-      "p_corrupt": 5.2038676585652865e-06,
-      "prob_ratio": 1.3646596744716137,
+      "p_clean": 7.101512892404571e-06,
+      "p_corrupt": 5.203876753512304e-06,
+      "prob_ratio": 1.3646581632840318,
+      "subject_pos": 3,
       "drop_reason": "prob_ratio"
     },
     {
@@ -2319,9 +2539,10 @@
       "clean": "The cat runs",
       "corrupt": "The cat run",
       "correct_answer": "fast",
-      "p_clean": 2.925186208813102e-07,
-      "p_corrupt": 2.9828148399246857e-05,
-      "prob_ratio": 0.009806797826200172,
+      "p_clean": 2.925183650859253e-07,
+      "p_corrupt": 2.9828219339833595e-05,
+      "prob_ratio": 0.009806765927032278,
+      "subject_pos": 2,
       "drop_reason": "prob_ratio"
     },
     {
@@ -2330,9 +2551,10 @@
       "clean": "She goes",
       "corrupt": "She go",
       "correct_answer": "home",
-      "p_clean": 1.5918971030259854e-07,
-      "p_corrupt": 2.871384367608698e-06,
-      "prob_ratio": 0.05544005605741054,
+      "p_clean": 1.591887297536232e-07,
+      "p_corrupt": 2.8713686788250925e-06,
+      "prob_ratio": 0.05544001748279851,
+      "subject_pos": 1,
       "drop_reason": "prob_ratio"
     },
     {
@@ -2341,9 +2563,10 @@
       "clean": "He does",
       "corrupt": "He do",
       "correct_answer": "work",
-      "p_clean": 1.520678978295109e-07,
-      "p_corrupt": 8.497043495481194e-07,
-      "prob_ratio": 0.17896565777306192,
+      "p_clean": 1.5206904890874284e-07,
+      "p_corrupt": 8.497038948007685e-07,
+      "prob_ratio": 0.17896710823527381,
+      "subject_pos": 1,
       "drop_reason": "prob_ratio"
     },
     {
@@ -2352,9 +2575,10 @@
       "clean": "They have",
       "corrupt": "They has",
       "correct_answer": "fun",
-      "p_clean": 4.712591206157413e-09,
-      "p_corrupt": 1.3772084805907525e-08,
-      "prob_ratio": 0.3421843005305885,
+      "p_clean": 4.7125916502466225e-09,
+      "p_corrupt": 1.3772081253193846e-08,
+      "prob_ratio": 0.3421844210477438,
+      "subject_pos": 1,
       "drop_reason": "prob_ratio"
     },
     {
@@ -2363,9 +2587,10 @@
       "clean": "I am",
       "corrupt": "I is",
       "correct_answer": "happy",
-      "p_clean": 7.921029805402213e-07,
-      "p_corrupt": 7.865609177315491e-07,
-      "prob_ratio": 1.007045942257919,
+      "p_clean": 7.921037195046665e-07,
+      "p_corrupt": 7.865602924539417e-07,
+      "prob_ratio": 1.0070476822996368,
+      "subject_pos": 1,
       "drop_reason": "prob_ratio"
     },
     {
@@ -2374,9 +2599,10 @@
       "clean": "We are",
       "corrupt": "We is",
       "correct_answer": "ready",
-      "p_clean": 3.150806264784478e-07,
-      "p_corrupt": 5.779451726084517e-07,
-      "prob_ratio": 0.5451739047432268,
+      "p_clean": 3.150816212382779e-07,
+      "p_corrupt": 5.779486400570022e-07,
+      "prob_ratio": 0.5451723551200014,
+      "subject_pos": 1,
       "drop_reason": "prob_ratio"
     },
     {
@@ -2385,9 +2611,10 @@
       "clean": "You were",
       "corrupt": "You was",
       "correct_answer": "late",
-      "p_clean": 4.600894332185135e-09,
-      "p_corrupt": 2.182694913699379e-08,
-      "prob_ratio": 0.2107896208172872,
+      "p_clean": 4.600867242743334e-09,
+      "p_corrupt": 2.18269224916412e-08,
+      "prob_ratio": 0.21078863703782677,
+      "subject_pos": 1,
       "drop_reason": "prob_ratio"
     },
     {
@@ -2396,9 +2623,10 @@
       "clean": "The children play",
       "corrupt": "The children plays",
       "correct_answer": "outside",
-      "p_clean": 2.1521780126931844e-06,
-      "p_corrupt": 1.4021163678989979e-06,
-      "prob_ratio": 1.5349496389647865,
+      "p_clean": 2.1521796043089125e-06,
+      "p_corrupt": 1.4021161405253224e-06,
+      "prob_ratio": 1.5349510230319212,
+      "subject_pos": 2,
       "drop_reason": "prob_ratio"
     },
     {
@@ -2407,9 +2635,10 @@
       "clean": "It seems",
       "corrupt": "It seem",
       "correct_answer": "good",
-      "p_clean": 1.1863122750810362e-07,
-      "p_corrupt": 5.1307069952599704e-06,
-      "prob_ratio": 0.023121809064072782,
+      "p_clean": 1.1863161120118093e-07,
+      "p_corrupt": 5.130756562721217e-06,
+      "prob_ratio": 0.023121660470724396,
+      "subject_pos": 1,
       "drop_reason": "prob_ratio"
     },
     {
@@ -2418,9 +2647,10 @@
       "clean": "She writes",
       "corrupt": "She write",
       "correct_answer": "letters",
-      "p_clean": 2.1477056577623443e-08,
-      "p_corrupt": 4.70106215288979e-07,
-      "prob_ratio": 0.04568554058452786,
+      "p_clean": 2.1477191580743238e-08,
+      "p_corrupt": 4.7010325943119824e-07,
+      "prob_ratio": 0.045686115018069816,
+      "subject_pos": 1,
       "drop_reason": "prob_ratio"
     },
     {
@@ -2429,9 +2659,10 @@
       "clean": "He takes",
       "corrupt": "He take",
       "correct_answer": "care",
-      "p_clean": 1.2985486819161451e-06,
-      "p_corrupt": 0.00013662401761393994,
-      "prob_ratio": 0.009504541767944998,
+      "p_clean": 1.2985457260583644e-06,
+      "p_corrupt": 0.00013662411947734654,
+      "prob_ratio": 0.009504513046641625,
+      "subject_pos": 1,
       "drop_reason": "prob_ratio"
     },
     {
@@ -2440,9 +2671,10 @@
       "clean": "The man works",
       "corrupt": "The man work",
       "correct_answer": "hard",
-      "p_clean": 4.620882236849866e-07,
-      "p_corrupt": 0.00026190909557044506,
-      "prob_ratio": 0.0017643076605588896,
+      "p_clean": 4.620874847205414e-07,
+      "p_corrupt": 0.00026190848439000547,
+      "prob_ratio": 0.0017643089562247676,
+      "subject_pos": 2,
       "drop_reason": "prob_ratio"
     },
     {
@@ -2451,9 +2683,10 @@
       "clean": "They are",
       "corrupt": "They is",
       "correct_answer": "coming",
-      "p_clean": 4.4052828229723673e-07,
-      "p_corrupt": 5.614075462290202e-07,
-      "prob_ratio": 0.7846853596042115,
+      "p_clean": 4.4052933390048565e-07,
+      "p_corrupt": 5.614109568341519e-07,
+      "prob_ratio": 0.784682465737169,
+      "subject_pos": 1,
       "drop_reason": "prob_ratio"
     },
     {
@@ -2462,9 +2695,10 @@
       "clean": "I have",
       "corrupt": "I has",
       "correct_answer": "done",
-      "p_clean": 3.7270817188073124e-07,
-      "p_corrupt": 7.519649898313219e-07,
-      "prob_ratio": 0.49564564430630714,
+      "p_clean": 3.727077455550898e-07,
+      "p_corrupt": 7.519647624576464e-07,
+      "prob_ratio": 0.4956452272270965,
+      "subject_pos": 1,
       "drop_reason": "prob_ratio"
     },
     {
@@ -2473,9 +2707,10 @@
       "clean": "It",
       "corrupt": "They",
       "correct_answer": "goes",
-      "p_clean": 3.418493008666701e-07,
-      "p_corrupt": 4.283706118712871e-07,
-      "prob_ratio": 0.7980222998336446,
+      "p_clean": 3.41849755614021e-07,
+      "p_corrupt": 4.2836876446017413e-07,
+      "prob_ratio": 0.7980268030158933,
+      "subject_pos": 0,
       "drop_reason": "prob_ratio"
     },
     {
@@ -2484,9 +2719,10 @@
       "clean": "the cat often ",
       "corrupt": "the cats often ",
       "correct_answer": "eats",
-      "p_clean": 3.2868987887013645e-07,
-      "p_corrupt": 6.298209882515948e-07,
-      "prob_ratio": 0.5218782558875834,
+      "p_clean": 3.286897367615893e-07,
+      "p_corrupt": 6.298222956502286e-07,
+      "prob_ratio": 0.5218769469287364,
+      "subject_pos": 1,
       "drop_reason": "prob_ratio"
     },
     {
@@ -2495,9 +2731,10 @@
       "clean": "Yesterday he ",
       "corrupt": "Today he ",
       "correct_answer": "ran",
-      "p_clean": 7.644200081813324e-07,
-      "p_corrupt": 5.85686336762592e-07,
-      "prob_ratio": 1.3051696107624757,
+      "p_clean": 7.644244419680035e-07,
+      "p_corrupt": 5.856867915099429e-07,
+      "prob_ratio": 1.3051761676189797,
+      "subject_pos": 0,
       "drop_reason": "prob_ratio"
     },
     {
@@ -2506,9 +2743,10 @@
       "clean": "The birds ",
       "corrupt": "The bird ",
       "correct_answer": "fly",
-      "p_clean": 2.122610112564871e-06,
-      "p_corrupt": 3.924113570974441e-06,
-      "prob_ratio": 0.540914546476233,
+      "p_clean": 2.1226053377176868e-06,
+      "p_corrupt": 3.924101292795967e-06,
+      "prob_ratio": 0.5409150221515576,
+      "subject_pos": 1,
       "drop_reason": "prob_ratio"
     },
     {
@@ -2517,9 +2755,10 @@
       "clean": "He does ",
       "corrupt": "He do ",
       "correct_answer": "not",
-      "p_clean": 1.5630155758117326e-05,
-      "p_corrupt": 4.959322905051522e-05,
-      "prob_ratio": 0.315167131831577,
+      "p_clean": 1.563013756822329e-05,
+      "p_corrupt": 4.959306170349009e-05,
+      "prob_ratio": 0.3151678285497611,
+      "subject_pos": 1,
       "drop_reason": "prob_ratio"
     },
     {
@@ -2528,9 +2767,10 @@
       "clean": "The 3rd president of the US is",
       "corrupt": "The 4th president of the US is",
       "correct_answer": "Thomas Jefferson",
-      "p_clean": 2.8576065957963692e-08,
-      "p_corrupt": 2.4798577413776002e-08,
-      "prob_ratio": 1.1523268242834461,
+      "p_clean": 2.857607128703421e-08,
+      "p_corrupt": 2.4798563202921287e-08,
+      "prob_ratio": 1.1523276995204275,
+      "subject_pos": 1,
       "drop_reason": "prob_ratio"
     },
     {
@@ -2539,9 +2779,10 @@
       "clean": "The discoverer of the theory of relativity is",
       "corrupt": "The discoverer of the theory of evolution is",
       "correct_answer": "Albert Einstein",
-      "p_clean": 5.255410997051513e-06,
-      "p_corrupt": 3.1356257750303484e-06,
-      "prob_ratio": 1.6760325925693884,
+      "p_clean": 5.2553964451362845e-06,
+      "p_corrupt": 3.1356289582618047e-06,
+      "prob_ratio": 1.676026250264491,
+      "subject_pos": 8,
       "drop_reason": "prob_ratio"
     },
     {
@@ -2550,9 +2791,10 @@
       "clean": "The discoverer of gravity is",
       "corrupt": "The discoverer of electricity is",
       "correct_answer": "Isaac Newton",
-      "p_clean": 5.746527165229054e-08,
-      "p_corrupt": 7.709515159604052e-08,
-      "prob_ratio": 0.745381135682751,
+      "p_clean": 5.7465221914299036e-08,
+      "p_corrupt": 7.709537186428861e-08,
+      "prob_ratio": 0.7453783609145225,
+      "subject_pos": 5,
       "drop_reason": "prob_ratio"
     },
     {
@@ -2561,9 +2803,10 @@
       "clean": "The first person on the moon is",
       "corrupt": "The last person on the moon is",
       "correct_answer": "Neil Armstrong",
-      "p_clean": 4.885586690761556e-07,
-      "p_corrupt": 4.824302664019342e-07,
-      "prob_ratio": 1.0127031886285418,
+      "p_clean": 4.885590101366688e-07,
+      "p_corrupt": 4.824293000638136e-07,
+      "prob_ratio": 1.0127059241054481,
+      "subject_pos": 1,
       "drop_reason": "prob_ratio"
     },
     {
@@ -2572,9 +2815,10 @@
       "clean": "The author of The Hobbit is",
       "corrupt": "The author of The Bible is",
       "correct_answer": "J. R. R. Tolkien",
-      "p_clean": 3.1756547969052917e-07,
-      "p_corrupt": 1.1927327250305098e-06,
-      "prob_ratio": 0.2662503283645596,
+      "p_clean": 3.1756621865497436e-07,
+      "p_corrupt": 1.1927355672014528e-06,
+      "prob_ratio": 0.266250313470645,
+      "subject_pos": 4,
       "drop_reason": "prob_ratio"
     },
     {
@@ -2583,9 +2827,10 @@
       "clean": "The 16th president of the US is",
       "corrupt": "The 26th president of the US is",
       "correct_answer": "Abraham Lincoln",
-      "p_clean": 2.714633184908166e-09,
-      "p_corrupt": 2.008912813877828e-09,
-      "prob_ratio": 1.3512946734946043,
+      "p_clean": 2.714642066692363e-09,
+      "p_corrupt": 2.0089105934317786e-09,
+      "prob_ratio": 1.3513005882730693,
+      "subject_pos": 1,
       "drop_reason": "prob_ratio"
     },
     {
@@ -2594,9 +2839,10 @@
       "clean": "The first man to orbit Earth is",
       "corrupt": "The first woman to orbit Earth is",
       "correct_answer": "Yuri Gagarin",
-      "p_clean": 1.993539768818664e-07,
-      "p_corrupt": 2.0518160681604058e-07,
-      "prob_ratio": 0.9715976981338339,
+      "p_clean": 1.99354545316055e-07,
+      "p_corrupt": 2.0518169208116888e-07,
+      "prob_ratio": 0.9716000647718186,
+      "subject_pos": 2,
       "drop_reason": "prob_ratio"
     },
     {
@@ -2605,9 +2851,10 @@
       "clean": "The CEO of Apple is",
       "corrupt": "The CEO of Microsoft is",
       "correct_answer": "Tim Cook",
-      "p_clean": 2.1585787379763133e-08,
-      "p_corrupt": 1.270785698892496e-08,
-      "prob_ratio": 1.6986174300336705,
+      "p_clean": 2.158570389099168e-08,
+      "p_corrupt": 1.2707850771676021e-08,
+      "prob_ratio": 1.698611691215569,
+      "subject_pos": 3,
       "drop_reason": "prob_ratio"
     },
     {
@@ -2616,9 +2863,10 @@
       "clean": "The CEO of Tesla is",
       "corrupt": "The CEO of Amazon is",
       "correct_answer": "Elon Musk",
-      "p_clean": 4.1301390751868894e-08,
-      "p_corrupt": 2.4357424521781468e-08,
-      "prob_ratio": 1.6956386630670002,
+      "p_clean": 4.1301237985180705e-08,
+      "p_corrupt": 2.4357406758213074e-08,
+      "prob_ratio": 1.6956336277980144,
+      "subject_pos": 3,
       "drop_reason": "prob_ratio"
     },
     {
@@ -2627,9 +2875,10 @@
       "clean": "The founder of Facebook is",
       "corrupt": "The founder of Microsoft is",
       "correct_answer": "Mark Zuckerberg",
-      "p_clean": 1.827180184932331e-08,
-      "p_corrupt": 1.6762815135962228e-08,
-      "prob_ratio": 1.0900198863449713,
+      "p_clean": 1.827180362568015e-08,
+      "p_corrupt": 1.676272098904974e-08,
+      "prob_ratio": 1.0900261143531662,
+      "subject_pos": 3,
       "drop_reason": "prob_ratio"
     },
     {
@@ -2638,9 +2887,10 @@
       "clean": "The founder of Google is",
       "corrupt": "The founder of Amazon is",
       "correct_answer": "Larry Page",
-      "p_clean": 4.675156262123892e-08,
-      "p_corrupt": 4.2892452256637625e-08,
-      "prob_ratio": 1.0899717820168255,
+      "p_clean": 4.675146669796959e-08,
+      "p_corrupt": 4.289231725351783e-08,
+      "prob_ratio": 1.0899729763174604,
+      "subject_pos": 3,
       "drop_reason": "prob_ratio"
     },
     {
@@ -2649,9 +2899,10 @@
       "clean": "The founder of Apple is",
       "corrupt": "The founder of Tesla is",
       "correct_answer": "Steve Jobs",
-      "p_clean": 1.5592003421716072e-07,
-      "p_corrupt": 1.6682584202953876e-07,
-      "prob_ratio": 0.934627587190916,
+      "p_clean": 1.5592019053656259e-07,
+      "p_corrupt": 1.6682614045748778e-07,
+      "prob_ratio": 0.9346268522965419,
+      "subject_pos": 3,
       "drop_reason": "prob_ratio"
     }
   ]

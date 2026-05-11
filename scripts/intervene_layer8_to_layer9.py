@@ -49,12 +49,23 @@ layer 10 captures post–mover-head residual state relevant to late bottlenecks 
 
 **Structured results:** Pass ``--results-json results/benchmarks/factual_recall_results.json`` to append per-row
 metrics (inject ids, dst ids, Δ activation at ``dst_sae_id`` for each tracked latent).
+
+**Tripartite / relay baseline:** Use ``--ablate-z-layer L --ablate-z-head H`` to zero that attention ``hook_z``
+slice during the *intervened* forward only (e.g. ``9`` and ``8`` for L9H8). Baseline ``run_with_cache`` for
+metrics is unchanged. Compare runs with vs without ablation to estimate direct vs relay contributions at dst.
+
+**Recovery (benchmark rows):** With ``--benchmark-json``, by default we log contrastive logits at the last prompt
+position: ``LD = logit(correct_answer first token) - logit(corrupt_answer first token)`` on clean, corrupt, and
+intervened-corrupt forwards. ``recovery = (LD_intervened - LD_corrupt) / (LD_clean - LD_corrupt)``. Raw logits for both
+answer tokens are stored under ``logits.clean_prompt``, ``logits.corrupt_prompt_baseline`` (natural corrupt forward),
+and ``logits.corrupt_prompt_intervened``. Disable extra forwards with ``--no-recovery-metrics``.
 """
 
 from __future__ import annotations
 
 import argparse
 import json
+import math
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
@@ -62,6 +73,7 @@ from typing import Any, Callable
 
 import torch
 from transformer_lens import HookedTransformer
+from transformer_lens import utils as tl_utils
 
 from discovery.benchmark_json import (
     add_discovery_benchmark_cli_args,
@@ -141,6 +153,41 @@ def _parse_int_list(xs: list[str]) -> list[int]:
     return [int(x) for x in xs]
 
 
+def _answer_first_token_id(model: HookedTransformer, answer: str) -> int:
+    """First token id for contrastive logit diff (matches ``build_benchmark.answer_token_id``)."""
+    t = model.to_tokens(answer, prepend_bos=False)
+    if t.numel() < 1:
+        raise ValueError(f"Empty answer tokenization: {answer!r}")
+    return int(t[0, 0].item())
+
+
+def _two_answer_logits_at_last(
+    model: HookedTransformer,
+    prompt: str,
+    tc_id: int,
+    tu_id: int,
+    *,
+    prepend_bos: bool,
+    device: torch.device,
+) -> tuple[float, float]:
+    """Logits at last prompt position for correct-answer first token vs corrupt-answer first token."""
+    tokens = model.to_tokens(prompt, prepend_bos=prepend_bos).to(device)
+    with torch.no_grad():
+        logits = model(tokens)[0, -1].float()
+    return float(logits[tc_id].item()), float(logits[tu_id].item())
+
+
+def _recovery_pair_from_row(row: dict[str, Any]) -> dict[str, str] | None:
+    """Benchmark pair fields needed for contrastive logit recovery."""
+    c = row.get("clean")
+    u = row.get("corrupt")
+    ca = row.get("correct_answer")
+    ua = row.get("corrupt_answer")
+    if all(isinstance(x, str) and str(x).strip() for x in (c, u, ca, ua)):
+        return {"clean": str(c), "corrupt": str(u), "correct_answer": str(ca), "corrupt_answer": str(ua)}
+    return None
+
+
 def run_one_intervention(
     *,
     args: Any,
@@ -157,11 +204,45 @@ def run_one_intervention(
     dst_features: list[int],
     dual_mode: bool,
     dynamic_src_top_k: int = 0,
+    ablate_z_layer: int | None = None,
+    ablate_z_head: int | None = None,
+    recovery_pair: dict[str, str] | None = None,
 ) -> dict[str, Any]:
     """Single forward with layer-8 hook + capture at ``args.dst_sae_id``.
 
     Returns metrics for ``--results-json``: inject ids used (after dynamic top-k), dst ids, and Δ SAE features at dst hook.
     """
+    recovery_block: dict[str, Any] = {}
+    tc_id: int | None = None
+    tu_id: int | None = None
+    if recovery_pair is not None:
+        try:
+            tc_id = _answer_first_token_id(model, recovery_pair["correct_answer"])
+            tu_id = _answer_first_token_id(model, recovery_pair["corrupt_answer"])
+            pb = bool(args.prepend_bos)
+            lc_ok, lc_bad = _two_answer_logits_at_last(
+                model, recovery_pair["clean"], tc_id, tu_id, prepend_bos=pb, device=device
+            )
+            cr_ok, cr_bad = _two_answer_logits_at_last(
+                model, recovery_pair["corrupt"], tc_id, tu_id, prepend_bos=pb, device=device
+            )
+            recovery_block["logit_diff_clean"] = lc_ok - lc_bad
+            recovery_block["logit_diff_corrupt"] = cr_ok - cr_bad
+            recovery_block["logits"] = {
+                "correct_answer_token_id": tc_id,
+                "corrupt_answer_token_id": tu_id,
+                "clean_prompt": {
+                    "logit_correct_answer": lc_ok,
+                    "logit_corrupt_answer": lc_bad,
+                },
+                "corrupt_prompt_baseline": {
+                    "logit_correct_answer": cr_ok,
+                    "logit_corrupt_answer": cr_bad,
+                },
+            }
+        except Exception as e:
+            recovery_block["recovery_error"] = str(e)
+
     tokens = model.to_tokens(prompt, prepend_bos=bool(args.prepend_bos)).to(device)
     seq_len = int(tokens.shape[-1])
     pos_eff = _resolve_pos(int(seq_pos_raw), seq_len)
@@ -258,13 +339,30 @@ def run_one_intervention(
         act9_int = act.detach()
         return act
 
+    fwd_hooks = [
+        (str(args.src_sae_id), _hook8),
+    ]
+    if ablate_z_layer is not None and ablate_z_head is not None:
+        z_hook = tl_utils.get_act_name("z", int(ablate_z_layer))
+        h_idx = int(ablate_z_head)
+
+        def _ablate_z(act: torch.Tensor, hook, *, _h: int = h_idx) -> torch.Tensor:  # noqa: ANN001
+            x = act.clone()
+            x[:, :, _h, :] = 0.0
+            return x
+
+        fwd_hooks.append((z_hook, _ablate_z))
+        print(
+            f"[{pair_tag}] ABLATION: zero hook_z at layer={int(ablate_z_layer)} head={h_idx} ({z_hook}) "
+            "during intervened forward only."
+        )
+
+    fwd_hooks.append((str(args.dst_sae_id), _capture9))
+
     with torch.no_grad():
         logits_int = model.run_with_hooks(
             tokens,
-            fwd_hooks=[
-                (str(args.src_sae_id), _hook8),
-                (str(args.dst_sae_id), _capture9),
-            ],
+            fwd_hooks=fwd_hooks,  # type: ignore[arg-type]
             return_type="logits",
         )
 
@@ -318,7 +416,34 @@ def run_one_intervention(
     print()
     print("=" * 80)
 
-    return {
+    if recovery_pair is not None and tc_id is not None and tu_id is not None and "recovery_error" not in recovery_block:
+        lv = logits_int[0, -1].float()
+        iv_ok = float(lv[tc_id].item())
+        iv_bad = float(lv[tu_id].item())
+        ld_int = iv_ok - iv_bad
+        recovery_block["logit_diff_intervened"] = ld_int
+        if isinstance(recovery_block.get("logits"), dict):
+            recovery_block["logits"]["corrupt_prompt_intervened"] = {
+                "logit_correct_answer": iv_ok,
+                "logit_corrupt_answer": iv_bad,
+            }
+        denom = float(recovery_block["logit_diff_clean"] - recovery_block["logit_diff_corrupt"])
+        recovery_block["recovery_denom"] = denom
+        if math.isfinite(denom) and abs(denom) > 1e-8:
+            rec = (ld_int - float(recovery_block["logit_diff_corrupt"])) / denom
+            recovery_block["recovery"] = float(rec) if math.isfinite(rec) else None
+            rv = recovery_block["recovery"]
+            rv_s = f"{rv:.4f}" if rv is not None else "nan"
+            print(
+                f"[{pair_tag}] recovery={rv_s}  LD_clean={recovery_block['logit_diff_clean']:.4f} "
+                f"LD_corrupt={recovery_block['logit_diff_corrupt']:.4f} LD_intervened={ld_int:.4f}  denom={denom:.4f}"
+            )
+        else:
+            recovery_block["recovery"] = None
+            recovery_block["recovery_note"] = "zero_or_bad_denominator"
+            print(f"[{pair_tag}] recovery undefined (denom={denom:.4g})")
+
+    out: dict[str, Any] = {
         "inject_feature_ids": [int(x) for x in inject_eff],
         "dst_feature_ids": [int(x) for x in dst_features],
         "dst_delta": {str(int(j)): float(delta[int(j)].item()) for j in dst_features},
@@ -328,6 +453,11 @@ def run_one_intervention(
         "src_sae_id": str(args.src_sae_id),
         "pair_tag": pair_tag,
     }
+    if ablate_z_layer is not None:
+        out["ablate_z_layer"] = int(ablate_z_layer)
+        out["ablate_z_head"] = int(ablate_z_head) if ablate_z_head is not None else None
+    out.update(recovery_block)
+    return out
 
 
 def main() -> None:
@@ -462,8 +592,30 @@ def main() -> None:
             "Typical: results/benchmarks/factual_recall_results.json"
         ),
     )
+    p.add_argument(
+        "--ablate-z-layer",
+        type=int,
+        default=None,
+        metavar="L",
+        help="Zero one attention head in hook_z at layer L during the intervened forward (needs --ablate-z-head).",
+    )
+    p.add_argument(
+        "--ablate-z-head",
+        type=int,
+        default=None,
+        metavar="H",
+        help="Head index H to zero in hook_z at --ablate-z-layer (e.g. 9 8 for L9H8 mover ablation).",
+    )
+    p.add_argument(
+        "--no-recovery-metrics",
+        action="store_true",
+        help="Skip contrastive logit-diff and recovery fraction (saves 2 forwards per benchmark row).",
+    )
 
     args = p.parse_args()
+
+    if (args.ablate_z_layer is None) ^ (args.ablate_z_head is None):
+        raise SystemExit("Provide both --ablate-z-layer and --ablate-z-head, or neither.")
 
     dst_cli = _parse_int_list(args.dst_features)
     if bool(args.dynamic_dst_latent) and not str(args.benchmark_json or "").strip():
@@ -545,6 +697,16 @@ def main() -> None:
     encode8, decode8 = discovery_encode_decode(src_sae)
     encode9, _decode9 = discovery_encode_decode(dst_sae)
 
+    ablate_z_layer = args.ablate_z_layer
+    ablate_z_head = args.ablate_z_head
+    if ablate_z_layer is not None:
+        nl = int(model.cfg.n_layers)
+        nh = int(model.cfg.n_heads)
+        if not (0 <= int(ablate_z_layer) < nl):
+            raise SystemExit(f"--ablate-z-layer must be in [0, {nl - 1}], got {ablate_z_layer}")
+        if not (0 <= int(ablate_z_head or -1) < nh):
+            raise SystemExit(f"--ablate-z-head must be in [0, {nh - 1}], got {ablate_z_head}")
+
     field = str(args.benchmark_prompt_field)
     results_path = str(getattr(args, "results_json", "") or "").strip()
 
@@ -561,6 +723,8 @@ def main() -> None:
             "src_sae_id": str(args.src_sae_id),
             "dst_sae_id": str(args.dst_sae_id),
             "benchmark_prompt_field": field,
+            "ablate_z_layer": ablate_z_layer,
+            "ablate_z_head": ablate_z_head,
             "rows": rows,
         }
         out_p.write_text(json.dumps(payload, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
@@ -607,6 +771,7 @@ def main() -> None:
 
             pid = row.get("id", idx)
             pair_tag = f"id={pid} idx={idx}"
+            recovery_pair = None if args.no_recovery_metrics else _recovery_pair_from_row(row)
             try:
                 metrics = run_one_intervention(
                     args=args,
@@ -623,8 +788,12 @@ def main() -> None:
                     dst_features=dst_use,
                     dual_mode=dual_mode,
                     dynamic_src_top_k=dyn_k,
+                    ablate_z_layer=ablate_z_layer,
+                    ablate_z_head=ablate_z_head,
+                    recovery_pair=recovery_pair,
                 )
-                rec = {"id": pid, "benchmark_index": idx, **metrics}
+                cat = row.get("category")
+                rec = {"id": pid, "benchmark_index": idx, "category": cat, **metrics}
                 result_rows.append(rec)
                 n_ok += 1
             except Exception as e:
@@ -633,6 +802,7 @@ def main() -> None:
                     {
                         "id": pid,
                         "benchmark_index": idx,
+                        "category": row.get("category"),
                         "error": str(e),
                     }
                 )
@@ -660,6 +830,8 @@ def main() -> None:
             "(fallback when using --dynamic-dst-latent)."
         )
 
+    recovery_single = None if args.no_recovery_metrics else (_recovery_pair_from_row(row_single) if row_single else None)
+
     metrics = run_one_intervention(
         args=args,
         model=model,
@@ -675,10 +847,14 @@ def main() -> None:
         dst_features=dst_use,
         dual_mode=dual_mode,
         dynamic_src_top_k=dyn_k,
+        ablate_z_layer=ablate_z_layer,
+        ablate_z_head=ablate_z_head,
+        recovery_pair=recovery_single,
     )
     pid = row_single.get("id", 0) if row_single is not None else None
+    cat_single = row_single.get("category") if row_single else None
     _write_results_payload(
-        [{"id": pid, "benchmark_index": int(args.benchmark_index), **metrics}]
+        [{"id": pid, "benchmark_index": int(args.benchmark_index), "category": cat_single, **metrics}]
         if results_path
         else []
     )

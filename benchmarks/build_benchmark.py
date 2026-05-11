@@ -47,6 +47,29 @@ def answer_token_id(model: HookedTransformer, answer: str) -> int:
     return int(t[0, 0].item())
 
 
+def subject_pos_from_clean_corrupt_diff(
+    model: HookedTransformer,
+    clean: str,
+    corrupt: str,
+    *,
+    prepend_bos: bool,
+) -> int | None:
+    """Index of the first differing token between clean and corrupt (entity / subject swap).
+
+    Assumes identical token lengths (generator constraint). Align ``prepend_bos`` with
+    ``benchmarks/enrich_source_sae_ids.py`` / interventions so indices match.
+    """
+    tc = model.to_tokens(clean, prepend_bos=prepend_bos)
+    tr = model.to_tokens(corrupt, prepend_bos=prepend_bos)
+    if tc.shape != tr.shape:
+        return None
+    n = int(tc.shape[-1])
+    for i in range(n):
+        if int(tc[0, i].item()) != int(tr[0, i].item()):
+            return i
+    return None
+
+
 def prob_next_token(
     model: HookedTransformer,
     prompt: str,
@@ -83,6 +106,11 @@ def main() -> int:
         help="Keep pair if P(answer|clean) > ratio * P(answer|corrupt) (default: 2)",
     )
     parser.add_argument("--device", default=None, help="cuda | cpu (default: auto)")
+    parser.add_argument(
+        "--prepend-bos",
+        action="store_true",
+        help="Pass prepend_bos=True when computing subject_pos (must match enrich_source_sae_ids / intervene).",
+    )
     args = parser.parse_args()
 
     meta_in, pairs_in = load_pairs(args.in_path)
@@ -113,12 +141,17 @@ def main() -> int:
             continue
 
         ratio_ok = p_clean > float(args.ratio) * p_corrupt
+        subj_pos = subject_pos_from_clean_corrupt_diff(
+            model, clean, corrupt, prepend_bos=bool(args.prepend_bos)
+        )
         row_out = {
             **row,
             "p_clean": p_clean,
             "p_corrupt": p_corrupt,
             "prob_ratio": (p_clean / p_corrupt) if p_corrupt > 1e-12 else float("inf"),
         }
+        if subj_pos is not None:
+            row_out["subject_pos"] = subj_pos
         if ratio_ok:
             kept.append(row_out)
         else:
@@ -129,7 +162,11 @@ def main() -> int:
     payload = {
         "schema_version": 1,
         "source_file": str(args.in_path),
-        "filter": {"ratio": args.ratio, "metric": "P(first_token(correct_answer)) at last prompt position"},
+        "filter": {
+            "ratio": args.ratio,
+            "metric": "P(first_token(correct_answer)) at last prompt position",
+            "subject_pos_prepend_bos": bool(args.prepend_bos),
+        },
         "model": args.model,
         "generator_meta": {k: v for k, v in meta_in.items() if k != "pairs"},
         "counts": {"input": len(pairs_in), "kept": len(kept), "dropped": len(dropped)},
