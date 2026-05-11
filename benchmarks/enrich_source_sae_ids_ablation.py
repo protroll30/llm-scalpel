@@ -17,10 +17,7 @@ This is **activation patching / causal scrubbing** at SAE feature granularity. I
 
 Example::
 
-  python benchmarks/enrich_source_sae_ids_ablation.py \\
-    --in benchmarks/processed/factual_recall_filtered_enriched.json \\
-    --out benchmarks/processed/factual_recall_filtered_enriched.json \\
-    --device cuda --top-k 8 --skip-dropped
+  python benchmarks/enrich_source_sae_ids_ablation.py --in benchmarks/processed/factual_recall_filtered_enriched.json --out benchmarks/processed/factual_recall_filtered_enriched_ablation.json --device cuda --top-k 8 --skip-dropped
 """
 
 from __future__ import annotations
